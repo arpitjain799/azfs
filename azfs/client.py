@@ -1,4 +1,5 @@
 import pandas as pd
+import gzip
 import io
 import re
 import json
@@ -76,7 +77,7 @@ def _get_file_client(
         )
         return file_client
     else:
-        raise ValueError("account_kindが不正です")
+        raise AzfsInputError("account_kindが不正です")
 
 
 def _download_data(path: str, msi: DefaultAzureCredential) -> Union[bytes, str]:
@@ -88,6 +89,7 @@ def _download_data(path: str, msi: DefaultAzureCredential) -> Union[bytes, str]:
     :return:
     """
     storage_account_url, account_kind, file_system, file_path = _decode_path(path)
+    file_bytes = None
     if account_kind == "dfs":
         file_client = _get_file_client(
             storage_account_url=storage_account_url,
@@ -96,7 +98,6 @@ def _download_data(path: str, msi: DefaultAzureCredential) -> Union[bytes, str]:
             file_path=file_path,
             msi=msi)
         file_bytes = file_client.download_file().readall()
-        return file_bytes
     elif account_kind == "blob":
         file_client = _get_file_client(
             storage_account_url=storage_account_url,
@@ -105,7 +106,11 @@ def _download_data(path: str, msi: DefaultAzureCredential) -> Union[bytes, str]:
             file_path=file_path,
             msi=msi)
         file_bytes = file_client.download_blob().readall()
-        return file_bytes
+
+    # gzip圧縮ファイルは一旦ここで展開
+    if file_path.endswith(".gz"):
+        file_bytes = gzip.decompress(file_bytes)
+    return file_bytes
 
 
 def read_csv(path: str, msi: DefaultAzureCredential) -> pd.DataFrame:
