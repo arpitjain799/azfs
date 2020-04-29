@@ -53,6 +53,29 @@ class AzFileClient:
         if self.account_url is not None:
             self.service_client = BlobServiceClient(account_url=self.account_url, credential=credential)
 
+    def __enter__(self):
+        pd.__dict__['read_csv_az'] = self.read_csv
+        pd.DataFrame.to_csv_az = self.to_csv(self)
+        return self
+
+    def __exit__(self, exec_type, exec_value, traceback):
+        """
+        restore pandas existing function
+        :param exec_type:
+        :param exec_value:
+        :param traceback:
+        :return:
+        """
+        pd.__dict__.pop('read_csv_az')
+        pd.DataFrame.to_csv_az = None
+
+    @staticmethod
+    def to_csv(azc):
+        def inner(self, path, **kwargs):
+            df = self if isinstance(self, pd.DataFrame) else None
+            return azc.write_csv(path=path, df=df, **kwargs)
+        return inner
+
     @staticmethod
     def _get_file_client(
             storage_account_url,
@@ -184,12 +207,12 @@ class AzFileClient:
             file_client.upload_blob(data=data, length=len(data))
         return True
 
-    def write_csv(self, path: str, df: pd.DataFrame) -> bool:
+    def write_csv(self, path: str, df: pd.DataFrame, **kwargs) -> bool:
         """
         output pandas dataframe to csv file in Datalake storage.
         Note: Unavailable for large loop processing!
         """
-        csv_str = df.to_csv(encoding="utf-8")
+        csv_str = df.to_csv(encoding="utf-8", **kwargs)
         return self._upload_data(path=path, data=csv_str)
 
     def read_json(self, path: str) -> dict:
