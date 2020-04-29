@@ -23,12 +23,32 @@ class AzFileClient:
 
     """
 
-    def __init__(self, credential: Union[str, DefaultAzureCredential]):
+    def __init__(
+            self,
+            credential: Union[str, DefaultAzureCredential],
+            *,
+            storage_account_name: str = None,
+            account_url: str = None):
         """
 
         :param credential: if string, Blob Storage -> Access Keys -> Key
         """
         self.credential = credential
+
+        # generate ServiceClient
+        self.account_url = None
+        if not (storage_account_name is None or account_url is None):
+            # self.url_pattern = None
+            raise AzfsInputError("両方の値を設定することはできません")
+        elif storage_account_name is not None:
+            self.account_url = f"https://{storage_account_name}.blob.core.windows.net"
+        elif account_url is not None:
+            self.account_url = account_url
+
+        # ServiceClient
+        self.service_client: Union[BlobServiceClient, None] = None
+        if self.account_url is not None:
+            self.service_client = BlobServiceClient(account_url=self.account_url, credential=credential)
 
     @staticmethod
     def _decode_path(path: str) -> (str, str, str, str):
@@ -102,6 +122,52 @@ class AzFileClient:
             return file_client
         else:
             raise AzfsInputError("account_kindが不正です")
+
+    def ls(self, path: str):
+        """
+        list blob file
+        :param path:
+        :return:
+        """
+        storage_account_url, account_kind, file_system, file_path = self._decode_path(path)
+        if self.service_client is None:
+            container_client = ContainerClient(
+                account_url=storage_account_url,
+                container_name=file_system,
+                credential=self.credential)
+        else:
+            container_client = self.service_client.get_container_client(file_system)
+
+        # container以下のフォルダを取得する
+        blob_list = [f.name for f in container_client.list_blobs()]
+        file_path_list = self._ls_filter(file_path_list=blob_list, file_path=file_path)
+        # file_path_list.extend(self._ls_get_folder(file_path_list=file_path_list))
+        return file_path_list
+
+    @staticmethod
+    def _ls_filter(file_path_list: list, file_path: str):
+        filtered_file_path_list = []
+        if not file_path == "":
+            file_path_pattern = rf"({file_path}/)(.*)"
+            for fp in file_path_list:
+                result = re.match(file_path_pattern, fp)
+                if result:
+                    filtered_file_path_list.append(result.group(2))
+                else:
+                    pass
+        else:
+            filtered_file_path_list = file_path_list
+        return [f for f in filtered_file_path_list if "/" not in f]
+
+    # @staticmethod
+    # def _ls_get_folder(file_path_list: list):
+    #     folders_in_file_path = []
+    #     file_path_pattern = r"(.*?/)(.*)"
+    #     for fp in file_path_list:
+    #         result = re.match(file_path_pattern, fp)
+    #         if result:
+    #             folders_in_file_path.append(result.group(1))
+    #     return list(set(folders_in_file_path))
 
     def _download_data(self, path: str) -> Union[bytes, str]:
         """
