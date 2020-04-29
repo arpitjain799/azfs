@@ -170,7 +170,7 @@ class AzFileClient:
             file_bytes = gzip.decompress(file_bytes)
         return file_bytes
 
-    def read_csv(self, path: str) -> pd.DataFrame:
+    def read_csv(self, path: str, **kwargs) -> pd.DataFrame:
         """
         blobにあるcsvを読み込み、pd.DataFrameとして取得する関数。
         gzip圧縮にも対応。
@@ -182,7 +182,7 @@ class AzFileClient:
             file_to_read = io.BytesIO(file_bytes)
         else:
             file_to_read = file_bytes
-        return pd.read_csv(file_to_read)
+        return pd.read_csv(file_to_read, **kwargs)
 
     def _upload_data(self, path: str, data):
         """
