@@ -4,6 +4,7 @@ AzFS is to provide convenient Python read/write functions for Azure Storage Acco
 
 azfs can
 
+* list files is blob,
 * read csv as pd.DataFrame,
 * read json as dict,
 * and raise lots of exceptions !
@@ -20,6 +21,8 @@ pip install git+https://github.com/gsy0911/azfs.git#egg=azfs
 import azfs
 credential = '[your storage account credential]'
 azc = azfs.AzFileClient(credential=credential)
+
+file_list = azc.ls("https://[storage-account].../")
 
 # read csv as pd.DataFrame
 df = azc.read_csv("https://[storage-account].../*.csv")
