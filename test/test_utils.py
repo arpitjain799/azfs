@@ -1,5 +1,8 @@
 import pytest
-from azfs.utils import BlobPathDecoder
+from azfs.utils import (
+    BlobPathDecoder,
+    ls_filter
+)
 from azfs.error import (
     AzfsInputError
 )
@@ -38,3 +41,31 @@ class TestBlobPathDecoder:
 
         with pytest.raises(AzfsInputError):
             BlobPathDecoder(path)
+
+
+class TestLsFilter:
+    def test_ls_filter(self):
+        file_path_list = [
+            "file1.csv",
+            "file2.csv",
+            "file3.csv",
+            "dir/file4.csv",
+            "dir/file5.csv",
+            "dir/some/file6.csv"
+        ]
+        result_list = [
+            "file1.csv",
+            "file2.csv",
+            "file3.csv",
+            "dir/"
+        ]
+        result_list_v = ls_filter(file_path_list, "")
+        assert result_list_v == result_list
+
+        result_list = [
+            "file4.csv",
+            "file5.csv",
+            "some/"
+        ]
+        result_list_v = ls_filter(file_path_list, "dir")
+        assert result_list_v == result_list

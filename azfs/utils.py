@@ -133,8 +133,6 @@ def _ls_get_file_name(file_path_list: list, file_path: str):
             result = re.match(file_path_pattern, fp)
             if result:
                 filtered_file_path_list.append(result.group(2))
-            else:
-                pass
     else:
         filtered_file_path_list = file_path_list
     return [f for f in filtered_file_path_list if "/" not in f]
