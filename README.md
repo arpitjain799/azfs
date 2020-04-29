@@ -2,6 +2,11 @@
 
 AzFS is to provide convenient Python read/write functions for Azure Storage Account.
 
+azfs can
+
+* read csv as pd.DataFrame,
+* read json as dict,
+* and raise lots of exceptions !
 
 ## install
 

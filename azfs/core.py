@@ -7,7 +7,11 @@ from azure.identity import DefaultAzureCredential
 from azure.storage.filedatalake import (
     DataLakeFileClient
 )
-from azure.storage.blob import BlobClient
+from azure.storage.blob import (
+    BlobServiceClient,
+    BlobClient,
+    ContainerClient
+)
 from typing import Union
 from azfs.error import (
     AzfsInputError
@@ -15,25 +19,38 @@ from azfs.error import (
 
 
 class AzFileClient:
+    """
+
+    """
+
     def __init__(self, credential: Union[str, DefaultAzureCredential]):
+        """
+
+        :param credential: if string, Blob Storage -> Access Keys -> Key
+        """
         self.credential = credential
 
     @staticmethod
-    def _decode_path(path: str) -> (str, str, str):
+    def _decode_path(path: str) -> (str, str, str, str):
         """
+        decode input [path] such as
+        * https://([a-z0-9]*).(dfs|blob).core.windows.net/(.*?)/(.*),
+        * ([a-z0-9]*)/(.+?)/(.*)
+
+        dfs: data_lake, blob: blob
         :param path:
         :return:
         """
         storage_account_name = None
-        # dfs: data_lake, blob: blob
-        account_kind = "dfs"
+        account_kind = "blob"
         container_name = None
         key = None
 
-        # pattern
+        # url pattern
         url_pattern = r"https://([a-z0-9]*).(dfs|blob).core.windows.net/(.*?)/(.*)"
         storage_pattern = r"([a-z0-9]*)/(.+?)/(.*)"
 
+        # find pattern
         url_result = re.match(url_pattern, path)
         storage_result = re.match(storage_pattern, path)
         if url_result:
@@ -48,6 +65,8 @@ class AzFileClient:
             key = storage_result.group(3)
         if storage_account_name is None:
             raise AzfsInputError(f"入力されたpath[{path}]が不正です")
+
+        # FileClientを作成するのに必要な情報を返す
         return f"https://{storage_account_name}.{account_kind}.core.windows.net", account_kind, container_name, key
 
     @staticmethod
@@ -87,6 +106,7 @@ class AzFileClient:
     def _download_data(self, path: str) -> Union[bytes, str]:
         """
         storage accountのタイプによってfile_clientを変更し、
+        データを取得する関数
         特定のファイルを取得する関数
         :param path:
         :return:
@@ -117,7 +137,8 @@ class AzFileClient:
 
     def read_csv(self, path: str) -> pd.DataFrame:
         """
-
+        blobにあるcsvを読み込み、pd.DataFrameとして取得する関数。
+        gzip圧縮にも対応。
         :param path:
         :return:
         """
