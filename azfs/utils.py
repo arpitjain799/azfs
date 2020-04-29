@@ -42,7 +42,7 @@ class BlobPathDecoder:
 
     @staticmethod
     def _decode_path_blob_name(path: str) -> (str, str, str, str):
-        url_pattern = r"https://([a-z0-9]*).(dfs|blob).core.windows.net/(.*?)/(.*)"
+        url_pattern = r"https://([a-z0-9]*).(dfs|blob).core.windows.net/(.*?)/(.+)"
         result = re.match(url_pattern, path)
         if result:
             storage_account_name = result.group(1)
