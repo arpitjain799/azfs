@@ -59,14 +59,14 @@ class AzFileClient:
             account_kind,
             file_system,
             file_path,
-            msi: DefaultAzureCredential) -> Union[DataLakeFileClient, BlobClient]:
+            credential: DefaultAzureCredential) -> Union[DataLakeFileClient, BlobClient]:
         """
 
         :param storage_account_url:
         :param account_kind:
         :param file_system:
         :param file_path:
-        :param msi:
+        :param credential:
         :return:
         """
         if account_kind == "dfs":
@@ -74,14 +74,14 @@ class AzFileClient:
                 storage_account_url,
                 file_system,
                 file_path,
-                credential=msi)
+                credential=credential)
             return file_client
         elif account_kind == "blob":
             file_client = BlobClient(
                 account_url=storage_account_url,
                 container_name=file_system,
                 blob_name=file_path,
-                credential=msi
+                credential=credential
             )
             return file_client
         else:
@@ -131,7 +131,7 @@ class AzFileClient:
                 account_kind=account_kind,
                 file_system=file_system,
                 file_path=file_path,
-                msi=self.credential)
+                credential=self.credential)
             file_bytes = file_client.download_file().readall()
         elif account_kind == "blob":
             file_client = self._get_file_client(
@@ -139,7 +139,7 @@ class AzFileClient:
                 account_kind=account_kind,
                 file_system=file_system,
                 file_path=file_path,
-                msi=self.credential)
+                credential=self.credential)
             file_bytes = file_client.download_blob().readall()
 
         # gzip圧縮ファイルは一旦ここで展開
@@ -174,7 +174,7 @@ class AzFileClient:
             account_kind=account_kind,
             file_system=file_system,
             file_path=file_path,
-            msi=self.credential)
+            credential=self.credential)
         if account_kind == "dfs":
             _ = file_client.create_file()
             _ = file_client.append_data(data=data, offset=0, length=len(data))
