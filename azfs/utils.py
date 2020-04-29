@@ -106,3 +106,58 @@ class BlobPathDecoder:
             self.account_type, \
             self.container_name, \
             self.blob_name
+
+# ================ #
+# filter based `/` #
+# ================ #
+
+
+def ls_filter(file_path_list: list, file_path: str):
+    filtered_list = []
+    filtered_list.extend(_ls_get_file_name(file_path_list=file_path_list, file_path=file_path))
+    filtered_list.extend(_ls_get_folder_name(file_path_list=file_path_list, file_path=file_path))
+    return filtered_list
+
+
+def _ls_get_file_name(file_path_list: list, file_path: str):
+    """
+    特定のフォルダ以下にあるファイル名を取得する
+    :param file_path_list:
+    :param file_path:
+    :return:
+    """
+    filtered_file_path_list = []
+    if not file_path == "":
+        file_path_pattern = rf"({file_path}/)(.*)"
+        for fp in file_path_list:
+            result = re.match(file_path_pattern, fp)
+            if result:
+                filtered_file_path_list.append(result.group(2))
+            else:
+                pass
+    else:
+        filtered_file_path_list = file_path_list
+    return [f for f in filtered_file_path_list if "/" not in f]
+
+
+def _ls_get_folder_name(file_path_list: list, file_path: str):
+    """
+    特定のフォルダ以下にあるフォルダ名を取得する
+    :param file_path_list:
+    :param file_path:
+    :return:
+    """
+    folders_in_file_path = []
+    if not file_path == "":
+        file_path_pattern = rf"({file_path}/)(.*?/)(.*)"
+        for fp in file_path_list:
+            result = re.match(file_path_pattern, fp)
+            if result:
+                folders_in_file_path.append(result.group(2))
+    else:
+        file_path_pattern = rf"(.*?/)(.*)"
+        for fp in file_path_list:
+            result = re.match(file_path_pattern, fp)
+            if result:
+                folders_in_file_path.append(result.group(1))
+    return list(set(folders_in_file_path))

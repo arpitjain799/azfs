@@ -1,7 +1,6 @@
 import pandas as pd
 import gzip
 import io
-import re
 import json
 from azure.identity import DefaultAzureCredential
 from azure.storage.filedatalake import (
@@ -16,7 +15,10 @@ from typing import Union
 from azfs.error import (
     AzfsInputError
 )
-from azfs.utils import BlobPathDecoder
+from azfs.utils import (
+    BlobPathDecoder,
+    ls_filter
+)
 
 
 class AzFileClient:
@@ -112,53 +114,7 @@ class AzFileClient:
 
         # container以下のフォルダを取得する
         blob_list = [f.name for f in container_client.list_blobs()]
-        file_path_list = self._ls_get_file_name(file_path_list=blob_list, file_path=file_path)
-        file_path_list.extend(self._ls_get_folder_name(file_path_list=blob_list, file_path=file_path))
-        return file_path_list
-
-    @staticmethod
-    def _ls_get_file_name(file_path_list: list, file_path: str):
-        """
-        特定のフォルダ以下にあるファイル名を取得する
-        :param file_path_list:
-        :param file_path:
-        :return:
-        """
-        filtered_file_path_list = []
-        if not file_path == "":
-            file_path_pattern = rf"({file_path}/)(.*)"
-            for fp in file_path_list:
-                result = re.match(file_path_pattern, fp)
-                if result:
-                    filtered_file_path_list.append(result.group(2))
-                else:
-                    pass
-        else:
-            filtered_file_path_list = file_path_list
-        return [f for f in filtered_file_path_list if "/" not in f]
-
-    @staticmethod
-    def _ls_get_folder_name(file_path_list: list, file_path: str):
-        """
-        特定のフォルダ以下にあるフォルダ名を取得する
-        :param file_path_list:
-        :param file_path:
-        :return:
-        """
-        folders_in_file_path = []
-        if not file_path == "":
-            file_path_pattern = rf"({file_path}/)(.*?/)(.*)"
-            for fp in file_path_list:
-                result = re.match(file_path_pattern, fp)
-                if result:
-                    folders_in_file_path.append(result.group(2))
-        else:
-            file_path_pattern = rf"(.*?/)(.*)"
-            for fp in file_path_list:
-                result = re.match(file_path_pattern, fp)
-                if result:
-                    folders_in_file_path.append(result.group(1))
-        return list(set(folders_in_file_path))
+        return ls_filter(file_path_list=blob_list, file_path=file_path)
 
     def _download_data(self, path: str) -> Union[bytes, str]:
         """
