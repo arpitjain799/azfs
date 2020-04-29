@@ -162,8 +162,7 @@ class AzFileClient:
 
     def _download_data(self, path: str) -> Union[bytes, str]:
         """
-        storage accountのタイプによってfile_clientを変更し、
-        データを取得する関数
+        storage accountのタイプによってfile_clientを変更し、データを取得する関数
         特定のファイルを取得する関数
         :param path:
         :return:
@@ -206,16 +205,14 @@ class AzFileClient:
             file_to_read = file_bytes
         return pd.read_csv(file_to_read)
 
-    def write_csv(self, path: str, df: pd.DataFrame) -> bool:
+    def _upload_data(self, path: str, data):
         """
-        output pandas dataframe to csv file in Datalake storage.
-        Note: Unavailable for large loop processing!
-        https://<storage_account>.dfs.core.windows.net/<file_system>/<file_name>
-        or
-        <storage_account>/<file_system>/<file_name>
+        upload data to blob or data_lake storage account
+        :param path:
+        :param data:
+        :return:
         """
         storage_account_url, account_kind, file_system, file_path = BlobPathDecoder(path).get_with_url()
-        csv_str = df.to_csv(encoding="utf-8")
         file_client = self._get_file_client(
             storage_account_url=storage_account_url,
             account_kind=account_kind,
@@ -224,41 +221,32 @@ class AzFileClient:
             msi=self.credential)
         if account_kind == "dfs":
             _ = file_client.create_file()
-            _ = file_client.append_data(data=csv_str, offset=0, length=len(csv_str))
-            _ = file_client.flush_data(len(csv_str))
+            _ = file_client.append_data(data=data, offset=0, length=len(data))
+            _ = file_client.flush_data(len(data))
             return True
         elif account_kind == "blob":
-            file_client.upload_blob(data=csv_str, length=len(csv_str))
+            file_client.upload_blob(data=data, length=len(data))
         return True
+
+    def write_csv(self, path: str, df: pd.DataFrame) -> bool:
+        """
+        output pandas dataframe to csv file in Datalake storage.
+        Note: Unavailable for large loop processing!
+        """
+        csv_str = df.to_csv(encoding="utf-8")
+        return self._upload_data(path=path, data=csv_str)
 
     def read_json(self, path: str) -> dict:
         """
         read json file in Datalake storage.
         Note: Unavailable for large loop processing!
-        https://<storage_account>.dfs.core.windows.net/<file_system>/<file_name>
-        or
-        <storage_account>/<file_system>/<file_name>
         """
         file_bytes = self._download_data(path)
         return json.loads(file_bytes)
 
-    def write_json(self, path: str, dict_data: dict) -> bool:
+    def write_json(self, path: str, data: dict) -> bool:
         """
         output dict to json file in Datalake storage.
         Note: Unavailable for large loop processing!
-        https://<storage_account>.dfs.core.windows.net/<file_system>/<file_name>
-        or
-        <storage_account>/<file_system>/<file_name>
         """
-        storage_account_url, account_kind, file_system, file_path = BlobPathDecoder(path).get_with_url()
-        file_client = self._get_file_client(
-                storage_account_url=storage_account_url,
-                account_kind=account_kind,
-                file_system=file_system,
-                file_path=file_path,
-                msi=self.credential)
-        data = json.dumps(dict_data)
-        _ = file_client.create_file()
-        _ = file_client.append_data(data, offset=0)
-        _ = file_client.flush_data(len(data))
-        return True
+        return self._upload_data(path=path, data=json.dumps(data))

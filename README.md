@@ -6,8 +6,8 @@ azfs can
 
 * list files is blob,
 * check if file exists,
-* read csv as pd.DataFrame,
-* read json as dict,
+* read csv as pd.DataFrame, and json as dict from blob,
+* write pd.DataFrame as csv, and dict as json to blob,
 * and raise lots of exceptions ! (Thank you for your cooperation)
 
 ## install
@@ -20,7 +20,7 @@ pip install git+https://github.com/gsy0911/azfs.git#egg=azfs
 
 ```python
 import azfs
-credential = '[your storage account credential]'
+credential = "[your storage account credential]"
 azc = azfs.AzFileClient(credential=credential)
 
 # get file list of blob
@@ -31,9 +31,11 @@ is_exists = azc.exists("https://[storage-account].../*.csv")
 
 # read csv as pd.DataFrame
 df = azc.read_csv("https://[storage-account].../*.csv")
+azc.write_csv(path="https://[storage-account].../*.csv", df=df)
 
 # read json as dict
 data = azc.read_json("https://[storage-account].../*.json")
+azc.write_json(path="https://[storage-account].../*.json", data=data)
 ```
 
 ## dependencies
