@@ -215,16 +215,20 @@ class AzFileClient:
         <storage_account>/<file_system>/<file_name>
         """
         storage_account_url, account_kind, file_system, file_path = BlobPathDecoder(path).get_with_url()
-        file_client = self._get_file_client(
-                storage_account_url=storage_account_url,
-                account_kind=account_kind,
-                file_system=file_system,
-                file_path=file_path,
-                msi=self.credential)
         csv_str = df.to_csv(encoding="utf-8")
-        _ = file_client.create_file()
-        _ = file_client.append_data(csv_str, offset=0)
-        _ = file_client.flush_data(len(csv_str))
+        file_client = self._get_file_client(
+            storage_account_url=storage_account_url,
+            account_kind=account_kind,
+            file_system=file_system,
+            file_path=file_path,
+            msi=self.credential)
+        if account_kind == "dfs":
+            _ = file_client.create_file()
+            _ = file_client.append_data(data=csv_str, offset=0, length=len(csv_str))
+            _ = file_client.flush_data(len(csv_str))
+            return True
+        elif account_kind == "blob":
+            file_client.upload_blob(data=csv_str, length=len(csv_str))
         return True
 
     def read_json(self, path: str) -> dict:

@@ -5,9 +5,10 @@ AzFS is to provide convenient Python read/write functions for Azure Storage Acco
 azfs can
 
 * list files is blob,
+* check if file exists,
 * read csv as pd.DataFrame,
 * read json as dict,
-* and raise lots of exceptions !
+* and raise lots of exceptions ! (Thank you for your cooperation)
 
 ## install
 
@@ -22,7 +23,11 @@ import azfs
 credential = '[your storage account credential]'
 azc = azfs.AzFileClient(credential=credential)
 
+# get file list of blob
 file_list = azc.ls("https://[storage-account].../")
+
+# check if file exists
+is_exists = azc.exists("https://[storage-account].../*.csv")
 
 # read csv as pd.DataFrame
 df = azc.read_csv("https://[storage-account].../*.csv")
