@@ -1,0 +1,6 @@
+include MANIFEST.in
+include setup.py
+include README.md
+include requirements.txt
+include LICENSE
+include pyproject.toml
