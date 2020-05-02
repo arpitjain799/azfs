@@ -1,13 +1,9 @@
 import pandas as pd
-import gzip
-import io
 import json
 from azure.identity import DefaultAzureCredential
-from azure.storage.filedatalake import (
-    DataLakeFileClient
-)
 from azfs.clients import (
-    AzBlobClient
+    AzBlobClient,
+    AzDataLakeClient
 )
 from azure.storage.blob import (
     BlobServiceClient,
@@ -57,6 +53,7 @@ class AzFileClient:
             self.service_client = BlobServiceClient(account_url=self.account_url, credential=credential)
 
         self.blob_client = AzBlobClient(credential=credential)
+        self.datalake_client = AzDataLakeClient(credential=credential)
 
     def __enter__(self):
         pd.__dict__['read_csv_az'] = self.read_csv
@@ -80,40 +77,6 @@ class AzFileClient:
             df = self if isinstance(self, pd.DataFrame) else None
             return azc.write_csv(path=path, df=df, **kwargs)
         return inner
-
-    @staticmethod
-    def _get_file_client(
-            storage_account_url,
-            account_kind,
-            file_system,
-            file_path,
-            credential: DefaultAzureCredential) -> Union[DataLakeFileClient, BlobClient]:
-        """
-
-        :param storage_account_url:
-        :param account_kind:
-        :param file_system:
-        :param file_path:
-        :param credential:
-        :return:
-        """
-        if account_kind == "dfs":
-            file_client = DataLakeFileClient(
-                storage_account_url,
-                file_system,
-                file_path,
-                credential=credential)
-            return file_client
-        elif account_kind == "blob":
-            file_client = BlobClient(
-                account_url=storage_account_url,
-                container_name=file_system,
-                blob_name=file_path,
-                credential=credential
-            )
-            return file_client
-        else:
-            raise AzfsInputError("account_kindが不正です")
 
     def exists(self, path: str) -> bool:
         # 親パスの部分を取得
@@ -154,26 +117,10 @@ class AzFileClient:
         storage_account_url, account_kind, file_system, file_path = BlobPathDecoder(path).get_with_url()
         file_bytes = None
         if account_kind == "dfs":
-            file_client = self._get_file_client(
-                storage_account_url=storage_account_url,
-                account_kind=account_kind,
-                file_system=file_system,
-                file_path=file_path,
-                credential=self.credential)
-            file_bytes = file_client.download_file().readall()
+            file_bytes = self.datalake_client.download_data(path=path)
         elif account_kind == "blob":
-            # file_client = self._get_file_client(
-            #     storage_account_url=storage_account_url,
-            #     account_kind=account_kind,
-            #     file_system=file_system,
-            #     file_path=file_path,
-            #     credential=self.credential)
-            # file_bytes = file_client.download_blob().readall()
             file_bytes = self.blob_client.download_data(path=path)
 
-        # # gzip圧縮ファイルは一旦ここで展開
-        # if file_path.endswith(".gz"):
-        #     file_bytes = gzip.decompress(file_bytes)
         return file_bytes
 
     def read_csv(self, path: str, **kwargs) -> pd.DataFrame:
@@ -184,10 +131,6 @@ class AzFileClient:
         :return:
         """
         file_to_read = self._download_data(path)
-        # if type(file_bytes) is bytes:
-        #     file_to_read = io.BytesIO(file_bytes)
-        # else:
-        #     file_to_read = file_bytes
         return pd.read_csv(file_to_read, **kwargs)
 
     def _upload_data(self, path: str, data):
