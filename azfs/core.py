@@ -141,19 +141,11 @@ class AzFileClient:
         :return:
         """
         storage_account_url, account_kind, file_system, file_path = BlobPathDecoder(path).get_with_url()
-        file_client = self._get_file_client(
-            storage_account_url=storage_account_url,
-            account_kind=account_kind,
-            file_system=file_system,
-            file_path=file_path,
-            credential=self.credential)
         if account_kind == "dfs":
-            _ = file_client.create_file()
-            _ = file_client.append_data(data=data, offset=0, length=len(data))
-            _ = file_client.flush_data(len(data))
+            self.datalake_client.upload_data(path, data)
             return True
         elif account_kind == "blob":
-            file_client.upload_blob(data=data, length=len(data))
+            self.blob_client.upload_data(path, data)
         return True
 
     def write_csv(self, path: str, df: pd.DataFrame, **kwargs) -> bool:

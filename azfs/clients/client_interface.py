@@ -2,6 +2,7 @@ from typing import Union
 from azure.identity import DefaultAzureCredential
 import io
 import gzip
+from azfs.utils import BlobPathDecoder
 
 
 class ClientInterface:
@@ -13,6 +14,16 @@ class ClientInterface:
         self.service_client = None
         self.file_client = None
         self.container_client = None
+
+    def _get_file_client_from_path(self, path):
+        storage_account_url, account_kind, file_system, file_path = BlobPathDecoder(path).get_with_url()
+        if self.file_client is None:
+            self.file_client = self._get_file_client(
+                storage_account_url=storage_account_url,
+                file_system=file_system,
+                file_path=file_path,
+                credential=self.credential)
+        return self.file_client
 
     def _get_file_client(
             self,
@@ -44,5 +55,8 @@ class ClientInterface:
     def _download_data(self, path: str):
         raise NotImplementedError
 
-    def _upload_data(self):
+    def upload_data(self, path: str, data):
+        return self._upload_data(path=path, data=data)
+
+    def _upload_data(self, path: str, data):
         raise NotImplementedError

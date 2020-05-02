@@ -32,15 +32,12 @@ class AzDataLakeClient(ClientInterface):
         raise NotImplementedError
 
     def _download_data(self, path: str):
-        storage_account_url, account_kind, file_system, file_path = BlobPathDecoder(path).get_with_url()
-        if self.file_client is None:
-            self.file_client = self._get_file_client(
-                storage_account_url=storage_account_url,
-                file_system=file_system,
-                file_path=file_path,
-                credential=self.credential)
-        file_bytes = self.file_client.download_file().readall()
+        file_bytes = self._get_file_client_from_path(path).download_file().readall()
         return file_bytes
 
-    def _upload_data(self):
-        raise NotImplementedError
+    def _upload_data(self, path: str, data):
+        file_client = self._get_file_client_from_path(path=path)
+        _ = file_client.create_file()
+        _ = file_client.append_data(data=data, offset=0, length=len(data))
+        _ = file_client.flush_data(len(data))
+        return True
