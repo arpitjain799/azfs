@@ -6,6 +6,9 @@ from azure.identity import DefaultAzureCredential
 from azure.storage.filedatalake import (
     DataLakeFileClient
 )
+from azfs.clients import (
+    AzBlobClient
+)
 from azure.storage.blob import (
     BlobServiceClient,
     BlobClient,
@@ -52,6 +55,8 @@ class AzFileClient:
         self.service_client: Union[BlobServiceClient, None] = None
         if self.account_url is not None:
             self.service_client = BlobServiceClient(account_url=self.account_url, credential=credential)
+
+        self.blob_client = AzBlobClient(credential=credential)
 
     def __enter__(self):
         pd.__dict__['read_csv_az'] = self.read_csv
@@ -157,17 +162,18 @@ class AzFileClient:
                 credential=self.credential)
             file_bytes = file_client.download_file().readall()
         elif account_kind == "blob":
-            file_client = self._get_file_client(
-                storage_account_url=storage_account_url,
-                account_kind=account_kind,
-                file_system=file_system,
-                file_path=file_path,
-                credential=self.credential)
-            file_bytes = file_client.download_blob().readall()
+            # file_client = self._get_file_client(
+            #     storage_account_url=storage_account_url,
+            #     account_kind=account_kind,
+            #     file_system=file_system,
+            #     file_path=file_path,
+            #     credential=self.credential)
+            # file_bytes = file_client.download_blob().readall()
+            file_bytes = self.blob_client.download_data(path=path)
 
-        # gzip圧縮ファイルは一旦ここで展開
-        if file_path.endswith(".gz"):
-            file_bytes = gzip.decompress(file_bytes)
+        # # gzip圧縮ファイルは一旦ここで展開
+        # if file_path.endswith(".gz"):
+        #     file_bytes = gzip.decompress(file_bytes)
         return file_bytes
 
     def read_csv(self, path: str, **kwargs) -> pd.DataFrame:
@@ -177,11 +183,11 @@ class AzFileClient:
         :param path:
         :return:
         """
-        file_bytes = self._download_data(path)
-        if type(file_bytes) is bytes:
-            file_to_read = io.BytesIO(file_bytes)
-        else:
-            file_to_read = file_bytes
+        file_to_read = self._download_data(path)
+        # if type(file_bytes) is bytes:
+        #     file_to_read = io.BytesIO(file_bytes)
+        # else:
+        #     file_to_read = file_bytes
         return pd.read_csv(file_to_read, **kwargs)
 
     def _upload_data(self, path: str, data):
