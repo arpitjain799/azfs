@@ -10,7 +10,7 @@ def _requires_from_file(filename):
 
 setuptools.setup(
     name="azfs",
-    version="0.1.0",
+    version="0.1.2",
     author="gsy0911",
     author_email="yoshiki0911@gmail.com",
     description="AzFS is to provide convenient Python read/write functions for Azure Storage Account.",
@@ -18,7 +18,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/gsy0911/pystock",
     packages=setuptools.find_packages(),
-    # install_requires=_requires_from_file('requirements.txt'),
+    install_requires=_requires_from_file('requirements.txt'),
     license="MIT",
     classifiers=[
         "Programming Language :: Python :: 3",
