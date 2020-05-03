@@ -87,7 +87,7 @@ class AzFileClient:
         storage_account_url, account_kind, file_system, file_path = BlobPathDecoder(path).get_with_url()
         file_list = []
         if account_kind == "dfs":
-            pass
+            file_list.extend(self.datalake_client.ls(path))
         elif account_kind == "blob":
             file_list.extend(self.blob_client.ls(path))
 

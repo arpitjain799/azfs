@@ -1,6 +1,7 @@
 from azfs.clients.client_interface import ClientInterface
 from azure.storage.filedatalake import (
-    DataLakeFileClient
+    DataLakeFileClient,
+    FileSystemClient
 )
 
 
@@ -27,10 +28,15 @@ class AzDataLakeClient(ClientInterface):
             storage_account_url: str,
             file_system: str,
             credential):
-        raise NotImplementedError
+        file_system = FileSystemClient(
+            account_url=storage_account_url,
+            file_system_name=file_system,
+            credential=credential)
+        return file_system
 
     def _ls(self, path: str):
-        raise NotImplementedError
+        file_list = [f.name for f in self.get_container_client_from_path(path=path).get_paths()]
+        return file_list
 
     def _download_data(self, path: str):
         file_bytes = self._get_file_client_from_path(path).download_file().readall()
