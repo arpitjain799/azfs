@@ -17,12 +17,11 @@ class ClientInterface:
 
     def _get_file_client_from_path(self, path):
         storage_account_url, account_kind, file_system, file_path = BlobPathDecoder(path).get_with_url()
-        if self.file_client is None:
-            self.file_client = self._get_file_client(
-                storage_account_url=storage_account_url,
-                file_system=file_system,
-                file_path=file_path,
-                credential=self.credential)
+        self.file_client = self._get_file_client(
+            storage_account_url=storage_account_url,
+            file_system=file_system,
+            file_path=file_path,
+            credential=self.credential)
         return self.file_client
 
     def _get_file_client(

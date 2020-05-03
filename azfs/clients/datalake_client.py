@@ -17,12 +17,11 @@ class AzDataLakeClient(ClientInterface):
             file_system,
             file_path,
             credential):
-        if self.file_client is None:
-            self.file_client = DataLakeFileClient(
-                storage_account_url,
-                file_system,
-                file_path,
-                credential=credential)
+        self.file_client = DataLakeFileClient(
+            storage_account_url,
+            file_system,
+            file_path,
+            credential=credential)
         return self.file_client
 
     def _get_service_client(self):

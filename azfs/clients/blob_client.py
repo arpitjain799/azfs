@@ -15,13 +15,12 @@ class AzBlobClient(ClientInterface):
             file_system,
             file_path,
             credential):
-        if self.file_client is None:
-            self.file_client = BlobClient(
-                account_url=storage_account_url,
-                container_name=file_system,
-                blob_name=file_path,
-                credential=credential
-            )
+        self.file_client = BlobClient(
+            account_url=storage_account_url,
+            container_name=file_system,
+            blob_name=file_path,
+            credential=credential
+        )
         return self.file_client
 
     def _get_service_client(self):
