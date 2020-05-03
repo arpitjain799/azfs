@@ -14,6 +14,25 @@ from azfs.utils import (
 
 class AzFileClient:
     """
+    usage:
+
+    ```
+    import azfs
+    import pandas as pd
+
+    credential = "[your credential]"
+    azc = azfs.AzFileClient(credential=credential)
+
+    path = "your blob file url, starts with https://..."
+    with azc:
+        df = pd.read_csv_az(path)
+
+    with azc:
+        df.to_csv_az(path)
+
+    # ls
+    file_list = azc.ls(path)
+    ```
 
     """
 
@@ -108,7 +127,7 @@ class AzFileClient:
         file_to_read = self._download_data(path)
         return pd.read_csv(file_to_read, **kwargs)
 
-    def _upload_data(self, path: str, data):
+    def _upload_data(self, path: str, data) -> bool:
         """
         upload data to blob or data_lake storage account
         :param path:
@@ -117,11 +136,10 @@ class AzFileClient:
         """
         storage_account_url, account_kind, file_system, file_path = BlobPathDecoder(path).get_with_url()
         if account_kind == "dfs":
-            self.datalake_client.upload_data(path, data)
-            return True
+            return self.datalake_client.upload_data(path, data)
         elif account_kind == "blob":
-            self.blob_client.upload_data(path, data)
-        return True
+            return self.blob_client.upload_data(path, data)
+        return False
 
     def write_csv(self, path: str, df: pd.DataFrame, **kwargs) -> bool:
         """
