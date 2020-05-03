@@ -20,6 +20,9 @@ pip install git+https://github.com/gsy0911/azfs.git#egg=azfs
 
 ```python
 import azfs
+import pandas as pd
+
+
 credential = "[your storage account credential]"
 azc = azfs.AzFileClient(credential=credential)
 
@@ -31,7 +34,15 @@ is_exists = azc.exists("https://[storage-account].../*.csv")
 
 # read csv as pd.DataFrame
 df = azc.read_csv("https://[storage-account].../*.csv")
+# or
+with azc:
+    df2 = pd.read_csv_az("https://[storage-account].../*.csv")
+
+# write csv
 azc.write_csv(path="https://[storage-account].../*.csv", df=df)
+# or
+with azc:
+    df2.to_csv_az(path="https://[storage-account].../*.csv", index=False)
 
 # read json as dict
 data = azc.read_json("https://[storage-account].../*.json")
