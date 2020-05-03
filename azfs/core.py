@@ -5,11 +5,13 @@ from azfs.clients import (
     AzBlobClient,
     AzDataLakeClient
 )
+from azfs.error import AzfsInputError
 from typing import Union
 from azfs.utils import (
     BlobPathDecoder,
     ls_filter
 )
+import io
 
 
 class AzFileClient:
@@ -101,6 +103,22 @@ class AzFileClient:
 
         return ls_filter(file_path_list=file_list, file_path=file_path)
 
+    def cp(self, src_path: str, dst_path: str):
+        """
+        copy the data from `src_path` to `dst_path`
+        :param src_path:
+        :param dst_path:
+        :return:
+        """
+        if src_path == dst_path:
+            raise AzfsInputError("src_path and dst_path must be different")
+        data = self._download_data(path=src_path)
+        if type(data) is io.BytesIO:
+            self._upload_data(path=dst_path, data=data.read())
+        elif type(data) is bytes:
+            self._upload_data(path=dst_path, data=data)
+        return True
+
     def get_properties(self, path: str) -> dict:
         """
         get file properties, such as
@@ -119,7 +137,7 @@ class AzFileClient:
             return self.blob_client.get_properties(path=path)
         return {}
 
-    def _download_data(self, path: str) -> Union[bytes, str]:
+    def _download_data(self, path: str) -> Union[bytes, str, io.BytesIO]:
         """
         storage accountのタイプによってfile_clientを変更し、データを取得する関数
         特定のファイルを取得する関数
@@ -173,6 +191,8 @@ class AzFileClient:
         Note: Unavailable for large loop processing!
         """
         file_bytes = self._download_data(path)
+        if type(file_bytes) is io.BytesIO:
+            file_bytes = file_bytes.read()
         return json.loads(file_bytes)
 
     def write_json(self, path: str, data: dict) -> bool:
