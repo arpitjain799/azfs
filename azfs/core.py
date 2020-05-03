@@ -95,17 +95,13 @@ class AzFileClient:
         :return:
         """
         storage_account_url, account_kind, file_system, file_path = BlobPathDecoder(path).get_with_url()
-        if self.service_client is None:
-            container_client = ContainerClient(
-                account_url=storage_account_url,
-                container_name=file_system,
-                credential=self.credential)
-        else:
-            container_client = self.service_client.get_container_client(file_system)
+        file_list = []
+        if account_kind == "dfs":
+            pass
+        elif account_kind == "blob":
+            file_list.extend(self.blob_client.ls(path))
 
-        # container以下のフォルダを取得する
-        blob_list = [f.name for f in container_client.list_blobs()]
-        return ls_filter(file_path_list=blob_list, file_path=file_path)
+        return ls_filter(file_path_list=file_list, file_path=file_path)
 
     def _download_data(self, path: str) -> Union[bytes, str]:
         """

@@ -35,7 +35,25 @@ class ClientInterface:
     def _get_service_client(self):
         raise NotImplementedError
 
-    def _get_container_client(self):
+    def get_container_client_from_path(self, path):
+        storage_account_url, _, file_system, _ = BlobPathDecoder(path).get_with_url()
+        container_client = self._get_container_client(
+            storage_account_url=storage_account_url,
+            file_system=file_system,
+            credential=self.credential)
+        return container_client
+
+    def _get_container_client(
+            self,
+            storage_account_url: str,
+            file_system: str,
+            credential):
+        raise NotImplementedError
+
+    def ls(self, path: str):
+        return self._ls(path=path)
+
+    def _ls(self, path: str):
         raise NotImplementedError
 
     def download_data(self, path: str):

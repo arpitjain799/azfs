@@ -27,7 +27,14 @@ class AzDataLakeClient(ClientInterface):
     def _get_service_client(self):
         raise NotImplementedError
 
-    def _get_container_client(self):
+    def _get_container_client(
+            self,
+            storage_account_url: str,
+            file_system: str,
+            credential):
+        raise NotImplementedError
+
+    def _ls(self, path: str):
         raise NotImplementedError
 
     def _download_data(self, path: str):
