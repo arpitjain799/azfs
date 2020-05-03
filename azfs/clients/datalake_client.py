@@ -55,4 +55,5 @@ class AzDataLakeClient(ClientInterface):
         return self.get_file_client_from_path(path=path).get_file_properties()
 
     def _rm(self, path: str):
-        raise NotImplementedError
+        self.get_file_client_from_path(path=path).delete_file()
+        return True

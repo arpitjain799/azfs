@@ -119,6 +119,19 @@ class AzFileClient:
             self._upload_data(path=dst_path, data=data)
         return True
 
+    def rm(self, path: str) -> bool:
+        """
+        delete the file in blob
+        :param path:
+        :return:
+        """
+        _, account_kind, _, file_path = BlobPathDecoder(path).get_with_url()
+        if account_kind == "dfs":
+            return self.datalake_client.rm(path=path)
+        elif account_kind == "blob":
+            return self.blob_client.rm(path=path)
+        return False
+
     def get_properties(self, path: str) -> dict:
         """
         get file properties, such as
