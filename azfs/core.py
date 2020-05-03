@@ -5,11 +5,6 @@ from azfs.clients import (
     AzBlobClient,
     AzDataLakeClient
 )
-from azure.storage.blob import (
-    BlobServiceClient,
-    BlobClient,
-    ContainerClient
-)
 from typing import Union
 from azfs.error import (
     AzfsInputError
@@ -46,11 +41,6 @@ class AzFileClient:
             self.account_url = f"https://{storage_account_name}.blob.core.windows.net"
         elif account_url is not None:
             self.account_url = account_url
-
-        # ServiceClient
-        self.service_client: Union[BlobServiceClient, None] = None
-        if self.account_url is not None:
-            self.service_client = BlobServiceClient(account_url=self.account_url, credential=credential)
 
         self.blob_client = AzBlobClient(credential=credential)
         self.datalake_client = AzDataLakeClient(credential=credential)

@@ -4,7 +4,6 @@ from azure.storage.blob import (
     BlobClient,
     ContainerClient
 )
-from azfs.utils import BlobPathDecoder
 
 
 class AzBlobClient(ClientInterface):

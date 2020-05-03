@@ -1,9 +1,4 @@
-from typing import Union
-from azure.identity import DefaultAzureCredential
 from azfs.clients.client_interface import ClientInterface
-import io
-import gzip
-from azfs.utils import BlobPathDecoder
 from azure.storage.filedatalake import (
     DataLakeFileClient
 )
