@@ -6,9 +6,6 @@ from azfs.clients import (
     AzDataLakeClient
 )
 from typing import Union
-from azfs.error import (
-    AzfsInputError
-)
 from azfs.utils import (
     BlobPathDecoder,
     ls_filter
@@ -22,37 +19,29 @@ class AzFileClient:
 
     def __init__(
             self,
-            credential: Union[str, DefaultAzureCredential],
-            *,
-            storage_account_name: str = None,
-            account_url: str = None):
+            credential: Union[str, DefaultAzureCredential]):
         """
 
         :param credential: if string, Blob Storage -> Access Keys -> Key
         """
         self.credential = credential
 
-        # generate ServiceClient
-        self.account_url = None
-        if not (storage_account_name is None or account_url is None):
-            # self.url_pattern = None
-            raise AzfsInputError("両方の値を設定することはできません")
-        elif storage_account_name is not None:
-            self.account_url = f"https://{storage_account_name}.blob.core.windows.net"
-        elif account_url is not None:
-            self.account_url = account_url
-
+        # 各種ストレージのclient
         self.blob_client = AzBlobClient(credential=credential)
         self.datalake_client = AzDataLakeClient(credential=credential)
 
     def __enter__(self):
+        """
+        with句でのread_csv_azとto_csv_azの関数追加処理
+        :return:
+        """
         pd.__dict__['read_csv_az'] = self.read_csv
         pd.DataFrame.to_csv_az = self.to_csv(self)
         return self
 
     def __exit__(self, exec_type, exec_value, traceback):
         """
-        restore pandas existing function
+        with句で追加したread_csv_azとto_csv_azの削除
         :param exec_type:
         :param exec_value:
         :param traceback:

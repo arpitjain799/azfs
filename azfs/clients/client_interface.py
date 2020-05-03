@@ -6,6 +6,16 @@ from azfs.utils import BlobPathDecoder
 
 
 class ClientInterface:
+    """
+    The class provides Azure Blob and Datalake Container and File Client interface.
+    Abstract methods below are implemented in each class
+        * _get_file_client
+        * _get_service_client
+        * _get_container_client
+        * _ls
+        * _download_data
+        * _upload_data
+    """
 
     def __init__(
             self,

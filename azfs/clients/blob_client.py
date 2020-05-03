@@ -1,7 +1,6 @@
 from azure.identity import DefaultAzureCredential
 from azfs.clients.client_interface import ClientInterface
 from azure.storage.blob import (
-    BlobServiceClient,
     BlobClient,
     ContainerClient
 )
