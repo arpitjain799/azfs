@@ -96,6 +96,23 @@ file_list = azc.ls("https://[storage-account].../")
 is_exists = azc.exists("https://[storage-account].../*.csv")
 ```
 
+### remove, copy files
+
+```python
+import azfs
+
+credential = "[your storage account credential]"
+azc = azfs.AzFileClient(credential=credential)
+
+# copy file from `src_path` to `dst_path`
+src_path = "https://[storage-account].../from/*.csv"
+dst_path = "https://[storage-account].../to/*.csv"
+is_copied = azc.cp(src_path=src_path, dst_path=dst_path, overwrite=True)
+
+# remove the file
+is_removed = azc.rm(path=src_path)
+```
+
 
 ## dependencies
 
