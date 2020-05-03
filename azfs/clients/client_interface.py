@@ -11,25 +11,35 @@ class ClientInterface:
             self,
             credential: Union[str, DefaultAzureCredential]):
         self.credential = credential
-        self.service_client = None
-        self.file_client = None
-        self.container_client = None
 
-    def _get_file_client_from_path(self, path):
+    def get_file_client_from_path(self, path):
+        """
+        pathからfile_clientを取得する関数
+        :param path:
+        :return:
+        """
         storage_account_url, account_kind, file_system, file_path = BlobPathDecoder(path).get_with_url()
-        self.file_client = self._get_file_client(
+        file_client = self._get_file_client(
             storage_account_url=storage_account_url,
             file_system=file_system,
             file_path=file_path,
             credential=self.credential)
-        return self.file_client
+        return file_client
 
     def _get_file_client(
             self,
-            storage_account_url,
-            file_system,
-            file_path,
-            credential):
+            storage_account_url: str,
+            file_system: str,
+            file_path: str,
+            credential: Union[DefaultAzureCredential, str]):
+        """
+        file_clientを取得する関数
+        :param storage_account_url:
+        :param file_system:
+        :param file_path:
+        :param credential:
+        :return:
+        """
         raise NotImplementedError
 
     def _get_service_client(self):
@@ -47,7 +57,7 @@ class ClientInterface:
             self,
             storage_account_url: str,
             file_system: str,
-            credential):
+            credential: Union[DefaultAzureCredential, str]):
         raise NotImplementedError
 
     def ls(self, path: str):

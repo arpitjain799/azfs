@@ -3,22 +3,24 @@ from azure.storage.filedatalake import (
     DataLakeFileClient,
     FileSystemClient
 )
+from typing import Union
+from azure.identity import DefaultAzureCredential
 
 
 class AzDataLakeClient(ClientInterface):
 
     def _get_file_client(
             self,
-            storage_account_url,
-            file_system,
-            file_path,
-            credential):
-        self.file_client = DataLakeFileClient(
+            storage_account_url: str,
+            file_system: str,
+            file_path: str,
+            credential: Union[DefaultAzureCredential, str]):
+        file_client = DataLakeFileClient(
             storage_account_url,
             file_system,
             file_path,
             credential=credential)
-        return self.file_client
+        return file_client
 
     def _get_service_client(self):
         raise NotImplementedError
@@ -27,7 +29,7 @@ class AzDataLakeClient(ClientInterface):
             self,
             storage_account_url: str,
             file_system: str,
-            credential):
+            credential: Union[DefaultAzureCredential, str]):
         file_system = FileSystemClient(
             account_url=storage_account_url,
             file_system_name=file_system,
@@ -39,11 +41,11 @@ class AzDataLakeClient(ClientInterface):
         return file_list
 
     def _download_data(self, path: str):
-        file_bytes = self._get_file_client_from_path(path).download_file().readall()
+        file_bytes = self.get_file_client_from_path(path).download_file().readall()
         return file_bytes
 
     def _upload_data(self, path: str, data):
-        file_client = self._get_file_client_from_path(path=path)
+        file_client = self.get_file_client_from_path(path=path)
         _ = file_client.create_file()
         _ = file_client.append_data(data=data, offset=0, length=len(data))
         _ = file_client.flush_data(len(data))
