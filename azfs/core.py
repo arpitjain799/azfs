@@ -103,15 +103,18 @@ class AzFileClient:
 
         return ls_filter(file_path_list=file_list, file_path=file_path)
 
-    def cp(self, src_path: str, dst_path: str):
+    def cp(self, src_path: str, dst_path: str, overwrite=False):
         """
         copy the data from `src_path` to `dst_path`
         :param src_path:
         :param dst_path:
+        :param overwrite:
         :return:
         """
         if src_path == dst_path:
             raise AzfsInputError("src_path and dst_path must be different")
+        if (not overwrite) and self.exists(dst_path):
+            raise AzfsInputError(f"{dst_path} is already exists. Please set `overwrite=True`.")
         data = self._download_data(path=src_path)
         if type(data) is io.BytesIO:
             self._upload_data(path=dst_path, data=data.read())
@@ -125,7 +128,7 @@ class AzFileClient:
         :param path:
         :return:
         """
-        _, account_kind, _, file_path = BlobPathDecoder(path).get_with_url()
+        _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
         if account_kind == "dfs":
             return self.datalake_client.rm(path=path)
         elif account_kind == "blob":
