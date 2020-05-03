@@ -7,7 +7,7 @@ AzFS is to provide convenient Python read/write functions for Azure Storage Acco
 
 azfs can
 
-* list files is blob,
+* list files in blob,
 * check if file exists,
 * read csv as pd.DataFrame, and json as dict from blob,
 * write pd.DataFrame as csv, and dict as json to blob,
@@ -21,16 +21,72 @@ $ pip install azfs
 
 ## usage
 
+### create the client
+
 ```python
 import azfs
-import pandas as pd
 from azure.identity import DefaultAzureCredential
-
 
 credential = "[your storage account credential]"
 # or
 credential = DefaultAzureCredential()
 
+azc = azfs.AzFileClient(credential=credential)
+```
+
+#### types of authorization
+
+Currently, only support [Azure Active Directory (ADD) token credential](https://docs.microsoft.com/azure/storage/common/storage-auth-aad).
+
+
+### download data
+
+azfs can get csv or json data from blob storage.
+
+```
+import azfs
+import pandas as pd
+
+credential = "[your storage account credential]"
+azc = azfs.AzFileClient(credential=credential)
+
+# read csv as pd.DataFrame
+df = azc.read_csv("https://[storage-account].../*.csv")
+# or
+with azc:
+    df = pd.read_csv_az("https://[storage-account].../*.csv")
+
+data = azc.read_json("https://[storage-account].../*.json")
+```
+
+### upload data
+
+```python
+import azfs
+import pandas as pd
+
+credential = "[your storage account credential]"
+azc = azfs.AzFileClient(credential=credential)
+
+df = pd.DataFrame()
+data = {"example": "data"}
+
+# write csv
+azc.write_csv(path="https://[storage-account].../*.csv", df=df)
+# or
+with azc:
+    df.to_csv_az(path="https://[storage-account].../*.csv", index=False)
+
+# read json as dict
+azc.write_json(path="https://[storage-account].../*.json", data=data)
+```
+
+### enumerating or checking if file exists
+
+```python
+import azfs
+
+credential = "[your storage account credential]"
 azc = azfs.AzFileClient(credential=credential)
 
 # get file list of blob
@@ -38,23 +94,8 @@ file_list = azc.ls("https://[storage-account].../")
 
 # check if file exists
 is_exists = azc.exists("https://[storage-account].../*.csv")
-
-# read csv as pd.DataFrame
-df = azc.read_csv("https://[storage-account].../*.csv")
-# or
-with azc:
-    df2 = pd.read_csv_az("https://[storage-account].../*.csv")
-
-# write csv
-azc.write_csv(path="https://[storage-account].../*.csv", df=df)
-# or
-with azc:
-    df2.to_csv_az(path="https://[storage-account].../*.csv", index=False)
-
-# read json as dict
-data = azc.read_json("https://[storage-account].../*.json")
-azc.write_json(path="https://[storage-account].../*.json", data=data)
 ```
+
 
 ## dependencies
 
