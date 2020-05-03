@@ -54,13 +54,14 @@ class BlobPathDecoder:
 
     @staticmethod
     def _decode_path_without_url(path: str) -> (str, str, str, str):
-        url_pattern = r"([a-z0-9]*)/(.+?)/(.*)"
+        url_pattern = r"(dfs|blob)/([a-z0-9]*)/(.+?)/(.*)"
         result = re.match(url_pattern, path)
         if result:
-            storage_account_name = result.group(1)
-            container_name = result.group(2)
-            blob_name = result.group(3)
-            return storage_account_name, "", container_name, blob_name
+            storage_account_name = result.group(2)
+            account_type = result.group(1)
+            container_name = result.group(3)
+            blob_name = result.group(4)
+            return storage_account_name, account_type, container_name, blob_name
         raise AzfsInputError(f"not matched with {url_pattern}")
 
     @staticmethod
