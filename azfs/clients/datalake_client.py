@@ -50,3 +50,9 @@ class AzDataLakeClient(ClientInterface):
         _ = file_client.append_data(data=data, offset=0, length=len(data))
         _ = file_client.flush_data(len(data))
         return True
+
+    def _get_properties(self, path: str):
+        return self.get_file_client_from_path(path=path).get_file_properties()
+
+    def _rm(self, path: str):
+        raise NotImplementedError

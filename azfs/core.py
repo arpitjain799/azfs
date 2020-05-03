@@ -101,6 +101,24 @@ class AzFileClient:
 
         return ls_filter(file_path_list=file_list, file_path=file_path)
 
+    def get_properties(self, path: str) -> dict:
+        """
+        get file properties, such as
+        * name
+        * creation_time
+        * last_modified_time
+        * size
+        * content_hash(md5)
+        :param path:
+        :return:
+        """
+        _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
+        if account_kind == "dfs":
+            return self.datalake_client.get_properties(path=path)
+        elif account_kind == "blob":
+            return self.blob_client.get_properties(path=path)
+        return {}
+
     def _download_data(self, path: str) -> Union[bytes, str]:
         """
         storage accountのタイプによってfile_clientを変更し、データを取得する関数

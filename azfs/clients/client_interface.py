@@ -97,3 +97,15 @@ class ClientInterface:
 
     def _upload_data(self, path: str, data):
         raise NotImplementedError
+
+    def get_properties(self, path: str):
+        return self._get_properties(path=path)
+
+    def _get_properties(self, path: str):
+        raise NotImplementedError
+
+    def rm(self, path: str):
+        return self.rm(path=path)
+
+    def _rm(self, path: str):
+        raise NotImplementedError
