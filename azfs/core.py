@@ -70,10 +70,10 @@ class AzFileClient:
         pd.DataFrame.to_csv_az = None
 
     @staticmethod
-    def to_csv(azc):
+    def to_csv(az_file_client):
         def inner(self, path, **kwargs):
             df = self if isinstance(self, pd.DataFrame) else None
-            return azc.write_csv(path=path, df=df, **kwargs)
+            return az_file_client.write_csv(path=path, df=df, **kwargs)
         return inner
 
     def exists(self, path: str) -> bool:
@@ -92,7 +92,7 @@ class AzFileClient:
         :param path:
         :return:
         """
-        storage_account_url, account_kind, file_system, file_path = BlobPathDecoder(path).get_with_url()
+        _, account_kind, _, file_path = BlobPathDecoder(path).get_with_url()
         file_list = []
         if account_kind == "dfs":
             file_list.extend(self.datalake_client.ls(path))
@@ -108,7 +108,7 @@ class AzFileClient:
         :param path:
         :return:
         """
-        storage_account_url, account_kind, file_system, file_path = BlobPathDecoder(path).get_with_url()
+        _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
         file_bytes = None
         if account_kind == "dfs":
             file_bytes = self.datalake_client.download_data(path=path)
@@ -134,7 +134,7 @@ class AzFileClient:
         :param data:
         :return:
         """
-        storage_account_url, account_kind, file_system, file_path = BlobPathDecoder(path).get_with_url()
+        _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
         if account_kind == "dfs":
             return self.datalake_client.upload_data(path, data)
         elif account_kind == "blob":
