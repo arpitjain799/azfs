@@ -1,5 +1,7 @@
 # azfs
 
+[![CircleCI](https://circleci.com/gh/gsy0911/azfs.svg?style=svg&circle-token=ccd8e1ece489b247bcaac84861ae725b0f89a605)](https://circleci.com/gh/gsy0911/azfs)
+
 AzFS is to provide convenient Python read/write functions for Azure Storage Account.
 
 azfs can
