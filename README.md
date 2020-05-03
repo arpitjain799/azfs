@@ -1,5 +1,8 @@
 # azfs
 
+[![CircleCI](https://circleci.com/gh/gsy0911/azfs.svg?style=svg&circle-token=ccd8e1ece489b247bcaac84861ae725b0f89a605)](https://circleci.com/gh/gsy0911/azfs)
+[![codecov](https://codecov.io/gh/gsy0911/azfs/branch/master/graph/badge.svg)](https://codecov.io/gh/gsy0911/azfs)
+
 AzFS is to provide convenient Python read/write functions for Azure Storage Account.
 
 azfs can
@@ -13,7 +16,7 @@ azfs can
 ## install
 
 ```bash
-pip install git+https://github.com/gsy0911/azfs.git#egg=azfs
+$ pip install azfs
 ```
 
 ## usage
@@ -21,9 +24,13 @@ pip install git+https://github.com/gsy0911/azfs.git#egg=azfs
 ```python
 import azfs
 import pandas as pd
+from azure.identity import DefaultAzureCredential
 
 
 credential = "[your storage account credential]"
+# or
+credential = DefaultAzureCredential()
+
 azc = azfs.AzFileClient(credential=credential)
 
 # get file list of blob
@@ -52,10 +59,10 @@ azc.write_json(path="https://[storage-account].../*.json", data=data)
 ## dependencies
 
 ```
-pandas = "^1.0.3"
-azure-identity = "^1.3.1"
-azure-storage-file-datalake = "^12.0.0"
-azure-storage-blob = "^12.3.0"
+pandas >= "1.0.0"
+azure-identity >= "1.3.1"
+azure-storage-file-datalake >= "12.0.0"
+azure-storage-blob >= "12.3.0"
 ```
 
 ## references
