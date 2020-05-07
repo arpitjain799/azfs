@@ -27,11 +27,15 @@ $ pip install azfs
 import azfs
 from azure.identity import DefaultAzureCredential
 
+# credential is not required if your environment is on ADD
+azc = azfs.AzFileClient()
+
+# credential is required if your environment is not on ADD
 credential = "[your storage account credential]"
 # or
 credential = DefaultAzureCredential()
-
 azc = azfs.AzFileClient(credential=credential)
+
 ```
 
 #### types of authorization
@@ -43,12 +47,11 @@ Currently, only support [Azure Active Directory (ADD) token credential](https://
 
 azfs can get csv or json data from blob storage.
 
-```
+```python
 import azfs
 import pandas as pd
 
-credential = "[your storage account credential]"
-azc = azfs.AzFileClient(credential=credential)
+azc = azfs.AzFileClient()
 
 # read csv as pd.DataFrame
 df = azc.read_csv("https://[storage-account].../*.csv")
@@ -65,8 +68,7 @@ data = azc.read_json("https://[storage-account].../*.json")
 import azfs
 import pandas as pd
 
-credential = "[your storage account credential]"
-azc = azfs.AzFileClient(credential=credential)
+azc = azfs.AzFileClient()
 
 df = pd.DataFrame()
 data = {"example": "data"}
@@ -86,8 +88,7 @@ azc.write_json(path="https://[storage-account].../*.json", data=data)
 ```python
 import azfs
 
-credential = "[your storage account credential]"
-azc = azfs.AzFileClient(credential=credential)
+azc = azfs.AzFileClient()
 
 # get file list of blob
 file_list = azc.ls("https://[storage-account].../")
@@ -101,8 +102,7 @@ is_exists = azc.exists("https://[storage-account].../*.csv")
 ```python
 import azfs
 
-credential = "[your storage account credential]"
-azc = azfs.AzFileClient(credential=credential)
+azc = azfs.AzFileClient()
 
 # copy file from `src_path` to `dst_path`
 src_path = "https://[storage-account].../from/*.csv"
