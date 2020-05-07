@@ -103,6 +103,9 @@ class AzFileClient:
 
         return ls_filter(file_path_list=file_list, file_path=file_path)
 
+    def walk(self, path: str, max_depth=2):
+        pass
+
     def cp(self, src_path: str, dst_path: str, overwrite=False):
         """
         copy the data from `src_path` to `dst_path`
