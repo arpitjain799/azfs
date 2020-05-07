@@ -5,11 +5,13 @@ from azfs.clients import (
     AzBlobClient,
     AzDataLakeClient
 )
+from azfs.error import AzfsInputError
 from typing import Union
 from azfs.utils import (
     BlobPathDecoder,
     ls_filter
 )
+import io
 
 
 class AzFileClient:
@@ -38,11 +40,13 @@ class AzFileClient:
 
     def __init__(
             self,
-            credential: Union[str, DefaultAzureCredential]):
+            credential: Union[str, DefaultAzureCredential, None] = None):
         """
 
         :param credential: if string, Blob Storage -> Access Keys -> Key
         """
+        if credential is None:
+            credential = DefaultAzureCredential()
         self.credential = credential
 
         # 各種ストレージのclient
@@ -70,10 +74,10 @@ class AzFileClient:
         pd.DataFrame.to_csv_az = None
 
     @staticmethod
-    def to_csv(azc):
+    def to_csv(az_file_client):
         def inner(self, path, **kwargs):
             df = self if isinstance(self, pd.DataFrame) else None
-            return azc.write_csv(path=path, df=df, **kwargs)
+            return az_file_client.write_csv(path=path, df=df, **kwargs)
         return inner
 
     def exists(self, path: str) -> bool:
@@ -92,7 +96,7 @@ class AzFileClient:
         :param path:
         :return:
         """
-        storage_account_url, account_kind, file_system, file_path = BlobPathDecoder(path).get_with_url()
+        _, account_kind, _, file_path = BlobPathDecoder(path).get_with_url()
         file_list = []
         if account_kind == "dfs":
             file_list.extend(self.datalake_client.ls(path))
@@ -101,14 +105,67 @@ class AzFileClient:
 
         return ls_filter(file_path_list=file_list, file_path=file_path)
 
-    def _download_data(self, path: str) -> Union[bytes, str]:
+    def walk(self, path: str, max_depth=2):
+        pass
+
+    def cp(self, src_path: str, dst_path: str, overwrite=False):
+        """
+        copy the data from `src_path` to `dst_path`
+        :param src_path:
+        :param dst_path:
+        :param overwrite:
+        :return:
+        """
+        if src_path == dst_path:
+            raise AzfsInputError("src_path and dst_path must be different")
+        if (not overwrite) and self.exists(dst_path):
+            raise AzfsInputError(f"{dst_path} is already exists. Please set `overwrite=True`.")
+        data = self._download_data(path=src_path)
+        if type(data) is io.BytesIO:
+            self._upload_data(path=dst_path, data=data.read())
+        elif type(data) is bytes:
+            self._upload_data(path=dst_path, data=data)
+        return True
+
+    def rm(self, path: str) -> bool:
+        """
+        delete the file in blob
+        :param path:
+        :return:
+        """
+        _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
+        if account_kind == "dfs":
+            return self.datalake_client.rm(path=path)
+        elif account_kind == "blob":
+            return self.blob_client.rm(path=path)
+        return False
+
+    def get_properties(self, path: str) -> dict:
+        """
+        get file properties, such as
+        * name
+        * creation_time
+        * last_modified_time
+        * size
+        * content_hash(md5)
+        :param path:
+        :return:
+        """
+        _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
+        if account_kind == "dfs":
+            return self.datalake_client.get_properties(path=path)
+        elif account_kind == "blob":
+            return self.blob_client.get_properties(path=path)
+        return {}
+
+    def _download_data(self, path: str) -> Union[bytes, str, io.BytesIO]:
         """
         storage accountのタイプによってfile_clientを変更し、データを取得する関数
         特定のファイルを取得する関数
         :param path:
         :return:
         """
-        storage_account_url, account_kind, file_system, file_path = BlobPathDecoder(path).get_with_url()
+        _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
         file_bytes = None
         if account_kind == "dfs":
             file_bytes = self.datalake_client.download_data(path=path)
@@ -134,7 +191,7 @@ class AzFileClient:
         :param data:
         :return:
         """
-        storage_account_url, account_kind, file_system, file_path = BlobPathDecoder(path).get_with_url()
+        _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
         if account_kind == "dfs":
             return self.datalake_client.upload_data(path, data)
         elif account_kind == "blob":
@@ -155,6 +212,8 @@ class AzFileClient:
         Note: Unavailable for large loop processing!
         """
         file_bytes = self._download_data(path)
+        if type(file_bytes) is io.BytesIO:
+            file_bytes = file_bytes.read()
         return json.loads(file_bytes)
 
     def write_json(self, path: str, data: dict) -> bool:

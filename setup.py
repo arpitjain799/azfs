@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="azfs",
-    version="0.1.0",
+    version="0.1.1",
     author="gsy0911",
     author_email="yoshiki0911@gmail.com",
     description="AzFS is to provide convenient Python read/write functions for Azure Storage Account.",
