@@ -40,11 +40,13 @@ class AzFileClient:
 
     def __init__(
             self,
-            credential: Union[str, DefaultAzureCredential]):
+            credential: Union[str, DefaultAzureCredential, None] = None):
         """
 
         :param credential: if string, Blob Storage -> Access Keys -> Key
         """
+        if credential is None:
+            credential = DefaultAzureCredential()
         self.credential = credential
 
         # 各種ストレージのclient
