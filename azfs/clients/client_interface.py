@@ -3,6 +3,14 @@ from azure.identity import DefaultAzureCredential
 import io
 import gzip
 from azfs.utils import BlobPathDecoder
+from azure.storage.blob import (
+    BlobClient,
+    ContainerClient
+)
+from azure.storage.filedatalake import (
+    DataLakeFileClient,
+    FileSystemClient
+)
 
 
 class ClientInterface:
@@ -22,7 +30,7 @@ class ClientInterface:
             credential: Union[str, DefaultAzureCredential]):
         self.credential = credential
 
-    def get_file_client_from_path(self, path):
+    def get_file_client_from_path(self, path) -> Union[BlobClient, DataLakeFileClient]:
         """
         pathからfile_clientを取得する関数
         :param path:
@@ -55,7 +63,7 @@ class ClientInterface:
     def _get_service_client(self):
         raise NotImplementedError
 
-    def get_container_client_from_path(self, path):
+    def get_container_client_from_path(self, path) -> Union[ContainerClient, FileSystemClient]:
         storage_account_url, _, file_system, _ = BlobPathDecoder(path).get_with_url()
         container_client = self._get_container_client(
             storage_account_url=storage_account_url,
@@ -96,4 +104,16 @@ class ClientInterface:
         return self._upload_data(path=path, data=data)
 
     def _upload_data(self, path: str, data):
+        raise NotImplementedError
+
+    def get_properties(self, path: str):
+        return self._get_properties(path=path)
+
+    def _get_properties(self, path: str):
+        raise NotImplementedError
+
+    def rm(self, path: str):
+        return self._rm(path=path)
+
+    def _rm(self, path: str):
         raise NotImplementedError

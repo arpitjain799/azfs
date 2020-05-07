@@ -48,3 +48,10 @@ class AzBlobClient(ClientInterface):
     def _upload_data(self, path: str, data):
         self.get_file_client_from_path(path=path).upload_blob(data=data, length=len(data))
         return True
+
+    def _get_properties(self, path: str):
+        return self.get_file_client_from_path(path=path).get_blob_properties()
+
+    def _rm(self, path: str):
+        self.get_file_client_from_path(path=path).delete_blob()
+        return True
