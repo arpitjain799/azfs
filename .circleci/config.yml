@@ -4,23 +4,56 @@ version: 2.1
 orbs:
   codecov: codecov/codecov@1.0.4
 
+commands:
+  poetry_environment_setup:
+    description: setup an environment with poetry
+    steps:
+    - run: sudo pip install poetry
+    - run: poetry install --no-dev
+
 jobs:
   python_test:
     docker:
       - image: circleci/python:3.7
     steps:
-      - checkout  # ソースコードを作業ディレクトリにチェックアウトします
-      - run:
-          command: |  # Pipenv を使用して依存関係をインストールします
-            sudo pip install poetry
-            poetry install
+      - checkout
+      - restore_cache:
+          key: poetry-cache-v1-{{ .Branch }}-{{ checksum "poetry.lock" }}
+#            - poetry-cache-v1-{{ .Branch }}
+#            - poetry-cache-v1
+      - poetry_environment_setup
+      - save_cache:
+          key: poetry-cache-v1-{{ .Branch }}-{{ checksum "poetry.lock" }}
+          paths:
+            - ~/
       - run: poetry run pytest ./test -vv --cov=./azfs --cov-report=xml
       - codecov/upload:
         file: ./test/coverage.xml
+  deploy_to_pypi:
+    docker:
+      - image: circleci/python:3.7
+    steps:
+      - checkout
+#      - restore_cache:
+#          keys:
+#            - poetry-cache-v1-{{ .Branch }}-{{ checksum "poetry.lock" }}
+#            - poetry-cache-v1-{{ .Branch }}
+#            - poetry-cache-v1
+#      - poetry_environment_setup
+#      - save_cache:
+#        key: poetry-cache-{{ .Branch }}-{{ checksum "poetry.lock" }}
+      - run:
+          command: |
+            poetry build
+            ls dist
+            ls build
 
 
 workflows:
   version: 2
-  process_pipeline:
+  process:
     jobs:
       - python_test
+      - deploy_to_pypi
+#          requires:
+#            - python_test
