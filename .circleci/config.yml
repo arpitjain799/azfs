@@ -1,26 +1,72 @@
 version: 2.1
 
-# テスト実施のための準備
 orbs:
   codecov: codecov/codecov@1.0.4
+
+commands:
+  poetry_environment_setup:
+    description: setup an environment with poetry
+    steps:
+    - run: sudo pip install poetry twine wheel
+    - run: poetry install --no-dev
+  create_pypi_file:
+    description: create .pypi file in ~/
+    steps:
+      - run:
+          command: |
+            echo -e "[distutils]" >> ~/.pypirc
+            echo -e "index-servers =" >> ~/.pypirc
+            echo -e "  pypi" >> ~/.pypirc
+            echo -e "[pypi]" >> ~/.pypirc
+            echo -e "repository: https://upload.pypi.org/legacy/" >> ~/.pypirc
+            echo -e "username: gsy0911" >> ~/.pypirc
+            echo -e "password: $PYPI_PASSWORD" >> ~/.pypirc
+      - run: cat ~/.pypirc
+  create_deployment_package_and_deploy:
+    description: create deployment package and deploy to pypi
+    steps:
+      - run:
+          command: |
+            python setup.py sdist bdist_wheel
+            twine upload -r pypi dist/*
 
 jobs:
   python_test:
     docker:
       - image: circleci/python:3.7
     steps:
-      - checkout  # ソースコードを作業ディレクトリにチェックアウトします
-      - run:
-          command: |  # Pipenv を使用して依存関係をインストールします
-            sudo pip install poetry
-            poetry install
+      - checkout
+      - restore_cache:
+          key: poetry-cache-v1-{{ .Branch }}-{{ checksum "poetry.lock" }}
+      - poetry_environment_setup
+      - save_cache:
+          key: poetry-cache-v1-{{ .Branch }}-{{ checksum "poetry.lock" }}
+          paths:
+            - ~/
       - run: poetry run pytest ./test -vv --cov=./azfs --cov-report=xml
       - codecov/upload:
         file: ./test/coverage.xml
+  deploy_to_pypi:
+    docker:
+      - image: circleci/python:3.7
+    steps:
+      - checkout
+      - restore_cache:
+          key: poetry-cache-v1-{{ .Branch }}-{{ checksum "poetry.lock" }}
+      - poetry_environment_setup
+      - create_pypi_file
+      - create_deployment_package_and_deploy
 
 
 workflows:
   version: 2
-  process_pipeline:
+  process:
     jobs:
       - python_test
+      - deploy_to_pypi:
+          requires:
+            - python_test
+          filters:
+            branches:
+              only:
+                - master
