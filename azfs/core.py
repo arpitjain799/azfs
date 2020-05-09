@@ -1,10 +1,7 @@
 import pandas as pd
 import json
 from azure.identity import DefaultAzureCredential
-from azfs.clients import (
-    AzBlobClient,
-    AzDataLakeClient
-)
+from azfs.clients import AzfsClient
 from azfs.error import AzfsInputError
 from typing import Union
 from azfs.utils import (
@@ -48,10 +45,6 @@ class AzFileClient:
         if credential is None:
             credential = DefaultAzureCredential()
         self.credential = credential
-
-        # 各種ストレージのclient
-        self.blob_client = AzBlobClient(credential=credential)
-        self.datalake_client = AzDataLakeClient(credential=credential)
 
     def __enter__(self):
         """
@@ -97,11 +90,7 @@ class AzFileClient:
         :return:
         """
         _, account_kind, _, file_path = BlobPathDecoder(path).get_with_url()
-        file_list = []
-        if account_kind == "dfs":
-            file_list.extend(self.datalake_client.ls(path))
-        elif account_kind == "blob":
-            file_list.extend(self.blob_client.ls(path))
+        file_list = AzfsClient.get(account_kind, credential=self.credential).ls(path=path)
 
         return ls_filter(file_path_list=file_list, file_path=file_path)
 
@@ -134,11 +123,7 @@ class AzFileClient:
         :return:
         """
         _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
-        if account_kind == "dfs":
-            return self.datalake_client.rm(path=path)
-        elif account_kind == "blob":
-            return self.blob_client.rm(path=path)
-        return False
+        return AzfsClient.get(account_kind, credential=self.credential).rm(path=path)
 
     def get_properties(self, path: str) -> dict:
         """
@@ -152,11 +137,7 @@ class AzFileClient:
         :return:
         """
         _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
-        if account_kind == "dfs":
-            return self.datalake_client.get_properties(path=path)
-        elif account_kind == "blob":
-            return self.blob_client.get_properties(path=path)
-        return {}
+        return AzfsClient.get(account_kind, credential=self.credential).get_properties(path=path)
 
     def _download_data(self, path: str) -> Union[bytes, str, io.BytesIO]:
         """
@@ -166,13 +147,7 @@ class AzFileClient:
         :return:
         """
         _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
-        file_bytes = None
-        if account_kind == "dfs":
-            file_bytes = self.datalake_client.download_data(path=path)
-        elif account_kind == "blob":
-            file_bytes = self.blob_client.download_data(path=path)
-
-        return file_bytes
+        return AzfsClient.get(account_kind, credential=self.credential).download_data(path=path)
 
     def read_csv(self, path: str, **kwargs) -> pd.DataFrame:
         """
@@ -192,11 +167,7 @@ class AzFileClient:
         :return:
         """
         _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
-        if account_kind == "dfs":
-            return self.datalake_client.upload_data(path, data)
-        elif account_kind == "blob":
-            return self.blob_client.upload_data(path, data)
-        return False
+        return AzfsClient.get(account_kind, credential=self.credential).upload_data(path=path, data=data)
 
     def write_csv(self, path: str, df: pd.DataFrame, **kwargs) -> bool:
         """
