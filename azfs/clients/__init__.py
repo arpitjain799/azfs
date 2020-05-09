@@ -7,9 +7,9 @@ class MetaClient(type):
 
     def __new__(mcs, name, bases, dictionary):
         cls = type.__new__(mcs, name, bases, dictionary)
-        skills = {'dfs': AzDataLakeClient,
-                  'blob': AzBlobClient}
-        cls.CLIENTS = skills
+        clients = {'dfs': AzDataLakeClient,
+                   'blob': AzBlobClient}
+        cls.CLIENTS = clients
         return cls
 
 
