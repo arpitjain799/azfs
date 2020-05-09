@@ -49,9 +49,6 @@ jobs:
   deploy_to_pypi:
     docker:
       - image: circleci/python:3.7
-    branches:
-      only:
-        - master
     steps:
       - checkout
       - restore_cache:
@@ -66,4 +63,10 @@ workflows:
   process:
     jobs:
       - python_test
-      - deploy_to_pypi
+      - deploy_to_pypi:
+          requires:
+            - python_test
+          filters:
+            branches:
+              only:
+                - master
