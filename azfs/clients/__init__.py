@@ -6,11 +6,15 @@ from typing import Union
 class MetaClient(type):
     """
     A metaclass which have AzBlobClient or AzDataLakeClient in class dictionary.
+    if another storage type is added, add new storage type as {"***": Class<Az***Client>}
     """
     def __new__(mcs, name, bases, dictionary):
         cls = type.__new__(mcs, name, bases, dictionary)
-        clients = {'dfs': AzDataLakeClient,
-                   'blob': AzBlobClient}
+        # set Clients
+        clients = {
+            'dfs': AzDataLakeClient,
+            'blob': AzBlobClient
+        }
         cls.CLIENTS = clients
         return cls
 

@@ -32,7 +32,7 @@ class ClientInterface:
 
     def get_file_client_from_path(self, path) -> Union[BlobClient, DataLakeFileClient]:
         """
-        pathからfile_clientを取得する関数
+        get file_client from given path
         :param path:
         :return:
         """
@@ -51,7 +51,8 @@ class ClientInterface:
             file_path: str,
             credential: Union[DefaultAzureCredential, str]):
         """
-        file_clientを取得する関数
+        abstract method to be implemented
+        get file_client from given path
         :param storage_account_url:
         :param file_system:
         :param file_path:
@@ -61,9 +62,18 @@ class ClientInterface:
         raise NotImplementedError
 
     def _get_service_client(self):
+        """
+        abstract method to be implemented
+        :return:
+        """
         raise NotImplementedError
 
     def get_container_client_from_path(self, path) -> Union[ContainerClient, FileSystemClient]:
+        """
+        get container_client from given path
+        :param path:
+        :return:
+        """
         storage_account_url, _, file_system, _ = BlobPathDecoder(path).get_with_url()
         container_client = self._get_container_client(
             storage_account_url=storage_account_url,
@@ -76,15 +86,32 @@ class ClientInterface:
             storage_account_url: str,
             file_system: str,
             credential: Union[DefaultAzureCredential, str]):
+        """
+        abstract method to be implemented
+        :param storage_account_url:
+        :param file_system:
+        :param credential:
+        :return:
+        """
         raise NotImplementedError
 
     def ls(self, path: str):
         return self._ls(path=path)
 
     def _ls(self, path: str):
+        """
+        abstract method to be implemented
+        :param path:
+        :return:
+        """
         raise NotImplementedError
 
     def download_data(self, path: str):
+        """
+        download data from Azure Blob or DataLake.
+        :param path:
+        :return:
+        """
         file_bytes = self._download_data(path=path)
 
         # gzip圧縮ファイルは一旦ここで展開
@@ -98,22 +125,43 @@ class ClientInterface:
         return file_to_read
 
     def _download_data(self, path: str):
+        """
+        abstract method to be implemented
+        :param path:
+        :return:
+        """
         raise NotImplementedError
 
     def upload_data(self, path: str, data):
         return self._upload_data(path=path, data=data)
 
     def _upload_data(self, path: str, data):
+        """
+        abstract method to be implemented
+        :param path:
+        :param data:
+        :return:
+        """
         raise NotImplementedError
 
     def get_properties(self, path: str):
         return self._get_properties(path=path)
 
     def _get_properties(self, path: str):
+        """
+        abstract method to be implemented
+        :param path:
+        :return:
+        """
         raise NotImplementedError
 
     def rm(self, path: str):
         return self._rm(path=path)
 
     def _rm(self, path: str):
+        """
+        abstract method to be implemented
+        :param path:
+        :return:
+        """
         raise NotImplementedError
