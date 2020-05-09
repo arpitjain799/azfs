@@ -64,5 +64,8 @@ workflows:
     jobs:
       - python_test
       - deploy_to_pypi
-#          requires:
-#            - python_test
+          requires:
+            - python_test
+          filters:
+            branches:
+              only: master
