@@ -4,7 +4,9 @@ from typing import Union
 
 
 class MetaClient(type):
-
+    """
+    A metaclass which have AzBlobClient or AzDataLakeClient in class dictionary.
+    """
     def __new__(mcs, name, bases, dictionary):
         cls = type.__new__(mcs, name, bases, dictionary)
         clients = {'dfs': AzDataLakeClient,
@@ -18,8 +20,28 @@ class AbstractClient(metaclass=MetaClient):
 
 
 class AzfsClient(AbstractClient):
+    """
+    Interface of AzBlobClient and AzDataLakeClient.
+    Different instances can be obtained as below
+
+    blob_client = AzfsClient.get("blob", "***")
+    or
+    datalake_client = AzfsClient.get("dfs", "***")
+
+    AzfsClient provide easy way to access functions implemented in AzBlobClient and AzDataLakeClient, as below
+
+    # path is azure storage url
+    data = AzfsClient.get("blob", "***").download_data(path)
+
+    """
     CLIENTS = {}
 
     @classmethod
-    def get(cls, skill_key, credential) -> Union[AzBlobClient, AzDataLakeClient]:
-        return cls.CLIENTS[skill_key](credential=credential)
+    def get(cls, account_kind: str, credential) -> Union[AzBlobClient, AzDataLakeClient]:
+        """
+        get AzBlobClient or AzDataLakeClient depending on account_kind
+        :param account_kind: currently blob or dfs
+        :param credential: AzureDefaultCredential or string
+        :return:
+        """
+        return cls.CLIENTS[account_kind](credential=credential)
