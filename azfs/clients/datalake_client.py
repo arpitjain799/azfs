@@ -36,8 +36,9 @@ class AzDataLakeClient(ClientInterface):
             credential=credential)
         return file_system
 
-    def _ls(self, path: str):
-        file_list = [f.name for f in self.get_container_client_from_path(path=path).get_paths()]
+    def _ls(self, path: str, file_path: str):
+        file_list = \
+            [f.name for f in self.get_container_client_from_path(path=path).get_paths(path=file_path, recursive=True)]
         return file_list
 
     def _download_data(self, path: str):
