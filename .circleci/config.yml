@@ -36,13 +36,13 @@ jobs:
       - image: circleci/python:3.7
     steps:
       - checkout
-      - restore_cache:
-          key: poetry-cache-v1-{{ .Branch }}-{{ checksum "poetry.lock" }}
+#      - restore_cache:
+#          key: poetry-cache-v1-{{ .Branch }}-{{ checksum "poetry.lock" }}
       - poetry_environment_setup
-      - save_cache:
-          key: poetry-cache-v1-{{ .Branch }}-{{ checksum "poetry.lock" }}
-          paths:
-            - ~/
+#      - save_cache:
+#          key: poetry-cache-v1-{{ .Branch }}-{{ checksum "poetry.lock" }}
+#          paths:
+#            - ~/
       - run: poetry run pytest ./test -vv --cov=./azfs --cov-report=xml
       - codecov/upload:
         file: ./test/coverage.xml
@@ -51,8 +51,8 @@ jobs:
       - image: circleci/python:3.7
     steps:
       - checkout
-      - restore_cache:
-          key: poetry-cache-v1-{{ .Branch }}-{{ checksum "poetry.lock" }}
+#      - restore_cache:
+#          key: poetry-cache-v1-{{ .Branch }}-{{ checksum "poetry.lock" }}
       - poetry_environment_setup
       - create_pypi_file
       - create_deployment_package_and_deploy
