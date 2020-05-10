@@ -93,13 +93,14 @@ class ClientInterface:
         """
         raise NotImplementedError
 
-    def ls(self, path: str):
-        return self._ls(path=path)
+    def ls(self, path: str, file_path: str):
+        return self._ls(path=path, file_path=file_path)
 
-    def _ls(self, path: str):
+    def _ls(self, path: str, file_path: str):
         """
         abstract method to be implemented
         :param path:
+        :param file_path:
         :return:
         """
         raise NotImplementedError
