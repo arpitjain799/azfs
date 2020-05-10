@@ -37,12 +37,11 @@ class ClientInterface:
         :return:
         """
         storage_account_url, account_kind, file_system, file_path = BlobPathDecoder(path).get_with_url()
-        file_client = self._get_file_client(
+        return self._get_file_client(
             storage_account_url=storage_account_url,
             file_system=file_system,
             file_path=file_path,
             credential=self.credential)
-        return file_client
 
     def _get_file_client(
             self,
@@ -75,11 +74,10 @@ class ClientInterface:
         :return:
         """
         storage_account_url, _, file_system, _ = BlobPathDecoder(path).get_with_url()
-        container_client = self._get_container_client(
+        return self._get_container_client(
             storage_account_url=storage_account_url,
             file_system=file_system,
             credential=self.credential)
-        return container_client
 
     def _get_container_client(
             self,

@@ -1,6 +1,36 @@
+import pytest
 from azfs.clients.blob_client import AzBlobClient
 from azfs.clients.datalake_client import AzDataLakeClient
+from azfs.clients.client_interface import ClientInterface
 import pandas as pd
+
+
+class TestClientInterface:
+    def test_not_implemented_error(self):
+        client_interface = ClientInterface(credential="")
+        # the file below is not exists
+        path = "https://testazfs.blob.core.windows.net/test_caontainer/test.csv"
+
+        with pytest.raises(NotImplementedError):
+            client_interface.download_data(path=path)
+
+        with pytest.raises(NotImplementedError):
+            client_interface.upload_data(path=path, data={})
+
+        with pytest.raises(NotImplementedError):
+            client_interface.ls(path=path)
+
+        with pytest.raises(NotImplementedError):
+            client_interface.rm(path=path)
+
+        with pytest.raises(NotImplementedError):
+            client_interface.get_properties(path=path)
+
+        with pytest.raises(NotImplementedError):
+            client_interface.get_container_client_from_path(path=path)
+
+        with pytest.raises(NotImplementedError):
+            client_interface.get_file_client_from_path(path=path)
 
 
 class TestReadCsv:
