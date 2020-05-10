@@ -35,8 +35,8 @@ class TestClientInterface:
 
 class TestReadCsv:
 
-    def test_blob_read_csv(self, mocker, _download_data, var_azc):
-        mocker.patch.object(AzBlobClient, "_download_data", _download_data)
+    def test_blob_read_csv(self, mocker, _download_data_csv, var_azc):
+        mocker.patch.object(AzBlobClient, "_download_data", _download_data_csv)
 
         # the file below is not exists
         path = "https://testazfs.blob.core.windows.net/test_caontainer/test.csv"
@@ -49,8 +49,8 @@ class TestReadCsv:
         assert "age" in columns
         assert len(df.index) == 2
 
-    def test_dfs_read_csv(self, mocker, _download_data, var_azc):
-        mocker.patch.object(AzDataLakeClient, "_download_data", _download_data)
+    def test_dfs_read_csv(self, mocker, _download_data_csv, var_azc):
+        mocker.patch.object(AzDataLakeClient, "_download_data", _download_data_csv)
 
         # the file below is not exists
         path = "https://testazfs.dfs.core.windows.net/test_caontainer/test.csv"
@@ -62,6 +62,27 @@ class TestReadCsv:
         assert "name" in columns
         assert "age" in columns
         assert len(df.index) == 2
+
+
+class TestReadJson:
+
+    def test_blob_read_json(self, mocker, _download_data_json, var_azc, var_json):
+        mocker.patch.object(AzBlobClient, "_download_data", _download_data_json)
+
+        # the file below is not exists
+        path = "https://testazfs.blob.core.windows.net/test_caontainer/test.json"
+
+        data = var_azc.read_json(path)
+        assert data == var_json
+
+    def test_dfs_read_json(self, mocker, _download_data_json, var_azc, var_json):
+        mocker.patch.object(AzDataLakeClient, "_download_data", _download_data_json)
+
+        # the file below is not exists
+        path = "https://testazfs.dfs.core.windows.net/test_caontainer/test.json"
+
+        data = var_azc.read_json(path)
+        assert data == var_json
 
 
 class TestToCsv:
