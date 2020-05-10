@@ -4,4 +4,4 @@ from azfs.core import (
 
 from azfs.utils import BlobPathDecoder
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
