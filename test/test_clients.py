@@ -10,6 +10,7 @@ class TestClientInterface:
         client_interface = ClientInterface(credential="")
         # the file below is not exists
         path = "https://testazfs.blob.core.windows.net/test_caontainer/test.csv"
+        file_path = "test_caontainer"
 
         with pytest.raises(NotImplementedError):
             client_interface.download_data(path=path)
@@ -18,7 +19,7 @@ class TestClientInterface:
             client_interface.upload_data(path=path, data={})
 
         with pytest.raises(NotImplementedError):
-            client_interface.ls(path=path)
+            client_interface.ls(path=path, file_path=file_path)
 
         with pytest.raises(NotImplementedError):
             client_interface.rm(path=path)
