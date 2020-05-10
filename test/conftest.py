@@ -40,6 +40,30 @@ def _upload_data(mocker):
 
 
 @pytest.fixture()
+def _ls(mocker):
+    """
+    :param mocker:
+    :return:
+    """
+    return_value = ["test1.csv", "test2.csv", "dir/"]
+    func_mock = mocker.MagicMock()
+    func_mock.return_value = return_value
+    yield func_mock
+
+
+@pytest.fixture()
+def _rm(mocker):
+    """
+    :param mocker:
+    :return:
+    """
+    return_value = True
+    func_mock = mocker.MagicMock()
+    func_mock.return_value = return_value
+    yield func_mock
+
+
+@pytest.fixture()
 def var_df() -> pd.DataFrame:
     data = {"1": {"name": "alice", "age": "10"}, "2": {"name": "bob", "age": "10"}}
     df = pd.DataFrame.from_dict(data, orient="index")

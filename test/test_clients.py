@@ -84,3 +84,79 @@ class TestToCsv:
         with var_azc:
             result = var_df.to_csv_az(path)
         assert result
+
+
+class TestLs:
+    def test_blob_ls(self, mocker, _ls, var_azc):
+        mocker.patch.object(AzBlobClient, "_ls", _ls)
+
+        # the file below is not exists
+        path = "https://testazfs.blob.core.windows.net/test_caontainer/"
+
+        file_list = var_azc.ls(path=path)
+        assert len(file_list) == 3
+        assert "test1.csv" in file_list
+        assert "test2.csv" in file_list
+        assert "dir/" in file_list
+
+    def test_dfs_ls(self, mocker, _ls, var_azc):
+        mocker.patch.object(AzDataLakeClient, "_ls", _ls)
+
+        # the file below is not exists
+        path = "https://testazfs.dfs.core.windows.net/test_caontainer/"
+
+        file_list = var_azc.ls(path=path)
+        assert len(file_list) == 3
+        assert "test1.csv" in file_list
+        assert "test2.csv" in file_list
+        assert "dir/" in file_list
+
+
+class TestRm:
+    def test_blob_rm(self, mocker, _rm, var_azc):
+        mocker.patch.object(AzBlobClient, "_rm", _rm)
+
+        # the file below is not exists
+        path = "https://testazfs.blob.core.windows.net/test_caontainer/"
+
+        result = var_azc.rm(path=path)
+        assert result
+
+    def test_dfs_rm(self, mocker, _rm, var_azc):
+        mocker.patch.object(AzDataLakeClient, "_rm", _rm)
+
+        # the file below is not exists
+        path = "https://testazfs.dfs.core.windows.net/test_caontainer/"
+
+        result = var_azc.rm(path=path)
+        assert result
+
+
+class TestExists:
+    def test_blob_exists(self, mocker, _ls, var_azc):
+        mocker.patch.object(AzBlobClient, "_ls", _ls)
+
+        # the file below is not exists
+        path = "https://testazfs.blob.core.windows.net/test_caontainer/test1.csv"
+
+        result = var_azc.exists(path=path)
+        assert result
+
+        # the file below is not exists
+        path = "https://testazfs.blob.core.windows.net/test_caontainer/test3.csv"
+        result = var_azc.exists(path=path)
+        assert not result
+
+    def test_dfs_exists(self, mocker, _ls, var_azc):
+        mocker.patch.object(AzDataLakeClient, "_ls", _ls)
+
+        # the file below is not exists
+        path = "https://testazfs.dfs.core.windows.net/test_caontainer/test1.csv"
+
+        result = var_azc.exists(path=path)
+        assert result
+
+        # the file below is not exists
+        path = "https://testazfs.dfs.core.windows.net/test_caontainer/test3.csv"
+        result = var_azc.exists(path=path)
+        assert not result
