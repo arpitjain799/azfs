@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "azfs"
-version = "0.1.1"
+version = "0.1.2"
 description = ""
 authors = ["yoshiki <yoshiki0911@gmail.com>"]
 
