@@ -144,9 +144,9 @@ class ClientInterface:
         raise NotImplementedError
 
     def info(self, path: str):
-        return self._get_properties(path=path)
+        return self._info(path=path)
 
-    def _get_properties(self, path: str):
+    def _info(self, path: str):
         """
         abstract method to be implemented
         :param path:

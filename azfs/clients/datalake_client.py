@@ -52,7 +52,7 @@ class AzDataLakeClient(ClientInterface):
         _ = file_client.flush_data(len(data))
         return True
 
-    def _get_properties(self, path: str):
+    def _info(self, path: str):
         return self.get_file_client_from_path(path=path).get_file_properties()
 
     def _rm(self, path: str):
