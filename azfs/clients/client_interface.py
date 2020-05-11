@@ -21,8 +21,8 @@ class ClientInterface:
         * _get_service_client
         * _get_container_client
         * _ls
-        * _download_data
-        * _upload_data
+        * _get
+        * _put
     """
 
     def __init__(
@@ -105,13 +105,13 @@ class ClientInterface:
         """
         raise NotImplementedError
 
-    def download_data(self, path: str):
+    def get(self, path: str):
         """
         download data from Azure Blob or DataLake.
         :param path:
         :return:
         """
-        file_bytes = self._download_data(path=path)
+        file_bytes = self._get(path=path)
 
         # gzip圧縮ファイルは一旦ここで展開
         if path.endswith(".gz"):
@@ -123,7 +123,7 @@ class ClientInterface:
             file_to_read = file_bytes
         return file_to_read
 
-    def _download_data(self, path: str):
+    def _get(self, path: str):
         """
         abstract method to be implemented
         :param path:
@@ -131,10 +131,10 @@ class ClientInterface:
         """
         raise NotImplementedError
 
-    def upload_data(self, path: str, data):
-        return self._upload_data(path=path, data=data)
+    def put(self, path: str, data):
+        return self._put(path=path, data=data)
 
-    def _upload_data(self, path: str, data):
+    def _put(self, path: str, data):
         """
         abstract method to be implemented
         :param path:
@@ -143,10 +143,10 @@ class ClientInterface:
         """
         raise NotImplementedError
 
-    def get_properties(self, path: str):
-        return self._get_properties(path=path)
+    def info(self, path: str):
+        return self._info(path=path)
 
-    def _get_properties(self, path: str):
+    def _info(self, path: str):
         """
         abstract method to be implemented
         :param path:

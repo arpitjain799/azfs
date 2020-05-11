@@ -41,18 +41,18 @@ class AzDataLakeClient(ClientInterface):
             [f.name for f in self.get_container_client_from_path(path=path).get_paths(path=file_path, recursive=True)]
         return file_list
 
-    def _download_data(self, path: str):
+    def _get(self, path: str):
         file_bytes = self.get_file_client_from_path(path).download_file().readall()
         return file_bytes
 
-    def _upload_data(self, path: str, data):
+    def _put(self, path: str, data):
         file_client = self.get_file_client_from_path(path=path)
         _ = file_client.create_file()
         _ = file_client.append_data(data=data, offset=0, length=len(data))
         _ = file_client.flush_data(len(data))
         return True
 
-    def _get_properties(self, path: str):
+    def _info(self, path: str):
         return self.get_file_client_from_path(path=path).get_file_properties()
 
     def _rm(self, path: str):
