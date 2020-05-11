@@ -139,6 +139,39 @@ class AzFileClient:
         _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
         return AzfsClient.get(account_kind, credential=self.credential).info(path=path)
 
+    def checksum(self, path):
+        pass
+
+    def size(self, path):
+        """
+        Size in bytes of file
+        """
+        return self.info(path).get("size", None)
+
+    def isdir(self, path):
+        """
+        Is this entry directory-like?
+        """
+        try:
+            return self.info(path)["type"] == "directory"
+        except IOError:
+            return False
+
+    def isfile(self, path):
+        """
+        Is this entry file-like?
+        """
+        try:
+            return self.info(path)["type"] == "file"
+        except IOError:
+            return False
+
+    def glob(self, path: str):
+        pass
+
+    def du(self, path):
+        pass
+
     def _download_data(self, path: str) -> Union[bytes, str, io.BytesIO]:
         """
         storage accountのタイプによってfile_clientを変更し、データを取得する関数
