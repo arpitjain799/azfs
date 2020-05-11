@@ -137,7 +137,29 @@ class AzFileClient:
         :return:
         """
         _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
-        return AzfsClient.get(account_kind, credential=self.credential).info(path=path)
+        # get info from blob or data-lake storage
+        data = AzfsClient.get(account_kind, credential=self.credential).info(path=path)
+
+        # extract below to determine file or directory
+        content_settings = data.get("content_settings", {})
+        metadata = data.get("metadata", {})
+
+        data_type = ""
+        if "hdi_isfolder" in metadata:
+            # only data-lake storage has `hdi_isfolder`
+            data_type = "directory"
+        elif content_settings:
+            # blob and data-lake storage have `content_settings`
+            data_type = "file"
+        return {
+            "name": data.get("name", ""),
+            "size": data.get("size", ""),
+            "creation_time": data.get("creation_time", ""),
+            "last_modified": data.get("last_modified", ""),
+            "etag": data.get("etag", ""),
+            "content_type": content_settings.get("content_type", ""),
+            "type": data_type
+        }
 
     def checksum(self, path):
         pass
