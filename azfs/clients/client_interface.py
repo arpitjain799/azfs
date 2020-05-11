@@ -21,8 +21,8 @@ class ClientInterface:
         * _get_service_client
         * _get_container_client
         * _ls
-        * _download_data
-        * _upload_data
+        * _get
+        * _put
     """
 
     def __init__(
