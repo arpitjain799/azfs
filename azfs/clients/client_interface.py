@@ -131,10 +131,10 @@ class ClientInterface:
         """
         raise NotImplementedError
 
-    def upload_data(self, path: str, data):
-        return self._upload_data(path=path, data=data)
+    def put(self, path: str, data):
+        return self._put(path=path, data=data)
 
-    def _upload_data(self, path: str, data):
+    def _put(self, path: str, data):
         """
         abstract method to be implemented
         :param path:

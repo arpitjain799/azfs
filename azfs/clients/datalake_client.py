@@ -45,7 +45,7 @@ class AzDataLakeClient(ClientInterface):
         file_bytes = self.get_file_client_from_path(path).download_file().readall()
         return file_bytes
 
-    def _upload_data(self, path: str, data):
+    def _put(self, path: str, data):
         file_client = self.get_file_client_from_path(path=path)
         _ = file_client.create_file()
         _ = file_client.append_data(data=data, offset=0, length=len(data))

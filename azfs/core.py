@@ -111,9 +111,9 @@ class AzFileClient:
             raise AzfsInputError(f"{dst_path} is already exists. Please set `overwrite=True`.")
         data = self._download_data(path=src_path)
         if type(data) is io.BytesIO:
-            self._upload_data(path=dst_path, data=data.read())
+            self._put(path=dst_path, data=data.read())
         elif type(data) is bytes:
-            self._upload_data(path=dst_path, data=data)
+            self._put(path=dst_path, data=data)
         return True
 
     def rm(self, path: str) -> bool:
@@ -192,7 +192,7 @@ class AzFileClient:
         file_to_read = self._download_data(path)
         return pd.read_csv(file_to_read, **kwargs)
 
-    def _upload_data(self, path: str, data) -> bool:
+    def _put(self, path: str, data) -> bool:
         """
         upload data to blob or data_lake storage account
         :param path:
@@ -200,7 +200,7 @@ class AzFileClient:
         :return:
         """
         _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
-        return AzfsClient.get(account_kind, credential=self.credential).upload_data(path=path, data=data)
+        return AzfsClient.get(account_kind, credential=self.credential).put(path=path, data=data)
 
     def write_csv(self, path: str, df: pd.DataFrame, **kwargs) -> bool:
         """
@@ -208,7 +208,7 @@ class AzFileClient:
         Note: Unavailable for large loop processing!
         """
         csv_str = df.to_csv(encoding="utf-8", **kwargs)
-        return self._upload_data(path=path, data=csv_str)
+        return self._put(path=path, data=csv_str)
 
     def read_json(self, path: str) -> dict:
         """
@@ -225,4 +225,4 @@ class AzFileClient:
         output dict to json file in Datalake storage.
         Note: Unavailable for large loop processing!
         """
-        return self._upload_data(path=path, data=json.dumps(data))
+        return self._put(path=path, data=json.dumps(data))

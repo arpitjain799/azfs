@@ -41,7 +41,7 @@ def _download_data_json(mocker):
 
 
 @pytest.fixture()
-def _upload_data(mocker):
+def _put(mocker):
     """
     :param mocker:
     :return:
