@@ -41,7 +41,7 @@ class AzDataLakeClient(ClientInterface):
             [f.name for f in self.get_container_client_from_path(path=path).get_paths(path=file_path, recursive=True)]
         return file_list
 
-    def _download_data(self, path: str):
+    def _get(self, path: str):
         file_bytes = self.get_file_client_from_path(path).download_file().readall()
         return file_bytes
 

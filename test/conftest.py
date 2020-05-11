@@ -14,7 +14,7 @@ sys.path.append(f"{SOURCE_PATH}")
 
 
 @pytest.fixture()
-def _download_data_csv(mocker):
+def _get_csv(mocker):
     """
     original data is
     data = {"1": {"name": "alice", "age": "10"}, "2": {"name": "bob", "age": "10"}}
@@ -29,7 +29,7 @@ def _download_data_csv(mocker):
 
 
 @pytest.fixture()
-def _download_data_json(mocker):
+def _get_json(mocker):
     """
     :param mocker:
     :return:

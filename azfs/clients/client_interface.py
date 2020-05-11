@@ -105,13 +105,13 @@ class ClientInterface:
         """
         raise NotImplementedError
 
-    def download_data(self, path: str):
+    def get(self, path: str):
         """
         download data from Azure Blob or DataLake.
         :param path:
         :return:
         """
-        file_bytes = self._download_data(path=path)
+        file_bytes = self._get(path=path)
 
         # gzip圧縮ファイルは一旦ここで展開
         if path.endswith(".gz"):
@@ -123,7 +123,7 @@ class ClientInterface:
             file_to_read = file_bytes
         return file_to_read
 
-    def _download_data(self, path: str):
+    def _get(self, path: str):
         """
         abstract method to be implemented
         :param path:
