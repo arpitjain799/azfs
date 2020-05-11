@@ -148,8 +148,9 @@ class AzFileClient:
         if "hdi_isfolder" in metadata:
             # only data-lake storage has `hdi_isfolder`
             data_type = "directory"
-        elif content_settings:
-            # blob and data-lake storage have `content_settings`
+        elif content_settings.get("content_type") is not None:
+            # blob and data-lake storage have `content_settings`,
+            # and its value of the `content_type` must not be None
             data_type = "file"
         return {
             "name": data.get("name", ""),
@@ -161,8 +162,14 @@ class AzFileClient:
             "type": data_type
         }
 
-    def checksum(self, path):
-        pass
+    def checksum(self, path: str):
+        """
+        raise KeyError if info has no etag.
+        Blob and DataLake storage have etag.
+        :param path:
+        :return:
+        """
+        return self.info(path=path)["etag"]
 
     def size(self, path):
         """
