@@ -143,7 +143,7 @@ class ClientInterface:
         """
         raise NotImplementedError
 
-    def get_properties(self, path: str):
+    def info(self, path: str):
         return self._get_properties(path=path)
 
     def _get_properties(self, path: str):

@@ -125,7 +125,7 @@ class AzFileClient:
         _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
         return AzfsClient.get(account_kind, credential=self.credential).rm(path=path)
 
-    def get_properties(self, path: str) -> dict:
+    def info(self, path: str) -> dict:
         """
         get file properties, such as
         * name
@@ -137,7 +137,7 @@ class AzFileClient:
         :return:
         """
         _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
-        return AzfsClient.get(account_kind, credential=self.credential).get_properties(path=path)
+        return AzfsClient.get(account_kind, credential=self.credential).info(path=path)
 
     def _download_data(self, path: str) -> Union[bytes, str, io.BytesIO]:
         """

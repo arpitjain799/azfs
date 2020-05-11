@@ -25,7 +25,7 @@ class TestClientInterface:
             client_interface.rm(path=path)
 
         with pytest.raises(NotImplementedError):
-            client_interface.get_properties(path=path)
+            client_interface.info(path=path)
 
         with pytest.raises(NotImplementedError):
             client_interface.get_container_client_from_path(path=path)
