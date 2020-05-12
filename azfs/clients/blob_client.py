@@ -37,19 +37,20 @@ class AzBlobClient(ClientInterface):
             credential=credential)
         return container_client
 
-    def _ls(self, path: str):
-        blob_list = [f.name for f in self.get_container_client_from_path(path=path).list_blobs()]
+    def _ls(self, path: str, file_path: str):
+        blob_list = \
+            [f.name for f in self.get_container_client_from_path(path=path).list_blobs(name_starts_with=file_path)]
         return blob_list
 
-    def _download_data(self, path: str):
+    def _get(self, path: str):
         file_bytes = self.get_file_client_from_path(path=path).download_blob().readall()
         return file_bytes
 
-    def _upload_data(self, path: str, data):
+    def _put(self, path: str, data):
         self.get_file_client_from_path(path=path).upload_blob(data=data, length=len(data))
         return True
 
-    def _get_properties(self, path: str):
+    def _info(self, path: str):
         return self.get_file_client_from_path(path=path).get_blob_properties()
 
     def _rm(self, path: str):

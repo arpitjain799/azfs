@@ -90,7 +90,7 @@ class AzFileClient:
         :return:
         """
         _, account_kind, _, file_path = BlobPathDecoder(path).get_with_url()
-        file_list = AzfsClient.get(account_kind, credential=self.credential).ls(path=path)
+        file_list = AzfsClient.get(account_kind, credential=self.credential).ls(path=path, file_path=file_path)
 
         return ls_filter(file_path_list=file_list, file_path=file_path)
 
@@ -109,11 +109,11 @@ class AzFileClient:
             raise AzfsInputError("src_path and dst_path must be different")
         if (not overwrite) and self.exists(dst_path):
             raise AzfsInputError(f"{dst_path} is already exists. Please set `overwrite=True`.")
-        data = self._download_data(path=src_path)
+        data = self._get(path=src_path)
         if type(data) is io.BytesIO:
-            self._upload_data(path=dst_path, data=data.read())
+            self._put(path=dst_path, data=data.read())
         elif type(data) is bytes:
-            self._upload_data(path=dst_path, data=data)
+            self._put(path=dst_path, data=data)
         return True
 
     def rm(self, path: str) -> bool:
@@ -125,7 +125,7 @@ class AzFileClient:
         _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
         return AzfsClient.get(account_kind, credential=self.credential).rm(path=path)
 
-    def get_properties(self, path: str) -> dict:
+    def info(self, path: str) -> dict:
         """
         get file properties, such as
         * name
@@ -137,9 +137,71 @@ class AzFileClient:
         :return:
         """
         _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
-        return AzfsClient.get(account_kind, credential=self.credential).get_properties(path=path)
+        # get info from blob or data-lake storage
+        data = AzfsClient.get(account_kind, credential=self.credential).info(path=path)
 
-    def _download_data(self, path: str) -> Union[bytes, str, io.BytesIO]:
+        # extract below to determine file or directory
+        content_settings = data.get("content_settings", {})
+        metadata = data.get("metadata", {})
+
+        data_type = ""
+        if "hdi_isfolder" in metadata:
+            # only data-lake storage has `hdi_isfolder`
+            data_type = "directory"
+        elif content_settings.get("content_type") is not None:
+            # blob and data-lake storage have `content_settings`,
+            # and its value of the `content_type` must not be None
+            data_type = "file"
+        return {
+            "name": data.get("name", ""),
+            "size": data.get("size", ""),
+            "creation_time": data.get("creation_time", ""),
+            "last_modified": data.get("last_modified", ""),
+            "etag": data.get("etag", ""),
+            "content_type": content_settings.get("content_type", ""),
+            "type": data_type
+        }
+
+    def checksum(self, path: str):
+        """
+        raise KeyError if info has no etag.
+        Blob and DataLake storage have etag.
+        :param path:
+        :return:
+        """
+        return self.info(path=path)["etag"]
+
+    def size(self, path):
+        """
+        Size in bytes of file
+        """
+        return self.info(path).get("size", None)
+
+    def isdir(self, path):
+        """
+        Is this entry directory-like?
+        """
+        try:
+            return self.info(path)["type"] == "directory"
+        except IOError:
+            return False
+
+    def isfile(self, path):
+        """
+        Is this entry file-like?
+        """
+        try:
+            return self.info(path)["type"] == "file"
+        except IOError:
+            return False
+
+    def glob(self, path: str):
+        pass
+
+    def du(self, path):
+        pass
+
+    def _get(self, path: str) -> Union[bytes, str, io.BytesIO]:
         """
         storage accountのタイプによってfile_clientを変更し、データを取得する関数
         特定のファイルを取得する関数
@@ -147,7 +209,7 @@ class AzFileClient:
         :return:
         """
         _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
-        return AzfsClient.get(account_kind, credential=self.credential).download_data(path=path)
+        return AzfsClient.get(account_kind, credential=self.credential).get(path=path)
 
     def read_csv(self, path: str, **kwargs) -> pd.DataFrame:
         """
@@ -156,10 +218,10 @@ class AzFileClient:
         :param path:
         :return:
         """
-        file_to_read = self._download_data(path)
+        file_to_read = self._get(path)
         return pd.read_csv(file_to_read, **kwargs)
 
-    def _upload_data(self, path: str, data) -> bool:
+    def _put(self, path: str, data) -> bool:
         """
         upload data to blob or data_lake storage account
         :param path:
@@ -167,7 +229,7 @@ class AzFileClient:
         :return:
         """
         _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
-        return AzfsClient.get(account_kind, credential=self.credential).upload_data(path=path, data=data)
+        return AzfsClient.get(account_kind, credential=self.credential).put(path=path, data=data)
 
     def write_csv(self, path: str, df: pd.DataFrame, **kwargs) -> bool:
         """
@@ -175,14 +237,14 @@ class AzFileClient:
         Note: Unavailable for large loop processing!
         """
         csv_str = df.to_csv(encoding="utf-8", **kwargs)
-        return self._upload_data(path=path, data=csv_str)
+        return self._put(path=path, data=csv_str)
 
     def read_json(self, path: str) -> dict:
         """
         read json file in Datalake storage.
         Note: Unavailable for large loop processing!
         """
-        file_bytes = self._download_data(path)
+        file_bytes = self._get(path)
         if type(file_bytes) is io.BytesIO:
             file_bytes = file_bytes.read()
         return json.loads(file_bytes)
@@ -192,4 +254,4 @@ class AzFileClient:
         output dict to json file in Datalake storage.
         Note: Unavailable for large loop processing!
         """
-        return self._upload_data(path=path, data=json.dumps(data))
+        return self._put(path=path, data=json.dumps(data))

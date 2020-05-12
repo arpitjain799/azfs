@@ -122,7 +122,7 @@ def ls_filter(file_path_list: list, file_path: str):
 
 def _ls_get_file_name(file_path_list: list, file_path: str):
     """
-    特定のフォルダ以下にあるファイル名を取得する
+    特定のフォルダ以下にあるファイル名を取得する。
     :param file_path_list:
     :param file_path:
     :return:
