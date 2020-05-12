@@ -119,8 +119,13 @@ is_removed = azc.rm(path=src_path)
 ```
 pandas >= "1.0.0"
 azure-identity >= "1.3.1"
-azure-storage-file-datalake >= "12.0.0"
 azure-storage-blob >= "12.3.0"
+```
+
+* optional
+
+```
+azure-storage-file-datalake >= "12.0.0"
 ```
 
 ## references
