@@ -1,5 +1,6 @@
 from azfs.clients.blob_client import AzBlobClient
 from azfs.clients.datalake_client import AzDataLakeClient
+from azfs.clients.queue_client import AzQueueClient
 from typing import Union
 
 
@@ -13,7 +14,8 @@ class MetaClient(type):
         # set Clients
         clients = {
             'dfs': AzDataLakeClient,
-            'blob': AzBlobClient
+            'blob': AzBlobClient,
+            'queue': AzQueueClient
         }
         cls.CLIENTS = clients
         return cls
