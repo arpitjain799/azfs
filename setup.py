@@ -17,7 +17,6 @@ setuptools.setup(
     install_requires=[
         "pandas>=1.0.0",
         "azure-identity>=1.3.1",
-        "azure-storage-file-datalake>=12.0.0",
         "azure-storage-blob>=12.3.0",
     ],
     license="MIT",
