@@ -1,15 +1,20 @@
-from typing import Union
+from typing import Union, TypeVar
 from azure.identity import DefaultAzureCredential
 import io
 import gzip
 from azfs.utils import BlobPathDecoder
-from azure.storage.blob import (
-    BlobClient,
-    ContainerClient
+
+# define the types
+FileClient = TypeVar(
+    "FileClient",
+    "azure.storage.blob.BlobClient",
+    "azure.storage.filedatalake.DataLakeFileClient",
+    "azure.storage.queue.QueueClient"
 )
-from azure.storage.filedatalake import (
-    DataLakeFileClient,
-    FileSystemClient
+FileSystemClient = TypeVar(
+    "FileSystemClient",
+    "azure.storage.blob.ContainerClient",
+    "azure.storage.filedatalake.FileSystemClient"
 )
 
 
@@ -30,7 +35,7 @@ class ClientInterface:
             credential: Union[str, DefaultAzureCredential]):
         self.credential = credential
 
-    def get_file_client_from_path(self, path) -> Union[BlobClient, DataLakeFileClient]:
+    def get_file_client_from_path(self, path: str) -> FileClient:
         """
         get file_client from given path
         :param path:
@@ -67,7 +72,7 @@ class ClientInterface:
         """
         raise NotImplementedError
 
-    def get_container_client_from_path(self, path) -> Union[ContainerClient, FileSystemClient]:
+    def get_container_client_from_path(self, path: str) -> FileSystemClient:
         """
         get container_client from given path
         :param path:
