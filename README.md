@@ -2,8 +2,10 @@
 
 [![CircleCI](https://circleci.com/gh/gsy0911/azfs.svg?style=svg&circle-token=ccd8e1ece489b247bcaac84861ae725b0f89a605)](https://circleci.com/gh/gsy0911/azfs)
 [![codecov](https://codecov.io/gh/gsy0911/azfs/branch/master/graph/badge.svg)](https://codecov.io/gh/gsy0911/azfs)
+[![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/gsy0911/azfs.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/gsy0911/azfs/context:python)
 
-[![Downloads](https://pepy.tech/badge/azfs)](https://pepy.tech/project/azfs)
+[![PiPY](https://img.shields.io/badge/pypi-0.1.3-blue.svg)](https://pypi.org/project/azfs/)
+[![Downloads](https://pepy.tech/badge/azfs)](https://pepy.tech/project/azfs) 
 
 AzFS is to provide convenient Python read/write functions for Azure Storage Account.
 
