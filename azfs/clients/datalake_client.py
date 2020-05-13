@@ -9,7 +9,8 @@ from azure.identity import DefaultAzureCredential
 import_filedatalake = functools.partial(
     import_optional_dependency,
     "azure.storage.filedatalake",
-    "To handle Azure Datalake storage, the package is required.")
+    "To handle Azure Datalake storage, the package is required.",
+    "azure-storage-file-datalake")
 
 
 class AzDataLakeClient(ClientInterface):

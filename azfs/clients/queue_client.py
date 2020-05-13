@@ -9,7 +9,8 @@ from azure.identity import DefaultAzureCredential
 import_queue = functools.partial(
     import_optional_dependency,
     "azure.storage.queue",
-    "To handle Azure Queue storage, the package is required.")
+    "To handle Azure Queue storage, the package is required.",
+    "azure-storage-queue")
 
 
 class AzQueueClient(ClientInterface):
