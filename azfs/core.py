@@ -254,4 +254,13 @@ class AzFileClient:
         output dict to json file in Datalake storage.
         Note: Unavailable for large loop processing!
         """
-        return self._put(path=path, data=json.dumps(data))
+        return self._put(path=path, data=json.dumps(data, **kwargs))
+
+    # ===================
+    # alias for functions
+    # ===================
+
+    get = _get
+    download = _get
+    put = _put
+    upload = _put
