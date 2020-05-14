@@ -84,7 +84,11 @@ with azc:
     df.to_csv_az(path="https://[storage-account].../*.csv", index=False)
 
 # read json as dict
-azc.write_json(path="https://[storage-account].../*.json", data=data)
+azc.write_json(path="https://[storage-account].../*.json", data=data, indent=4)
+
+# or
+import json
+azc.put(path="https://[storage-account].../*.json", data=json.dumps(data, indent=4)) 
 ```
 
 ### enumerating or checking if file exists
@@ -101,7 +105,7 @@ file_list = azc.ls("https://[storage-account].../")
 is_exists = azc.exists("https://[storage-account].../*.csv")
 ```
 
-### remove, copy files
+### remove, copy files, etc...
 
 ```python
 import azfs
@@ -115,6 +119,10 @@ is_copied = azc.cp(src_path=src_path, dst_path=dst_path, overwrite=True)
 
 # remove the file
 is_removed = azc.rm(path=src_path)
+
+# get file meta info
+data = azc.info(path=src_path)
+
 ```
 
 
