@@ -239,7 +239,7 @@ class AzFileClient:
         csv_str = df.to_csv(encoding="utf-8", **kwargs)
         return self._put(path=path, data=csv_str)
 
-    def read_json(self, path: str) -> dict:
+    def read_json(self, path: str, **kwargs) -> dict:
         """
         read json file in Datalake storage.
         Note: Unavailable for large loop processing!
@@ -247,9 +247,9 @@ class AzFileClient:
         file_bytes = self._get(path)
         if type(file_bytes) is io.BytesIO:
             file_bytes = file_bytes.read()
-        return json.loads(file_bytes)
+        return json.loads(file_bytes, **kwargs)
 
-    def write_json(self, path: str, data: dict) -> bool:
+    def write_json(self, path: str, data: dict, **kwargs) -> bool:
         """
         output dict to json file in Datalake storage.
         Note: Unavailable for large loop processing!
