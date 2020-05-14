@@ -47,7 +47,11 @@ class AzBlobClient(ClientInterface):
         return file_bytes
 
     def _put(self, path: str, data):
-        self.get_file_client_from_path(path=path).upload_blob(data=data, length=len(data))
+        self.get_file_client_from_path(path=path).upload_blob(
+            data=data,
+            length=len(data),
+            overwrite=True
+        )
         return True
 
     def _info(self, path: str):
