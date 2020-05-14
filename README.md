@@ -2,8 +2,10 @@
 
 [![CircleCI](https://circleci.com/gh/gsy0911/azfs.svg?style=svg&circle-token=ccd8e1ece489b247bcaac84861ae725b0f89a605)](https://circleci.com/gh/gsy0911/azfs)
 [![codecov](https://codecov.io/gh/gsy0911/azfs/branch/master/graph/badge.svg)](https://codecov.io/gh/gsy0911/azfs)
+[![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/gsy0911/azfs.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/gsy0911/azfs/context:python)
 
-[![Downloads](https://pepy.tech/badge/azfs)](https://pepy.tech/project/azfs)
+[![PiPY](https://img.shields.io/badge/pypi-0.1.4-blue.svg)](https://pypi.org/project/azfs/)
+[![Downloads](https://pepy.tech/badge/azfs)](https://pepy.tech/project/azfs) 
 
 AzFS is to provide convenient Python read/write functions for Azure Storage Account.
 
@@ -82,7 +84,11 @@ with azc:
     df.to_csv_az(path="https://[storage-account].../*.csv", index=False)
 
 # read json as dict
-azc.write_json(path="https://[storage-account].../*.json", data=data)
+azc.write_json(path="https://[storage-account].../*.json", data=data, indent=4)
+
+# or
+import json
+azc.put(path="https://[storage-account].../*.json", data=json.dumps(data, indent=4)) 
 ```
 
 ### enumerating or checking if file exists
@@ -99,7 +105,7 @@ file_list = azc.ls("https://[storage-account].../")
 is_exists = azc.exists("https://[storage-account].../*.csv")
 ```
 
-### remove, copy files
+### remove, copy files, etc...
 
 ```python
 import azfs
@@ -113,6 +119,10 @@ is_copied = azc.cp(src_path=src_path, dst_path=dst_path, overwrite=True)
 
 # remove the file
 is_removed = azc.rm(path=src_path)
+
+# get file meta info
+data = azc.info(path=src_path)
+
 ```
 
 
