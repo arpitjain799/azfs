@@ -1,16 +1,7 @@
 from azfs.clients.client_interface import ClientInterface
-from azfs.utils import import_optional_dependency
 from typing import Union
-import functools
 from azure.identity import DefaultAzureCredential
-
-
-# import filedatalake optionally
-import_queue = functools.partial(
-    import_optional_dependency,
-    "azure.storage.queue",
-    "To handle Azure Queue storage, the package is required.",
-    "azure-storage-queue")
+from azure.storage.queue import QueueClient
 
 
 class AzQueueClient(ClientInterface):
@@ -20,15 +11,12 @@ class AzQueueClient(ClientInterface):
             storage_account_url: str,
             file_system: str,
             file_path: str,
-            credential: Union[DefaultAzureCredential, str]):
-        # import queue optionally
-        _queue = import_queue()
-        file_client = _queue.QueueClient(
-            storage_account_url,
-            file_system,
-            file_path,
+            credential: Union[DefaultAzureCredential, str]) -> QueueClient:
+        queue_client = QueueClient(
+            account_url=storage_account_url,
+            queue_name=file_system,
             credential=credential)
-        return file_client
+        return queue_client
 
     def _get_service_client(self):
         raise NotImplementedError
@@ -41,13 +29,13 @@ class AzQueueClient(ClientInterface):
         pass
 
     def _ls(self, path: str, file_path: str):
-        pass
+        return self.get_file_client_from_path(path).peek_messages(16)
 
     def _get(self, path: str):
         pass
 
     def _put(self, path: str, data):
-        pass
+        return self.get_file_client_from_path(path).send_message(data)
 
     def _info(self, path: str):
         pass

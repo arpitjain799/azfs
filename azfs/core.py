@@ -91,8 +91,12 @@ class AzFileClient:
         """
         _, account_kind, _, file_path = BlobPathDecoder(path).get_with_url()
         file_list = AzfsClient.get(account_kind, credential=self.credential).ls(path=path, file_path=file_path)
-
-        return ls_filter(file_path_list=file_list, file_path=file_path)
+        if account_kind in ["dfs", "blob"]:
+            return ls_filter(file_path_list=file_list, file_path=file_path)
+        elif account_kind in ["queue"]:
+            return file_list
+        else:
+            return []
 
     def walk(self, path: str, max_depth=2):
         pass

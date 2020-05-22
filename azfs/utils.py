@@ -21,7 +21,7 @@ class BlobPathDecoder:
 
     @staticmethod
     def _decode_path_storage_account_name(path: str) -> (str, str, str, str):
-        url_pattern = r"https://([a-z0-9]*).(dfs|blob).core.windows.net/(.*)"
+        url_pattern = r"https://([a-z0-9]*).(dfs|blob|queue).core.windows.net/(.*)"
         result = re.match(url_pattern, path)
         if result:
             storage_account_name = result.group(1)
@@ -32,7 +32,7 @@ class BlobPathDecoder:
 
     @staticmethod
     def _decode_path_container_name(path: str) -> (str, str, str, str):
-        url_pattern = r"https://([a-z0-9]*).(dfs|blob).core.windows.net/(.*?)/"
+        url_pattern = r"https://([a-z0-9]*).(dfs|blob|queue).core.windows.net/(.*?)/"
         result = re.match(url_pattern, path)
         if result:
             storage_account_name = result.group(1)
@@ -43,7 +43,7 @@ class BlobPathDecoder:
 
     @staticmethod
     def _decode_path_blob_name(path: str) -> (str, str, str, str):
-        url_pattern = r"https://([a-z0-9]*).(dfs|blob).core.windows.net/(.*?)/(.+)"
+        url_pattern = r"https://([a-z0-9]*).(dfs|blob|queue).core.windows.net/(.*?)/(.+)"
         result = re.match(url_pattern, path)
         if result:
             storage_account_name = result.group(1)
@@ -55,7 +55,7 @@ class BlobPathDecoder:
 
     @staticmethod
     def _decode_path_without_url(path: str) -> (str, str, str, str):
-        url_pattern = r"(dfs|blob)/([a-z0-9]*)/(.+?)/(.*)"
+        url_pattern = r"(dfs|blob|queue)/([a-z0-9]*)/(.+?)/(.*)"
         result = re.match(url_pattern, path)
         if result:
             storage_account_name = result.group(2)
@@ -69,7 +69,7 @@ class BlobPathDecoder:
     def _decode_path(path: str) -> (str, str, str, str):
         """
         decode input [path] such as
-        * https://([a-z0-9]*).(dfs|blob).core.windows.net/(.*?)/(.*),
+        * https://([a-z0-9]*).(dfs|blob|queue).core.windows.net/(.*?)/(.*),
         * ([a-z0-9]*)/(.+?)/(.*)
 
         dfs: data_lake, blob: blob
