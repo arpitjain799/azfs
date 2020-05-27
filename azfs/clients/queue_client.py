@@ -33,7 +33,7 @@ class AzQueueClient(ClientInterface):
 
     def _get(self, path: str, **kwargs):
         """
-        
+
         :param path:
         :param kwargs:
         :return:
@@ -60,7 +60,17 @@ class AzQueueClient(ClientInterface):
         return self.get_file_client_from_path(path).send_message(data)
 
     def _info(self, path: str):
-        pass
+        """
+        no correspond method to _info()
+        :param path:
+        :return:
+        """
+        raise NotImplementedError
 
     def _rm(self, path: str):
-        pass
+        """
+        no correspond method to _rm()
+        :param path:
+        :return:
+        """
+        raise NotImplementedError
