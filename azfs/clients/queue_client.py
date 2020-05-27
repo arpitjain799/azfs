@@ -31,8 +31,30 @@ class AzQueueClient(ClientInterface):
     def _ls(self, path: str, file_path: str):
         return self.get_file_client_from_path(path).peek_messages(16)
 
-    def _get(self, path: str):
-        pass
+    def _get(self, path: str, **kwargs):
+        """
+        
+        :param path:
+        :param kwargs:
+        :return:
+        """
+        delete_after_receive = True
+        if "delete" in kwargs:
+            delete_after_receive = kwargs['delete']
+        elif "delete_after_receive" in kwargs:
+            delete_after_receive = kwargs['delete_after_receive']
+
+        queue_client = self.get_file_client_from_path(path)
+        # get queue iterator
+        message_itr = queue_client.receive_messages()
+        received_message = next(message_itr)
+        message_id = received_message['id']
+        pop_receipt = received_message['pop_receipt']
+
+        # delete message in queue
+        if delete_after_receive:
+            queue_client.delete_message(message_id, pop_receipt=pop_receipt)
+        return received_message
 
     def _put(self, path: str, data):
         return self.get_file_client_from_path(path).send_message(data)
