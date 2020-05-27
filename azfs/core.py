@@ -205,7 +205,7 @@ class AzFileClient:
     def du(self, path):
         pass
 
-    def _get(self, path: str) -> Union[bytes, str, io.BytesIO]:
+    def _get(self, path: str, **kwargs) -> Union[bytes, str, io.BytesIO]:
         """
         storage accountのタイプによってfile_clientを変更し、データを取得する関数
         特定のファイルを取得する関数
@@ -213,7 +213,7 @@ class AzFileClient:
         :return:
         """
         _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
-        return AzfsClient.get(account_kind, credential=self.credential).get(path=path)
+        return AzfsClient.get(account_kind, credential=self.credential).get(path=path, **kwargs)
 
     def read_csv(self, path: str, **kwargs) -> pd.DataFrame:
         """
