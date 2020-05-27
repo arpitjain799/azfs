@@ -26,7 +26,7 @@ class AzQueueClient(ClientInterface):
             storage_account_url: str,
             file_system: str,
             credential: Union[DefaultAzureCredential, str]):
-        pass
+        raise NotImplementedError
 
     def _ls(self, path: str, file_path: str):
         return self.get_file_client_from_path(path).peek_messages(16)
