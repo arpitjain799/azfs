@@ -95,8 +95,6 @@ class AzFileClient:
             return ls_filter(file_path_list=file_list, file_path=file_path)
         elif account_kind in ["queue"]:
             return file_list
-        else:
-            return []
 
     def walk(self, path: str, max_depth=2):
         pass

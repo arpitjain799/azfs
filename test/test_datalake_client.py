@@ -1,7 +1,9 @@
+import azfs
 from azfs.clients.datalake_client import AzDataLakeClient
 from azure.storage.filedatalake import FileSystemClient, DataLakeFileClient
 
 credential = ""
+azc = azfs.AzFileClient()
 datalake_client = AzDataLakeClient(credential=credential)
 test_file_path = "https://test.dfs.core.windows.net/test/test.csv"
 test_file_ls_path = "https://test.dfs.core.windows.net/test/"
@@ -14,6 +16,10 @@ class BlobMock:
 
 
 def test_blob_info(mocker):
+    # ======================== #
+    # test for datalake_client #
+    # ======================== #
+
     # mock
     func_mock = mocker.MagicMock()
     func_mock.return_value = {
@@ -22,16 +28,33 @@ def test_blob_info(mocker):
             "creation_time": "creation_time",
             "last_modified": "last_modified",
             "etag": "etag",
-            "content_type": "content_type",
-            "type": "file"
+            "content_settings": {
+                "content_type": "content"
+            }
         }
 
     mocker.patch.object(DataLakeFileClient, "get_file_properties", func_mock)
     info = datalake_client.info(path=test_file_path)
     assert "name" in info
 
+    # ===================== #
+    # test for AzFileClient #
+    # ===================== #
+    info = azc.info(path=test_file_path)
+    assert "name" in info
+    size = azc.size(path=test_file_path)
+    assert size == 500
+    check_sum = azc.checksum(path=test_file_path)
+    assert check_sum == "etag"
+    result = azc.isfile(path=test_file_path)
+    assert result
+
 
 def test_blob_upload(mocker):
+    # ======================== #
+    # test for datalake_client #
+    # ======================== #
+
     # mock
     create_file_mock = mocker.MagicMock()
     create_file_mock.return_value = True
@@ -51,6 +74,10 @@ def test_blob_upload(mocker):
 
 
 def test_blob_rm(mocker):
+    # ======================== #
+    # test for datalake_client #
+    # ======================== #
+
     # mock
     func_mock = mocker.MagicMock()
     func_mock.return_value = True
@@ -61,6 +88,10 @@ def test_blob_rm(mocker):
 
 
 def test_blob_ls(mocker):
+    # ======================== #
+    # test for datalake_client #
+    # ======================== #
+
     # mock
     func_mock = mocker.MagicMock()
     func_mock.return_value = [
