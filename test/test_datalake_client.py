@@ -48,6 +48,45 @@ def test_blob_info(mocker):
     assert check_sum == "etag"
     result = azc.isfile(path=test_file_path)
     assert result
+    result = azc.isdir(path=test_file_path)
+    assert not result
+
+
+def test_blob_info_directory(mocker):
+    # ======================== #
+    # test for datalake_client #
+    # ======================== #
+
+    # mock
+    func_mock = mocker.MagicMock()
+    func_mock.return_value = {
+            "name": "test/",
+            "size": 0,
+            "creation_time": "creation_time",
+            "last_modified": "last_modified",
+            "etag": "etag",
+            "metadata": {
+                "hdi_isfolder": "hdi_isfolder"
+            }
+        }
+
+    mocker.patch.object(DataLakeFileClient, "get_file_properties", func_mock)
+    info = datalake_client.info(path=test_file_path)
+    assert "name" in info
+
+    # ===================== #
+    # test for AzFileClient #
+    # ===================== #
+    info = azc.info(path=test_file_path)
+    assert "name" in info
+    size = azc.size(path=test_file_path)
+    assert size == 0
+    check_sum = azc.checksum(path=test_file_path)
+    assert check_sum == "etag"
+    result = azc.isfile(path=test_file_path)
+    assert not result
+    result = azc.isdir(path=test_file_path)
+    assert result
 
 
 def test_blob_upload(mocker):
