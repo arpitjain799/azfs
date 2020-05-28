@@ -84,6 +84,19 @@ azure-storage-blob = ">=12.0,<13.0"
 msrest = ">=0.6.10"
 
 [[package]]
+category = "main"
+description = "Microsoft Azure Azure Queue Storage Client Library for Python"
+name = "azure-storage-queue"
+optional = false
+python-versions = "*"
+version = "12.1.1"
+
+[package.dependencies]
+azure-core = ">=1.2.2,<2.0.0"
+cryptography = ">=2.1.4"
+msrest = ">=0.6.10"
+
+[[package]]
 category = "dev"
 description = "Specifications for callback functions passed in to an API"
 name = "backcall"
@@ -1147,7 +1160,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["jaraco.itertools", "func-timeout"]
 
 [metadata]
-content-hash = "e090f6d58fa868b6697934ff0f0da75208a21c7e4cac4c6739be9db7b9dfa192"
+content-hash = "20310bbb0c44c4231bc987c1700f54040502779110d76e1cd7aeee9d74ebfc41"
 python-versions = "^3.7"
 
 [metadata.files]
@@ -1178,6 +1191,10 @@ azure-storage-blob = [
 azure-storage-file-datalake = [
     {file = "azure-storage-file-datalake-12.0.1.zip", hash = "sha256:4b1b1181ebffcdecf161685882e5c941863d4727a1fd820b43f95ddb5c49fd1f"},
     {file = "azure_storage_file_datalake-12.0.1-py2.py3-none-any.whl", hash = "sha256:511ad649f7ec005419a00c7fc98d95f85dd81017fd8daddf42d47dd10eed7f9a"},
+]
+azure-storage-queue = [
+    {file = "azure-storage-queue-12.1.1.zip", hash = "sha256:08a59a7dcad2fb7980453773ef8ee32a27794f2714522ed83280fa1ad4808959"},
+    {file = "azure_storage_queue-12.1.1-py2.py3-none-any.whl", hash = "sha256:0b528a89856d4ed92bfcd6a6b549377ce9c6932b94ffc175399ed163efa9ffd2"},
 ]
 backcall = [
     {file = "backcall-0.1.0.tar.gz", hash = "sha256:38ecd85be2c1e78f77fd91700c76e14667dc21e2713b63876c0eb901196e01e4"},

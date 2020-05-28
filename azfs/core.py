@@ -91,8 +91,10 @@ class AzFileClient:
         """
         _, account_kind, _, file_path = BlobPathDecoder(path).get_with_url()
         file_list = AzfsClient.get(account_kind, credential=self.credential).ls(path=path, file_path=file_path)
-
-        return ls_filter(file_path_list=file_list, file_path=file_path)
+        if account_kind in ["dfs", "blob"]:
+            return ls_filter(file_path_list=file_list, file_path=file_path)
+        elif account_kind in ["queue"]:
+            return file_list
 
     def walk(self, path: str, max_depth=2):
         pass
@@ -201,7 +203,7 @@ class AzFileClient:
     def du(self, path):
         pass
 
-    def _get(self, path: str) -> Union[bytes, str, io.BytesIO]:
+    def _get(self, path: str, **kwargs) -> Union[bytes, str, io.BytesIO]:
         """
         storage accountのタイプによってfile_clientを変更し、データを取得する関数
         特定のファイルを取得する関数
@@ -209,7 +211,7 @@ class AzFileClient:
         :return:
         """
         _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
-        return AzfsClient.get(account_kind, credential=self.credential).get(path=path)
+        return AzfsClient.get(account_kind, credential=self.credential).get(path=path, **kwargs)
 
     def read_csv(self, path: str, **kwargs) -> pd.DataFrame:
         """

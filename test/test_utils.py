@@ -11,12 +11,20 @@ from azfs.error import (
 class TestBlobPathDecoder:
 
     @pytest.mark.parametrize("path,storage_account_name,account_type,container_name,blob_file", [
+        # blob storage
         ("https://test.blob.core.windows.net/test/test_file.csv", "test", "blob", "test", "test_file.csv"),
         ("https://test.blob.core.windows.net/test/dir/test_file.csv", "test", "blob", "test", "dir/test_file.csv"),
         ("https://test.blob.core.windows.net/test/", "test", "blob", "test", ""),
         ("https://test.blob.core.windows.net/test", "test", "blob", "test", ""),
         ("https://test.blob.core.windows.net/", "test", "blob", "", ""),
         ("blob/test/test/test_file.csv", "test", "blob", "test", "test_file.csv"),
+        # datalake storage
+        ("https://test.dfs.core.windows.net/test/test_file.csv", "test", "dfs", "test", "test_file.csv"),
+        ("https://test.dfs.core.windows.net/test/dir/test_file.csv", "test", "dfs", "test", "dir/test_file.csv"),
+        ("https://test.dfs.core.windows.net/test/", "test", "dfs", "test", ""),
+        ("https://test.dfs.core.windows.net/test", "test", "dfs", "test", ""),
+        ("https://test.dfs.core.windows.net/", "test", "dfs", "", ""),
+        ("dfs/test/test/test_file.csv", "test", "dfs", "test", "test_file.csv"),
     ])
     def test_path_decoder_pass(self, path, storage_account_name, account_type, container_name, blob_file):
         bpd = BlobPathDecoder()
