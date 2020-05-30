@@ -4,6 +4,7 @@
 [![codecov](https://codecov.io/gh/gsy0911/azfs/branch/master/graph/badge.svg)](https://codecov.io/gh/gsy0911/azfs)
 [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/gsy0911/azfs.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/gsy0911/azfs/context:python)
 
+[![PythonVersion](https://img.shields.io/badge/python-3.7-blue.svg)](https://www.python.org/downloads/release/python-377/)
 [![PiPY](https://img.shields.io/badge/pypi-0.1.4-blue.svg)](https://pypi.org/project/azfs/)
 [![Downloads](https://pepy.tech/badge/azfs)](https://pepy.tech/project/azfs) 
 
@@ -46,6 +47,20 @@ azc = azfs.AzFileClient(credential=credential)
 
 Currently, only support [Azure Active Directory (AAD) token credential](https://docs.microsoft.com/azure/storage/common/storage-auth-aad).
 
+#### types of storage account kind
+
+The table blow shows if `azfs` provides read/write functions for the storage. 
+
+
+| account kind | Blob | Data Lake | Queue | File | Table |
+|:--|:--:|:--:|:--:|:--:|:--:|
+| StorageV2 | O | O | O | X | X |
+| StorageV1 | O | O | O | X | X |
+| BlobStorage | O | - | - | - | - |
+
+* O: provides basic functions
+* X: not provides
+* -: storage type unavailable
 
 ### download data
 
@@ -151,13 +166,10 @@ data = azc.info(path=src_path)
 pandas >= "1.0.0"
 azure-identity >= "1.3.1"
 azure-storage-blob >= "12.3.0"
-```
-
-* optional
-
-```
 azure-storage-file-datalake >= "12.0.0"
+azure-storage-queue >= "12.1.1"
 ```
+
 
 ## references
 
