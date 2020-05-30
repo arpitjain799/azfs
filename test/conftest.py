@@ -65,6 +65,28 @@ def _ls(mocker):
 
 
 @pytest.fixture()
+def _ls_for_glob(mocker):
+    """
+    :param mocker:
+    :return:
+    """
+    return_value = [
+        "test1.csv",
+        "test2.csv",
+        "test1.json",
+        "dir1/test1.csv",
+        "dir1/test2.csv",
+        "dir1/test1.json",
+        "dir2/test1.csv",
+        "dir2/test2.csv",
+        "dir2/test1.json",
+    ]
+    func_mock = mocker.MagicMock()
+    func_mock.return_value = return_value
+    yield func_mock
+
+
+@pytest.fixture()
 def _rm(mocker):
     """
     :param mocker:

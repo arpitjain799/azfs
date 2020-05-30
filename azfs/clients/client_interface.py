@@ -1,21 +1,26 @@
-from typing import Union, TypeVar
+from typing import Union
 from azure.identity import DefaultAzureCredential
 import io
 import gzip
 from azfs.utils import BlobPathDecoder
+from azure.storage.blob import (
+    BlobClient,
+    ContainerClient
+)
+from azure.storage.filedatalake import DataLakeFileClient, FileSystemClient
+from azure.storage.queue import QueueClient
+
 
 # define the types
-FileClient = TypeVar(
-    "FileClient",
-    "azure.storage.blob.BlobClient",
-    "azure.storage.filedatalake.DataLakeFileClient",
-    "azure.storage.queue.QueueClient"
-)
-FileSystemClient = TypeVar(
-    "FileSystemClient",
-    "azure.storage.blob.ContainerClient",
-    "azure.storage.filedatalake.FileSystemClient"
-)
+FileClientType = Union[
+    BlobClient,
+    DataLakeFileClient,
+    QueueClient
+]
+FileSystemClientType = Union[
+    ContainerClient,
+    FileSystemClient
+]
 
 
 class ClientInterface:
@@ -35,7 +40,7 @@ class ClientInterface:
             credential: Union[str, DefaultAzureCredential]):
         self.credential = credential
 
-    def get_file_client_from_path(self, path: str) -> FileClient:
+    def get_file_client_from_path(self, path: str) -> FileClientType:
         """
         get file_client from given path
         :param path:
@@ -72,7 +77,7 @@ class ClientInterface:
         """
         raise NotImplementedError
 
-    def get_container_client_from_path(self, path: str) -> FileSystemClient:
+    def get_container_client_from_path(self, path: str) -> FileSystemClientType:
         """
         get container_client from given path
         :param path:
@@ -110,13 +115,13 @@ class ClientInterface:
         """
         raise NotImplementedError
 
-    def get(self, path: str):
+    def get(self, path: str, **kwargs):
         """
         download data from Azure Blob or DataLake.
         :param path:
         :return:
         """
-        file_bytes = self._get(path=path)
+        file_bytes = self._get(path=path, **kwargs)
 
         # gzip圧縮ファイルは一旦ここで展開
         if path.endswith(".gz"):
@@ -128,7 +133,7 @@ class ClientInterface:
             file_to_read = file_bytes
         return file_to_read
 
-    def _get(self, path: str):
+    def _get(self, path: str, **kwargs):
         """
         abstract method to be implemented
         :param path:

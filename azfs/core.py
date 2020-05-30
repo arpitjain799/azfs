@@ -9,6 +9,7 @@ from azfs.utils import (
     ls_filter
 )
 import io
+import re
 
 
 class AzFileClient:
@@ -83,16 +84,25 @@ class AzFileClient:
                 return True
         return False
 
-    def ls(self, path: str):
+    def ls(self, path: str, attach_prefix: bool = False):
         """
         list blob file
         :param path:
+        :param attach_prefix: return full_path if True, return only name
         :return:
         """
         _, account_kind, _, file_path = BlobPathDecoder(path).get_with_url()
         file_list = AzfsClient.get(account_kind, credential=self.credential).ls(path=path, file_path=file_path)
-
-        return ls_filter(file_path_list=file_list, file_path=file_path)
+        if account_kind in ["dfs", "blob"]:
+            file_name_list = ls_filter(file_path_list=file_list, file_path=file_path)
+            if attach_prefix:
+                path = path if path.endswith("/") else f"{path}/"
+                file_full_path_list = [f"{path}{f}" for f in file_name_list]
+                return file_full_path_list
+            else:
+                return file_name_list
+        elif account_kind in ["queue"]:
+            return file_list
 
     def walk(self, path: str, max_depth=2):
         pass
@@ -195,13 +205,33 @@ class AzFileClient:
         except IOError:
             return False
 
-    def glob(self, path: str):
-        pass
+    def glob(self, pattern_path: str):
+        """
+        currently only support * wildcard
+        :param pattern_path: ex: https://<storage_account_name>.blob.core.windows.net/<container>/*/*.csv
+        :return:
+        """
+        if "*" not in pattern_path:
+            raise AzfsInputError("no any `*` in the `pattern_path`")
+        url, account_kind, container_name, file_path = BlobPathDecoder(pattern_path).get_with_url()
+
+        # get container root path
+        base_path = f"{url}/{container_name}/"
+        file_list = AzfsClient.get(account_kind, credential=self.credential).ls(path=base_path, file_path="")
+        if account_kind in ["dfs", "blob"]:
+            # fix pattern_path, in order to avoid matching `/`
+            pattern_path = rf"{pattern_path.replace('*', '([^/])*?')}$"
+            file_full_path_list = [f"{base_path}{f}" for f in file_list]
+            # filter with re.match
+            matched_full_path_list = [f for f in file_full_path_list if re.match(pattern_path, f)]
+            return matched_full_path_list
+        elif account_kind in ["queue"]:
+            raise NotImplementedError
 
     def du(self, path):
         pass
 
-    def _get(self, path: str) -> Union[bytes, str, io.BytesIO]:
+    def _get(self, path: str, **kwargs) -> Union[bytes, str, io.BytesIO]:
         """
         storage accountのタイプによってfile_clientを変更し、データを取得する関数
         特定のファイルを取得する関数
@@ -209,7 +239,7 @@ class AzFileClient:
         :return:
         """
         _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
-        return AzfsClient.get(account_kind, credential=self.credential).get(path=path)
+        return AzfsClient.get(account_kind, credential=self.credential).get(path=path, **kwargs)
 
     def read_csv(self, path: str, **kwargs) -> pd.DataFrame:
         """

@@ -1,16 +1,7 @@
 from azfs.clients.client_interface import ClientInterface
-from azfs.utils import import_optional_dependency
 from typing import Union
-import functools
 from azure.identity import DefaultAzureCredential
-
-
-# import filedatalake optionally
-import_filedatalake = functools.partial(
-    import_optional_dependency,
-    "azure.storage.filedatalake",
-    "To handle Azure Datalake storage, the package is required.",
-    "azure-storage-file-datalake")
+from azure.storage.filedatalake import DataLakeFileClient, FileSystemClient
 
 
 class AzDataLakeClient(ClientInterface):
@@ -21,8 +12,7 @@ class AzDataLakeClient(ClientInterface):
             file_system: str,
             file_path: str,
             credential: Union[DefaultAzureCredential, str]):
-        filedatalake = import_filedatalake()
-        file_client = filedatalake.DataLakeFileClient(
+        file_client = DataLakeFileClient(
             storage_account_url,
             file_system,
             file_path,
@@ -37,8 +27,7 @@ class AzDataLakeClient(ClientInterface):
             storage_account_url: str,
             file_system: str,
             credential: Union[DefaultAzureCredential, str]):
-        filedatalake = import_filedatalake()
-        file_system = filedatalake.FileSystemClient(
+        file_system = FileSystemClient(
             account_url=storage_account_url,
             file_system_name=file_system,
             credential=credential)
@@ -49,7 +38,7 @@ class AzDataLakeClient(ClientInterface):
             [f.name for f in self.get_container_client_from_path(path=path).get_paths(path=file_path, recursive=True)]
         return file_list
 
-    def _get(self, path: str):
+    def _get(self, path: str, **kwargs):
         file_bytes = self.get_file_client_from_path(path).download_file().readall()
         return file_bytes
 
