@@ -31,10 +31,10 @@ $ pip install azfs
 import azfs
 from azure.identity import DefaultAzureCredential
 
-# credential is not required if your environment is on ADD
+# credential is not required if your environment is on AAD
 azc = azfs.AzFileClient()
 
-# credential is required if your environment is not on ADD
+# credential is required if your environment is not on AAD
 credential = "[your storage account credential]"
 # or
 credential = DefaultAzureCredential()
@@ -44,7 +44,7 @@ azc = azfs.AzFileClient(credential=credential)
 
 #### types of authorization
 
-Currently, only support [Azure Active Directory (ADD) token credential](https://docs.microsoft.com/azure/storage/common/storage-auth-aad).
+Currently, only support [Azure Active Directory (AAD) token credential](https://docs.microsoft.com/azure/storage/common/storage-auth-aad).
 
 
 ### download data
@@ -56,14 +56,23 @@ import azfs
 import pandas as pd
 
 azc = azfs.AzFileClient()
+csv_path = "https://[storage-account].../*.csv"
+json_path = "https://[storage-account].../*.json"
+data_path = "https://[storage-account].../*.another_format"
 
 # read csv as pd.DataFrame
-df = azc.read_csv("https://[storage-account].../*.csv")
+df = azc.read_csv(csv_path, index_col=0)
 # or
 with azc:
-    df = pd.read_csv_az("https://[storage-account].../*.csv")
+    df = pd.read_csv_az(csv_path, header=None)
 
-data = azc.read_json("https://[storage-account].../*.json")
+# read json
+data = azc.read_json(json_path)
+
+# also get data directory
+data = azc.get(data_path)
+# or, (`download` is an alias for `get`) 
+data = azc.download(data_path)
 ```
 
 ### upload data
@@ -73,22 +82,28 @@ import azfs
 import pandas as pd
 
 azc = azfs.AzFileClient()
+csv_path = "https://[storage-account].../*.csv"
+json_path = "https://[storage-account].../*.json"
+data_path = "https://[storage-account].../*.another_format"
+
 
 df = pd.DataFrame()
 data = {"example": "data"}
 
 # write csv
-azc.write_csv(path="https://[storage-account].../*.csv", df=df)
+azc.write_csv(path=csv_path, df=df)
 # or
 with azc:
-    df.to_csv_az(path="https://[storage-account].../*.csv", index=False)
+    df.to_csv_az(path=csv_path, index=False)
 
 # read json as dict
-azc.write_json(path="https://[storage-account].../*.json", data=data, indent=4)
+azc.write_json(path=json_path, data=data, indent=4)
 
-# or
+# also put data directory
 import json
-azc.put(path="https://[storage-account].../*.json", data=json.dumps(data, indent=4)) 
+azc.put(path=json_path, data=json.dumps(data, indent=4)) 
+# or, (`upload` is an alias for `put`)
+azc.upload(path=json_path, data=json.dumps(data, indent=4))
 ```
 
 ### enumerating or checking if file exists
@@ -98,8 +113,10 @@ import azfs
 
 azc = azfs.AzFileClient()
 
-# get file list of blob
-file_list = azc.ls("https://[storage-account].../")
+# get file_name list of blob
+file_name_list = azc.ls("https://[storage-account].../{container_name}")
+# or if set `attach_prefix` True, get full_path list of blob
+file_full_path_list = azc.ls("https://[storage-account].../{container_name}", attach_prefix=True)
 
 # check if file exists
 is_exists = azc.exists("https://[storage-account].../*.csv")
