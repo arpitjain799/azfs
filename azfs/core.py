@@ -83,16 +83,24 @@ class AzFileClient:
                 return True
         return False
 
-    def ls(self, path: str):
+    def ls(self, path: str, attach_prefix: bool = False):
         """
         list blob file
         :param path:
+        :param attach_prefix: return full_path if True, return only name
         :return:
         """
         _, account_kind, _, file_path = BlobPathDecoder(path).get_with_url()
-        file_list = AzfsClient.get(account_kind, credential=self.credential).ls(path=path, file_path=file_path)
+        file_list = AzfsClient.get(account_kind, credential=self.credential) \
+            .ls(path=path, file_path=file_path)
         if account_kind in ["dfs", "blob"]:
-            return ls_filter(file_path_list=file_list, file_path=file_path)
+            file_name_list = ls_filter(file_path_list=file_list, file_path=file_path)
+            if attach_prefix:
+                path = path if path.endswith("/") else f"{path}/"
+                file_full_path_list = [f"{path}{f}" for f in file_name_list]
+                return file_full_path_list
+            else:
+                return file_name_list
         elif account_kind in ["queue"]:
             return file_list
 
