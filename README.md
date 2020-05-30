@@ -12,7 +12,7 @@ AzFS is to provide convenient Python read/write functions for Azure Storage Acco
 
 azfs can
 
-* list files in blob,
+* list files in blob (also with wildcard `*`),
 * check if file exists,
 * read csv as pd.DataFrame, and json as dict from blob,
 * write pd.DataFrame as csv, and dict as json to blob,
@@ -121,7 +121,7 @@ azc.put(path=json_path, data=json.dumps(data, indent=4))
 azc.upload(path=json_path, data=json.dumps(data, indent=4))
 ```
 
-### enumerating or checking if file exists
+### enumerating(ls, glob) or checking if file exists
 
 ```python
 import azfs
@@ -132,6 +132,13 @@ azc = azfs.AzFileClient()
 file_name_list = azc.ls("https://[storage-account].../{container_name}")
 # or if set `attach_prefix` True, get full_path list of blob
 file_full_path_list = azc.ls("https://[storage-account].../{container_name}", attach_prefix=True)
+
+# find specific file with `*`
+file_full_path_list = azc.glob("https://[storage-account].../{container_name}/*.csv")
+# also search deeper directory
+file_full_path_list = azc.glob("https://[storage-account].../{container_name}/*/*/*.csv")
+# or if the directory starts with `a`
+file_full_path_list = azc.glob("https://[storage-account].../{container_name}/a*/*.csv")
 
 # check if file exists
 is_exists = azc.exists("https://[storage-account].../*.csv")
@@ -159,8 +166,6 @@ data = azc.info(path=src_path)
 
 
 ## dependencies
-
-* required
 
 ```
 pandas >= "1.0.0"
