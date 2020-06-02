@@ -1,4 +1,25 @@
 import setuptools
+import os
+
+
+def get_version(init_file_path):
+    version_line = list(
+        filter(lambda l: l.startswith('VERSION'), open(init_file_path))
+    )[0]
+
+    # eval is required to convert from string to tuple,
+    # because VERSION defined in __init__.py is tuple
+    version_tuple = eval(version_line.split('=')[-1])
+
+    # join with dot
+    return ".".join(map(str, version_tuple))
+
+
+# get __version__ from __init__.py
+init = os.path.join(
+    os.path.dirname(__file__), 'azfs', '__init__.py'
+)
+VERSION = get_version(init_file_path=init)
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -6,7 +27,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="azfs",
-    version="0.1.5",
+    version=VERSION,
     author="gsy0911",
     author_email="yoshiki0911@gmail.com",
     description="AzFS is to provide convenient Python read/write functions for Azure Storage Account.",
@@ -15,7 +36,7 @@ setuptools.setup(
     url="https://github.com/gsy0911/azfs",
     packages=setuptools.find_packages(),
     install_requires=[
-        "pandas>=1.0.0",
+        "pandas",
         "azure-identity>=1.3.1",
         "azure-storage-blob>=12.3.0",
         "azure-storage-file-datalake>=12.0.0",
@@ -27,5 +48,5 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires='>=3.7',
+    python_requires='>=3.6',
 )
