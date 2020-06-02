@@ -168,7 +168,7 @@ data = azc.info(path=src_path)
 ## dependencies
 
 ```
-pandas >= "1.0.0"
+pandas
 azure-identity >= "1.3.1"
 azure-storage-blob >= "12.3.0"
 azure-storage-file-datalake >= "12.0.0"
