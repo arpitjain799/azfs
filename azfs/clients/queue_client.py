@@ -74,3 +74,6 @@ class AzQueueClient(ClientInterface):
         :return:
         """
         raise NotImplementedError
+
+    def _mkdir(self, path: str):
+        raise NotImplementedError

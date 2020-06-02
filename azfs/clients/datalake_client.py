@@ -55,3 +55,6 @@ class AzDataLakeClient(ClientInterface):
     def _rm(self, path: str):
         self.get_file_client_from_path(path=path).delete_file()
         return True
+
+    def _mkdir(self, path: str):
+        self.get_container_client_from_path(path=path).create_file_system()
