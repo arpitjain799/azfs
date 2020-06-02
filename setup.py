@@ -36,7 +36,7 @@ setuptools.setup(
     url="https://github.com/gsy0911/azfs",
     packages=setuptools.find_packages(),
     install_requires=[
-        "pandas>=1.0.0",
+        "pandas",
         "azure-identity>=1.3.1",
         "azure-storage-blob>=12.3.0",
         "azure-storage-file-datalake>=12.0.0",
@@ -48,5 +48,5 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires='>=3.7',
+    python_requires='>=3.6',
 )

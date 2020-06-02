@@ -4,7 +4,7 @@
 [![codecov](https://codecov.io/gh/gsy0911/azfs/branch/master/graph/badge.svg)](https://codecov.io/gh/gsy0911/azfs)
 [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/gsy0911/azfs.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/gsy0911/azfs/context:python)
 
-[![PythonVersion](https://img.shields.io/badge/python-3.7-blue.svg)](https://www.python.org/downloads/release/python-377/)
+[![PythonVersion](https://img.shields.io/badge/python-3.6|3.7|3.8-blue.svg)](https://www.python.org/downloads/release/python-377/)
 [![PiPY](https://img.shields.io/badge/pypi-0.1.5-blue.svg)](https://pypi.org/project/azfs/)
 [![Downloads](https://pepy.tech/badge/azfs)](https://pepy.tech/project/azfs) 
 
@@ -168,7 +168,7 @@ data = azc.info(path=src_path)
 ## dependencies
 
 ```
-pandas >= "1.0.0"
+pandas
 azure-identity >= "1.3.1"
 azure-storage-blob >= "12.3.0"
 azure-storage-file-datalake >= "12.0.0"
