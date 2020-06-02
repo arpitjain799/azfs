@@ -1,4 +1,22 @@
 import setuptools
+import os
+
+
+def get_version(version_tuple):
+    return ".".join(map(str, version_tuple))
+
+
+init = os.path.join(
+    os.path.dirname(__file__), 'azfs', '__init__.py'
+)
+
+version_line = list(
+    filter(lambda l: l.startswith('VERSION'), open(init))
+)[0]
+
+# eval is required to convert from string to tuple,
+# because VERSION defined in __init__.py is tuple
+VERSION = get_version(eval(version_line.split('=')[-1]))
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
