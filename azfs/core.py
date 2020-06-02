@@ -221,9 +221,10 @@ class AzFileClient:
         if account_kind in ["dfs", "blob"]:
             # fix pattern_path, in order to avoid matching `/`
             pattern_path = rf"{pattern_path.replace('*', '([^/])*?')}$"
+            pattern = re.compile(pattern_path)
             file_full_path_list = [f"{base_path}{f}" for f in file_list]
-            # filter with re.match
-            matched_full_path_list = [f for f in file_full_path_list if re.match(pattern_path, f)]
+            # filter with pattern.match
+            matched_full_path_list = [f for f in file_full_path_list if pattern.match(f)]
             return matched_full_path_list
         elif account_kind in ["queue"]:
             raise NotImplementedError
