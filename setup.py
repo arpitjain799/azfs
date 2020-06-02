@@ -2,7 +2,7 @@ import setuptools
 import os
 
 
-def get_version(init_file_path: str):
+def get_version(init_file_path):
     version_line = list(
         filter(lambda l: l.startswith('VERSION'), open(init_file_path))
     )[0]
