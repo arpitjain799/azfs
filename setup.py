@@ -51,7 +51,8 @@ setuptools.setup(
         "Development Status :: 3 - Alpha",
         "Operating System :: OS Independent",
         "Intended Audience :: Developers",
-        "License :: OSI Approved :: MIT License",
+        "License :: OSI Approved :: MIT License"
     ],
     python_requires='>=3.6',
+    keywords=["Azure", "StorageAccount", "Blob", "DataLake", "Queue"]
 )
