@@ -130,6 +130,8 @@ def _ls_get_file_name(file_path_list: list, file_path: str):
     """
     filtered_file_path_list = []
     if not file_path == "":
+        # check if file_path endswith `/`
+        file_path = file_path if not file_path.endswith("/") else file_path[:-1]
         file_path_pattern = rf"({file_path}/)(.*)"
         for fp in file_path_list:
             result = re.match(file_path_pattern, fp)
@@ -149,6 +151,8 @@ def _ls_get_folder_name(file_path_list: list, file_path: str):
     """
     folders_in_file_path = []
     if not file_path == "":
+        # check if file_path endswith `/`
+        file_path = file_path if not file_path.endswith("/") else file_path[:-1]
         file_path_pattern = rf"({file_path}/)(.*?/)(.*)"
         for fp in file_path_list:
             result = re.match(file_path_pattern, fp)
