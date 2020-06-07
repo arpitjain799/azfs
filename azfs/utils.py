@@ -1,5 +1,4 @@
 from typing import Union
-import importlib
 import re
 from azfs.error import (
     AzfsInputError
@@ -21,7 +20,7 @@ class BlobPathDecoder:
 
     @staticmethod
     def _decode_path_storage_account_name(path: str) -> (str, str, str, str):
-        url_pattern = r"https://([a-z0-9]*).(dfs|blob|queue).core.windows.net/(.*)"
+        url_pattern = r"https://([a-z0-9]*).(dfs|blob|queue).core.windows.net/([^/.]*)$"
         result = re.match(url_pattern, path)
         if result:
             storage_account_name = result.group(1)
@@ -32,7 +31,7 @@ class BlobPathDecoder:
 
     @staticmethod
     def _decode_path_container_name(path: str) -> (str, str, str, str):
-        url_pattern = r"https://([a-z0-9]*).(dfs|blob|queue).core.windows.net/(.*?)/"
+        url_pattern = r"https://([a-z0-9]*).(dfs|blob|queue).core.windows.net/([^/.]*?)/$"
         result = re.match(url_pattern, path)
         if result:
             storage_account_name = result.group(1)
@@ -130,6 +129,8 @@ def _ls_get_file_name(file_path_list: list, file_path: str):
     """
     filtered_file_path_list = []
     if not file_path == "":
+        # check if file_path endswith `/`
+        file_path = file_path if not file_path.endswith("/") else file_path[:-1]
         file_path_pattern = rf"({file_path}/)(.*)"
         for fp in file_path_list:
             result = re.match(file_path_pattern, fp)
@@ -149,6 +150,8 @@ def _ls_get_folder_name(file_path_list: list, file_path: str):
     """
     folders_in_file_path = []
     if not file_path == "":
+        # check if file_path endswith `/`
+        file_path = file_path if not file_path.endswith("/") else file_path[:-1]
         file_path_pattern = rf"({file_path}/)(.*?/)(.*)"
         for fp in file_path_list:
             result = re.match(file_path_pattern, fp)
@@ -161,27 +164,3 @@ def _ls_get_folder_name(file_path_list: list, file_path: str):
             if result:
                 folders_in_file_path.append(result.group(1))
     return list(set(folders_in_file_path))
-
-# =============== #
-# optional import #
-# =============== #
-
-
-def import_optional_dependency(name: str, extra: str = "", pypi_name: str = ""):
-    """
-    import package dynamically.
-    any package can import anywhere, since the package imported is kept singleton.
-    :param name: import package name
-    :param extra: message to be shown when raise ImportError
-    :param pypi_name: name for pip install
-    :return:
-    """
-    msg = (
-        f"Missing optional dependency '{name}'. {extra} "
-        f"Use pip or conda to install {pypi_name}."
-    )
-    try:
-        module = importlib.import_module(name)
-    except ImportError:
-        raise ImportError(msg) from None
-    return module

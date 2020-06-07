@@ -45,8 +45,14 @@ setuptools.setup(
     license="MIT",
     classifiers=[
         "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Development Status :: 3 - Alpha",
         "Operating System :: OS Independent",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: MIT License"
     ],
     python_requires='>=3.6',
+    keywords=["Azure", "StorageAccount", "Blob", "DataLake", "Queue"]
 )
