@@ -1,5 +1,4 @@
 from typing import Union
-import importlib
 import re
 from azfs.error import (
     AzfsInputError
