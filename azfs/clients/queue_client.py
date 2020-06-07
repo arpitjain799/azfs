@@ -48,16 +48,19 @@ class AzQueueClient(ClientInterface):
         queue_client = self.get_file_client_from_path(path)
         # get queue iterator
         message_itr = queue_client.receive_messages()
-        received_message = next(message_itr)
-        message_id = received_message['id']
-        pop_receipt = received_message['pop_receipt']
-        # decode with base64
-        received_message['content'] = base64.b64decode(received_message['content'].encode('utf-8')).decode('utf-8')
+        try:
+            received_message = next(message_itr)
+            message_id = received_message['id']
+            pop_receipt = received_message['pop_receipt']
+            # decode with base64
+            received_message['content'] = base64.b64decode(received_message['content'].encode('utf-8')).decode('utf-8')
 
-        # delete message in queue
-        if delete_after_receive:
-            queue_client.delete_message(message_id, pop_receipt=pop_receipt)
-        return received_message
+            # delete message in queue
+            if delete_after_receive:
+                queue_client.delete_message(message_id, pop_receipt=pop_receipt)
+            return received_message
+        except StopIteration:
+            return {"status": "error", "message": "queue not found"}
 
     def _put(self, path: str, data):
         # encode with base64
