@@ -267,7 +267,7 @@ class AzFileClient:
         output pandas dataframe to csv file in Datalake storage.
         Note: Unavailable for large loop processing!
         """
-        csv_str = df.to_csv(encoding="utf-8", **kwargs)
+        csv_str = df.to_csv(**kwargs).encode("utf-8")
         return self._put(path=path, data=csv_str)
 
     def read_json(self, path: str, **kwargs) -> dict:
