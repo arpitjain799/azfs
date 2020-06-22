@@ -1,4 +1,5 @@
 import pytest
+from azure.core.exceptions import ResourceNotFoundError
 from azfs.clients.blob_client import AzBlobClient
 from azfs.clients.datalake_client import AzDataLakeClient
 from azfs.clients.client_interface import ClientInterface
@@ -250,8 +251,8 @@ class TestRm:
 
 
 class TestExists:
-    def test_blob_exists(self, mocker, _ls, var_azc):
-        mocker.patch.object(AzBlobClient, "_ls", _ls)
+    def test_blob_exists(self, mocker, _get_csv, var_azc):
+        mocker.patch.object(AzBlobClient, "_get", _get_csv)
 
         # the file below is not exists
         path = "https://testazfs.blob.core.windows.net/test_caontainer/test1.csv"
@@ -259,13 +260,16 @@ class TestExists:
         result = var_azc.exists(path=path)
         assert result
 
+        # set to raise exception
+        _get_csv.side_effect = ResourceNotFoundError
+        mocker.patch.object(AzBlobClient, "_get", _get_csv)
         # the file below is not exists
         path = "https://testazfs.blob.core.windows.net/test_caontainer/test3.csv"
         result = var_azc.exists(path=path)
         assert not result
 
-    def test_dfs_exists(self, mocker, _ls, var_azc):
-        mocker.patch.object(AzDataLakeClient, "_ls", _ls)
+    def test_dfs_exists(self, mocker, _get_csv, var_azc):
+        mocker.patch.object(AzDataLakeClient, "_get", _get_csv)
 
         # the file below is not exists
         path = "https://testazfs.dfs.core.windows.net/test_caontainer/test1.csv"
@@ -273,6 +277,9 @@ class TestExists:
         result = var_azc.exists(path=path)
         assert result
 
+        # set to raise exception
+        _get_csv.side_effect = ResourceNotFoundError
+        mocker.patch.object(AzDataLakeClient, "_get", _get_csv)
         # the file below is not exists
         path = "https://testazfs.dfs.core.windows.net/test_caontainer/test3.csv"
         result = var_azc.exists(path=path)
