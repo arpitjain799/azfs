@@ -1,15 +1,16 @@
-import pandas as pd
+import io
+import re
+from typing import Union
 import json
+import pandas as pd
 from azure.identity import DefaultAzureCredential
+from azure.core.exceptions import ResourceNotFoundError
 from azfs.clients import AzfsClient
 from azfs.error import AzfsInputError
-from typing import Union
 from azfs.utils import (
     BlobPathDecoder,
     ls_filter
 )
-import io
-import re
 
 
 class AzFileClient:
@@ -75,14 +76,12 @@ class AzFileClient:
         return inner
 
     def exists(self, path: str) -> bool:
-        # 親パスの部分を取得
-        parent_path = path.rsplit("/", 1)[0]
-        file_name = path.rsplit("/", 1)[1]
-        file_list = self.ls(parent_path)
-        if file_list:
-            if file_name in file_list:
-                return True
-        return False
+        try:
+            _ = self._get(path=path)
+        except ResourceNotFoundError:
+            return False
+        else:
+            return True
 
     def ls(self, path: str, attach_prefix: bool = False):
         """
@@ -267,7 +266,7 @@ class AzFileClient:
         output pandas dataframe to csv file in Datalake storage.
         Note: Unavailable for large loop processing!
         """
-        csv_str = df.to_csv(encoding="utf-8", **kwargs)
+        csv_str = df.to_csv(**kwargs).encode("utf-8")
         return self._put(path=path, data=csv_str)
 
     def read_json(self, path: str, **kwargs) -> dict:
