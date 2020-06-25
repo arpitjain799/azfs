@@ -31,31 +31,47 @@ class BlobPathDecoder:
     def _decode_path_blob_name(path: str) -> (str, str, str, str):
         result = re.match(BlobPathDecoder._BLOB_URL_PATTERN, path)
         if result:
-            # if finding regex-pattern with ?P<name>, `None` appears in value
-            # so replace None to ""
-            result_dict = {k: (v if v is not None else "") for k, v in result.groupdict().items()}
-            # get specified key
-            storage_account_name = result_dict["storage_account"]
-            account_type = result_dict["storage_type"]
-            container_name = result_dict["container"]
-            blob_name = result_dict["blob"]
-            return storage_account_name, account_type, container_name, blob_name
+            return BlobPathDecoder._decode_pattern_block_dict(result.groupdict())
         raise AzfsInputError(f"not matched with {BlobPathDecoder._BLOB_URL_PATTERN}")
 
     @staticmethod
     def _decode_path_without_url(path: str) -> (str, str, str, str):
         result = re.match(BlobPathDecoder._SIMPLE_PATTERN, path)
         if result:
-            # if finding regex-pattern with ?P<name>, `None` appears in value
-            # so replace None to ""
-            result_dict = {k: (v if v is not None else "") for k, v in result.groupdict().items()}
-            # get specified key
-            storage_account_name = result_dict["storage_account"]
-            account_type = result_dict["storage_type"]
-            container_name = result_dict["container"]
-            blob_name = result_dict["blob"]
-            return storage_account_name, account_type, container_name, blob_name
+            return BlobPathDecoder._decode_pattern_block_dict(result.groupdict())
         raise AzfsInputError(f"not matched with {BlobPathDecoder._SIMPLE_PATTERN}")
+
+    @staticmethod
+    def _decode_pattern_block_dict(pattern_block_dict: dict) -> (str, str, str, str):
+        """
+
+        Args:
+            pattern_block_dict:
+
+        Returns:
+            tuple of str
+
+        Examples:
+            block_dict = {
+                'storage_account': 'test',
+                'storage_type': 'blob',
+                'container': '',
+                'blob': None
+            }
+            
+            BlobPathDecoder._decode_pattern_block_dict(pattern_block_dict=block_dict)
+            (test, blob, "", "")
+
+        """
+        # if finding regex-pattern with ?P<name>, `None` appears in value
+        # so replace None to ""
+        result_dict = {k: (v if v is not None else "") for k, v in pattern_block_dict.items()}
+        # get specified key
+        storage_account_name = result_dict["storage_account"]
+        account_type = result_dict["storage_type"]
+        container_name = result_dict["container"]
+        blob_name = result_dict["blob"]
+        return storage_account_name, account_type, container_name, blob_name
 
     @staticmethod
     def _decode_path(path: str) -> (str, str, str, str):
