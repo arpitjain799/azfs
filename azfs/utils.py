@@ -6,9 +6,14 @@ from azfs.error import (
 
 
 class BlobPathDecoder:
-    STORAGE_ACCOUNT = "(?P<storage_account>[a-z0-9]*)"
-    STORAGE_TYPE = "(?P<storage_type>dfs|blob|queue)"
-    BLOB_URL = f"https://{STORAGE_ACCOUNT}.{STORAGE_TYPE}.core.windows.net"
+    # pattern blocks
+    _STORAGE_ACCOUNT = "(?P<storage_account>[a-z0-9]*)"
+    _STORAGE_TYPE = "(?P<storage_type>dfs|blob|queue)"
+    _CONTAINER = "(?P<container>[^/.]*)"
+    _BLOB = "(?P<blob>.+)"
+    # pattern
+    _BLOB_URL_PATTERN = rf"https://{_STORAGE_ACCOUNT}.{_STORAGE_TYPE}.core.windows.net/{_CONTAINER}?/?{_BLOB}?$"
+    _SIMPLE_PATTERN = rf"/?{_STORAGE_TYPE}/{_STORAGE_ACCOUNT}/{_CONTAINER}/{_BLOB}"
 
     def __init__(self, path: Union[None, str] = None):
         self.storage_account_name = None
@@ -24,8 +29,7 @@ class BlobPathDecoder:
 
     @staticmethod
     def _decode_path_blob_name(path: str) -> (str, str, str, str):
-        url_pattern = rf"{BlobPathDecoder.BLOB_URL}/(?P<container>[^/.]*)?/?(?P<blob>.+)?$"
-        result = re.match(url_pattern, path)
+        result = re.match(BlobPathDecoder._BLOB_URL_PATTERN, path)
         if result:
             # if finding regex-pattern with ?P<name>, `None` appears in value
             # so replace None to ""
@@ -36,19 +40,22 @@ class BlobPathDecoder:
             container_name = result_dict["container"]
             blob_name = result_dict["blob"]
             return storage_account_name, account_type, container_name, blob_name
-        raise AzfsInputError(f"not matched with {url_pattern}")
+        raise AzfsInputError(f"not matched with {BlobPathDecoder._BLOB_URL_PATTERN}")
 
     @staticmethod
     def _decode_path_without_url(path: str) -> (str, str, str, str):
-        url_pattern = r"(dfs|blob|queue)/([a-z0-9]*)/(.+?)/(.*)"
-        result = re.match(url_pattern, path)
+        result = re.match(BlobPathDecoder._SIMPLE_PATTERN, path)
         if result:
-            storage_account_name = result.group(2)
-            account_type = result.group(1)
-            container_name = result.group(3)
-            blob_name = result.group(4)
+            # if finding regex-pattern with ?P<name>, `None` appears in value
+            # so replace None to ""
+            result_dict = {k: (v if v is not None else "") for k, v in result.groupdict().items()}
+            # get specified key
+            storage_account_name = result_dict["storage_account"]
+            account_type = result_dict["storage_type"]
+            container_name = result_dict["container"]
+            blob_name = result_dict["blob"]
             return storage_account_name, account_type, container_name, blob_name
-        raise AzfsInputError(f"not matched with {url_pattern}")
+        raise AzfsInputError(f"not matched with {BlobPathDecoder._SIMPLE_PATTERN}")
 
     @staticmethod
     def _decode_path(path: str) -> (str, str, str, str):
