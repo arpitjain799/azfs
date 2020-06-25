@@ -29,6 +29,17 @@ class BlobPathDecoder:
 
     @staticmethod
     def _decode_path_blob_name(path: str) -> (str, str, str, str):
+        """
+        ex: https://test.dfs.core.windows.net/test/dir/test_file.csv
+        Args:
+            path: decode target path
+
+        Returns:
+            tuple of str
+
+        Raises:
+            AzfsInputError: when pattern not matched
+        """
         result = re.match(BlobPathDecoder._BLOB_URL_PATTERN, path)
         if result:
             return BlobPathDecoder._decode_pattern_block_dict(result.groupdict())
@@ -36,6 +47,17 @@ class BlobPathDecoder:
 
     @staticmethod
     def _decode_path_without_url(path: str) -> (str, str, str, str):
+        """
+        ex: /dfs/test/test/test_file.csv
+        Args:
+            path: decode target path
+
+        Returns:
+            tuple of str
+
+        Raises:
+            AzfsInputError: when pattern not matched
+        """
         result = re.match(BlobPathDecoder._SIMPLE_PATTERN, path)
         if result:
             return BlobPathDecoder._decode_pattern_block_dict(result.groupdict())
@@ -44,7 +66,6 @@ class BlobPathDecoder:
     @staticmethod
     def _decode_pattern_block_dict(pattern_block_dict: dict) -> (str, str, str, str):
         """
-
         Args:
             pattern_block_dict:
 
@@ -58,7 +79,7 @@ class BlobPathDecoder:
                 'container': '',
                 'blob': None
             }
-            
+
             BlobPathDecoder._decode_pattern_block_dict(pattern_block_dict=block_dict)
             (test, blob, "", "")
 
@@ -81,8 +102,14 @@ class BlobPathDecoder:
         * ([a-z0-9]*)/(.+?)/(.*)
 
         dfs: data_lake, blob: blob
-        :param path:
-        :return:
+        Args:
+            path:
+
+        Returns:
+            tuple of str
+
+        Raises:
+            AzfsInputError: when pattern not matched
         """
         function_list = [
             BlobPathDecoder._decode_path_blob_name,
