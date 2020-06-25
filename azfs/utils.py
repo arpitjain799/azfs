@@ -6,6 +6,15 @@ from azfs.error import (
 
 
 class BlobPathDecoder:
+    # pattern blocks
+    _STORAGE_ACCOUNT = "(?P<storage_account>[a-z0-9]*)"
+    _STORAGE_TYPE = "(?P<storage_type>dfs|blob|queue)"
+    _CONTAINER = "(?P<container>[^/.]*)"
+    _BLOB = "(?P<blob>.+)"
+    # pattern
+    _BLOB_URL_PATTERN = rf"https://{_STORAGE_ACCOUNT}.{_STORAGE_TYPE}.core.windows.net/{_CONTAINER}?/?{_BLOB}?$"
+    _SIMPLE_PATTERN = rf"/?{_STORAGE_TYPE}/{_STORAGE_ACCOUNT}/{_CONTAINER}/{_BLOB}"
+
     def __init__(self, path: Union[None, str] = None):
         self.storage_account_name = None
         # blob: blob or data_lake: dfs
@@ -19,50 +28,71 @@ class BlobPathDecoder:
                 path=path)
 
     @staticmethod
-    def _decode_path_storage_account_name(path: str) -> (str, str, str, str):
-        url_pattern = r"https://([a-z0-9]*).(dfs|blob|queue).core.windows.net/([^/.]*)$"
-        result = re.match(url_pattern, path)
-        if result:
-            storage_account_name = result.group(1)
-            account_type = result.group(2)
-            container_name = result.group(3)
-            return storage_account_name, account_type, container_name, ""
-        raise AzfsInputError(f"not matched with {url_pattern}")
-
-    @staticmethod
-    def _decode_path_container_name(path: str) -> (str, str, str, str):
-        url_pattern = r"https://([a-z0-9]*).(dfs|blob|queue).core.windows.net/([^/.]*?)/$"
-        result = re.match(url_pattern, path)
-        if result:
-            storage_account_name = result.group(1)
-            account_type = result.group(2)
-            container_name = result.group(3)
-            return storage_account_name, account_type, container_name, ""
-        raise AzfsInputError(f"not matched with {url_pattern}")
-
-    @staticmethod
     def _decode_path_blob_name(path: str) -> (str, str, str, str):
-        url_pattern = r"https://([a-z0-9]*).(dfs|blob|queue).core.windows.net/(.*?)/(.+)"
-        result = re.match(url_pattern, path)
+        """
+        ex: https://test.dfs.core.windows.net/test/dir/test_file.csv
+        Args:
+            path: decode target path
+
+        Returns:
+            tuple of str
+
+        Raises:
+            AzfsInputError: when pattern not matched
+        """
+        result = re.match(BlobPathDecoder._BLOB_URL_PATTERN, path)
         if result:
-            storage_account_name = result.group(1)
-            account_type = result.group(2)
-            container_name = result.group(3)
-            blob_name = result.group(4)
-            return storage_account_name, account_type, container_name, blob_name
-        raise AzfsInputError(f"not matched with {url_pattern}")
+            return BlobPathDecoder._decode_pattern_block_dict(result.groupdict())
+        raise AzfsInputError(f"not matched with {BlobPathDecoder._BLOB_URL_PATTERN}")
 
     @staticmethod
     def _decode_path_without_url(path: str) -> (str, str, str, str):
-        url_pattern = r"(dfs|blob|queue)/([a-z0-9]*)/(.+?)/(.*)"
-        result = re.match(url_pattern, path)
+        """
+        ex: /dfs/test/test/test_file.csv
+        Args:
+            path: decode target path
+
+        Returns:
+            tuple of str
+
+        Raises:
+            AzfsInputError: when pattern not matched
+        """
+        result = re.match(BlobPathDecoder._SIMPLE_PATTERN, path)
         if result:
-            storage_account_name = result.group(2)
-            account_type = result.group(1)
-            container_name = result.group(3)
-            blob_name = result.group(4)
-            return storage_account_name, account_type, container_name, blob_name
-        raise AzfsInputError(f"not matched with {url_pattern}")
+            return BlobPathDecoder._decode_pattern_block_dict(result.groupdict())
+        raise AzfsInputError(f"not matched with {BlobPathDecoder._SIMPLE_PATTERN}")
+
+    @staticmethod
+    def _decode_pattern_block_dict(pattern_block_dict: dict) -> (str, str, str, str):
+        """
+        Args:
+            pattern_block_dict:
+
+        Returns:
+            tuple of str
+
+        Examples:
+            block_dict = {
+                'storage_account': 'test',
+                'storage_type': 'blob',
+                'container': '',
+                'blob': None
+            }
+
+            BlobPathDecoder._decode_pattern_block_dict(pattern_block_dict=block_dict)
+            (test, blob, "", "")
+
+        """
+        # if finding regex-pattern with ?P<name>, `None` appears in value
+        # so replace None to ""
+        result_dict = {k: (v if v is not None else "") for k, v in pattern_block_dict.items()}
+        # get specified key
+        storage_account_name = result_dict["storage_account"]
+        account_type = result_dict["storage_type"]
+        container_name = result_dict["container"]
+        blob_name = result_dict["blob"]
+        return storage_account_name, account_type, container_name, blob_name
 
     @staticmethod
     def _decode_path(path: str) -> (str, str, str, str):
@@ -72,13 +102,17 @@ class BlobPathDecoder:
         * ([a-z0-9]*)/(.+?)/(.*)
 
         dfs: data_lake, blob: blob
-        :param path:
-        :return:
+        Args:
+            path:
+
+        Returns:
+            tuple of str
+
+        Raises:
+            AzfsInputError: when pattern not matched
         """
         function_list = [
             BlobPathDecoder._decode_path_blob_name,
-            BlobPathDecoder._decode_path_container_name,
-            BlobPathDecoder._decode_path_storage_account_name,
             BlobPathDecoder._decode_path_without_url
         ]
         for func in function_list:
