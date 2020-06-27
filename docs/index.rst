@@ -10,7 +10,8 @@ Welcome to azfs's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-
+   sources/api
+   sources/version_history
 
 Indices and tables
 ==================
