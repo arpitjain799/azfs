@@ -1,6 +1,6 @@
 import io
 import re
-from typing import Union
+from typing import Union, Optional
 import json
 import pandas as pd
 from azure.identity import DefaultAzureCredential
@@ -15,31 +15,35 @@ from azfs.utils import (
 
 class AzFileClient:
     """
-    usage:
 
-    ```
-    import azfs
-    import pandas as pd
+    azfs can
 
-    credential = "[your credential]"
-    azc = azfs.AzFileClient(credential=credential)
+    * list files in blob (also with wildcard *),
+    * check if file exists,
+    * read csv as pd.DataFrame, and json as dict from blob,
+    * write pd.DataFrame as csv, and dict as json to blob,
 
-    path = "your blob file url, starts with https://..."
-    with azc:
-        df = pd.read_csv_az(path)
-
-    with azc:
-        df.to_csv_az(path)
-
-    # ls
-    file_list = azc.ls(path)
-    ```
+    Examples:
+        >>> import azfs
+        >>> import pandas as pd
+        >>> credential = "[your credential]"
+        >>> azc = azfs.AzFileClient()
+        >>> path = "your blob file url, starts with https://..."
+        you can read and write csv file in azure blob storage
+        >>> df = azc.read_csv(path=path)
+        >>> azc.write_csv(path=path, df=df)
+        Using `with` statement, you can use `pandas`-like methods
+        >>> with azc:
+        >>>     df = pd.read_csv_az(path)
+        >>>     df.to_csv_az(path)
+        list files in blob
+        >>> file_list = azc.ls(path)
 
     """
 
     def __init__(
             self,
-            credential: Union[str, DefaultAzureCredential, None] = None):
+            credential: Optional[Union[str, DefaultAzureCredential]] = None):
         """
 
         :param credential: if string, Blob Storage -> Access Keys -> Key
@@ -76,6 +80,25 @@ class AzFileClient:
         return inner
 
     def exists(self, path: str) -> bool:
+        """
+        check if specified file exists or not.
+        Args:
+            path: Azure Blob path URL format, ex: https://testazfs.blob.core.windows.net/test_caontainer/test1.csv
+
+        Returns:
+            True if files exists, otherwise False
+
+        Examples:
+            >>> import azfs
+            >>> azc = azfs.AzFileClient()
+            >>> path = "https://testazfs.blob.core.windows.net/test_caontainer/test1.csv"
+            >>> azc.exists(path=path)
+            True
+            >>> path = "https://testazfs.blob.core.windows.net/test_caontainer/not_exist_test1.csv"
+            >>> azc.exists(path=path)
+            False            
+
+        """
         try:
             _ = self._get(path=path)
         except ResourceNotFoundError:
@@ -85,10 +108,35 @@ class AzFileClient:
 
     def ls(self, path: str, attach_prefix: bool = False):
         """
-        list blob file
-        :param path:
-        :param attach_prefix: return full_path if True, return only name
-        :return:
+        list blob file from blob or dfs.
+        Args:
+            path: Azure Blob path URL format, ex: https://testazfs.blob.core.windows.net/test_caontainer
+            attach_prefix: return full_path if True, return only name
+
+        Returns:
+            list of azure blob files
+
+        Examples:
+            >>> import azfs
+            >>> azc = azfs.AzFileClient()
+            >>> path = "https://testazfs.blob.core.windows.net/test_caontainer"
+            >>> azc.ls(path)
+            [
+                "test1.csv",
+                "test2.csv",
+                "test3.csv",
+                "directory_1",
+                "directory_2"
+            ]
+            >>> azc.ls(path=path, attach_prefix=True)
+            [
+                "https://testazfs.blob.core.windows.net/test_caontainer/test1.csv",
+                "https://testazfs.blob.core.windows.net/test_caontainer/test2.csv",
+                "https://testazfs.blob.core.windows.net/test_caontainer/test3.csv",
+                "https://testazfs.blob.core.windows.net/test_caontainer/directory_1",
+                "https://testazfs.blob.core.windows.net/test_caontainer/directory_2"
+            ]
+
         """
         _, account_kind, _, file_path = BlobPathDecoder(path).get_with_url()
         file_list = AzfsClient.get(account_kind, credential=self.credential).ls(path=path, file_path=file_path)
@@ -109,10 +157,14 @@ class AzFileClient:
     def cp(self, src_path: str, dst_path: str, overwrite=False):
         """
         copy the data from `src_path` to `dst_path`
-        :param src_path:
-        :param dst_path:
-        :param overwrite:
-        :return:
+
+        Args:
+            src_path:
+            dst_path:
+            overwrite:
+
+        Returns:
+
         """
         if src_path == dst_path:
             raise AzfsInputError("src_path and dst_path must be different")
@@ -142,8 +194,27 @@ class AzFileClient:
         * last_modified_time
         * size
         * content_hash(md5)
-        :param path:
-        :return:
+
+        Args:
+            path:
+
+        Returns:
+            dict info of some file
+        Examples:
+            >>> import azfs
+            >>> azc = azfs.AzFileClient()
+            >>> path = "https://testazfs.blob.core.windows.net/test_caontainer/test1.csv"
+            >>> azc.info(path=path)
+            {
+                "name": "test1.csv",
+                "size": "128KB",
+                "creation_time": "",
+                "last_modified": "",
+                "etag": "etag...",
+                "content_type": "",
+                "type": "file"
+            }
+
         """
         _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
         # get info from blob or data-lake storage
@@ -173,22 +244,39 @@ class AzFileClient:
 
     def checksum(self, path: str):
         """
-        raise KeyError if info has no etag.
         Blob and DataLake storage have etag.
-        :param path:
-        :return:
+        Args:
+            path:
+
+        Returns:
+            etag
+        Raises:
+            KeyError: if info has no etag
+
         """
         return self.info(path=path)["etag"]
 
     def size(self, path):
         """
         Size in bytes of file
+
+        Args:
+            path:
+
+        Returns:
+
         """
         return self.info(path).get("size", None)
 
     def isdir(self, path):
         """
         Is this entry directory-like?
+
+        Args:
+            path:
+
+        Returns:
+
         """
         try:
             return self.info(path)["type"] == "directory"
@@ -198,6 +286,12 @@ class AzFileClient:
     def isfile(self, path):
         """
         Is this entry file-like?
+
+        Args:
+            path:
+
+        Returns:
+
         """
         try:
             return self.info(path)["type"] == "file"
@@ -207,8 +301,12 @@ class AzFileClient:
     def glob(self, pattern_path: str):
         """
         currently only support * wildcard
-        :param pattern_path: ex: https://<storage_account_name>.blob.core.windows.net/<container>/*/*.csv
-        :return:
+
+        Args:
+            pattern_path: ex: https://<storage_account_name>.blob.core.windows.net/<container>/*/*.csv
+
+        Returns:
+
         """
         if "*" not in pattern_path:
             raise AzfsInputError("no any `*` in the `pattern_path`")
@@ -235,8 +333,13 @@ class AzFileClient:
         """
         storage accountのタイプによってfile_clientを変更し、データを取得する関数
         特定のファイルを取得する関数
-        :param path:
-        :return:
+
+        Args:
+            path:
+            **kwargs:
+
+        Returns:
+
         """
         _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
         return AzfsClient.get(account_kind, credential=self.credential).get(path=path, **kwargs)
@@ -245,8 +348,13 @@ class AzFileClient:
         """
         blobにあるcsvを読み込み、pd.DataFrameとして取得する関数。
         gzip圧縮にも対応。
-        :param path:
-        :return:
+
+        Args:
+            path:
+            **kwargs:
+
+        Returns:
+
         """
         file_to_read = self._get(path)
         return pd.read_csv(file_to_read, **kwargs)
@@ -254,9 +362,13 @@ class AzFileClient:
     def _put(self, path: str, data) -> bool:
         """
         upload data to blob or data_lake storage account
-        :param path:
-        :param data:
-        :return:
+
+        Args:
+            path:
+            data:
+
+        Returns:
+
         """
         _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
         return AzfsClient.get(account_kind, credential=self.credential).put(path=path, data=data)
@@ -264,7 +376,14 @@ class AzFileClient:
     def write_csv(self, path: str, df: pd.DataFrame, **kwargs) -> bool:
         """
         output pandas dataframe to csv file in Datalake storage.
-        Note: Unavailable for large loop processing!
+
+        Args:
+            path:
+            df:
+            **kwargs:
+
+        Returns:
+
         """
         csv_str = df.to_csv(**kwargs).encode("utf-8")
         return self._put(path=path, data=csv_str)
@@ -272,7 +391,13 @@ class AzFileClient:
     def read_json(self, path: str, **kwargs) -> dict:
         """
         read json file in Datalake storage.
-        Note: Unavailable for large loop processing!
+
+        Args:
+            path:
+            **kwargs:
+
+        Returns:
+
         """
         file_bytes = self._get(path)
         if type(file_bytes) is io.BytesIO:
@@ -282,7 +407,14 @@ class AzFileClient:
     def write_json(self, path: str, data: dict, **kwargs) -> bool:
         """
         output dict to json file in Datalake storage.
-        Note: Unavailable for large loop processing!
+
+        Args:
+            path:
+            data:
+            **kwargs:
+
+        Returns:
+
         """
         return self._put(path=path, data=json.dumps(data, **kwargs))
 
