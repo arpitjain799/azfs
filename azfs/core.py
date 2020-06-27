@@ -36,8 +36,6 @@ class AzFileClient:
         >>> with azc:
         >>>     df = pd.read_csv_az(path)
         >>>     df.to_csv_az(path)
-        list files in blob
-        >>> file_list = azc.ls(path)
 
     """
 
@@ -82,11 +80,12 @@ class AzFileClient:
     def exists(self, path: str) -> bool:
         """
         check if specified file exists or not.
+
         Args:
-            path: Azure Blob path URL format, ex: https://testazfs.blob.core.windows.net/test_caontainer/test1.csv
+            path: Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_caontainer/test1.csv``
 
         Returns:
-            True if files exists, otherwise False
+            ``True`` if files exists, otherwise ``False``
 
         Examples:
             >>> import azfs
@@ -96,7 +95,7 @@ class AzFileClient:
             True
             >>> path = "https://testazfs.blob.core.windows.net/test_caontainer/not_exist_test1.csv"
             >>> azc.exists(path=path)
-            False            
+            False
 
         """
         try:
@@ -109,6 +108,7 @@ class AzFileClient:
     def ls(self, path: str, attach_prefix: bool = False):
         """
         list blob file from blob or dfs.
+
         Args:
             path: Azure Blob path URL format, ex: https://testazfs.blob.core.windows.net/test_caontainer
             attach_prefix: return full_path if True, return only name
@@ -189,6 +189,7 @@ class AzFileClient:
     def info(self, path: str) -> dict:
         """
         get file properties, such as
+
         * name
         * creation_time
         * last_modified_time
@@ -245,6 +246,7 @@ class AzFileClient:
     def checksum(self, path: str):
         """
         Blob and DataLake storage have etag.
+
         Args:
             path:
 
@@ -340,6 +342,15 @@ class AzFileClient:
 
         Returns:
 
+        Examples:
+            >>> import azfs
+            >>> azc = azfs.AzFileClient()
+            >>> path = "https://testazfs.blob.core.windows.net/test_caontainer/test1.csv"
+            you can read csv file in azure blob storage
+            >>> data = azc.get(path=path)
+            `download()` is same method as `get()`
+            >>> data = azc.download(path=path)
+
         """
         _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
         return AzfsClient.get(account_kind, credential=self.credential).get(path=path, **kwargs)
@@ -355,6 +366,16 @@ class AzFileClient:
 
         Returns:
 
+        Examples:
+            >>> import azfs
+            >>> azc = azfs.AzFileClient()
+            >>> path = "https://testazfs.blob.core.windows.net/test_caontainer/test1.csv"
+            you can read and write csv file in azure blob storage
+            >>> df = azc.read_csv(path=path)
+            Using `with` statement, you can use `pandas`-like methods
+            >>> with azc:
+            >>>     df = pd.read_csv_az(path)
+
         """
         file_to_read = self._get(path)
         return pd.read_csv(file_to_read, **kwargs)
@@ -368,6 +389,15 @@ class AzFileClient:
             data:
 
         Returns:
+
+        Examples:
+            >>> import azfs
+            >>> azc = azfs.AzFileClient()
+            >>> path = "https://testazfs.blob.core.windows.net/test_caontainer/test1.csv"
+            you can write file in azure blob storage
+            >>> data = azc.put(path=path)
+            `download()` is same method as `get()`
+            >>> data = azc.upload(path=path)
 
         """
         _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
@@ -383,6 +413,18 @@ class AzFileClient:
             **kwargs:
 
         Returns:
+            pd.DataFrame
+
+        Examples:
+            >>> import azfs
+            >>> azc = azfs.AzFileClient()
+            >>> path = "https://testazfs.blob.core.windows.net/test_caontainer/test1.csv"
+            you can read and write csv file in azure blob storage
+            >>> azc.write_csv(path=path, df=df)
+            Using `with` statement, you can use `pandas`-like methods
+            >>> with azc:
+            >>>     df.to_csv_az(path)
+
 
         """
         csv_str = df.to_csv(**kwargs).encode("utf-8")
@@ -397,6 +439,14 @@ class AzFileClient:
             **kwargs:
 
         Returns:
+            dict
+
+        Examples:
+            >>> import azfs
+            >>> azc = azfs.AzFileClient()
+            >>> path = "https://testazfs.blob.core.windows.net/test_caontainer/test1.json"
+            you can read and write csv file in azure blob storage
+            >>> azc.read_json(path=path)
 
         """
         file_bytes = self._get(path)
@@ -414,6 +464,14 @@ class AzFileClient:
             **kwargs:
 
         Returns:
+            bool
+
+        Examples:
+            >>> import azfs
+            >>> azc = azfs.AzFileClient()
+            >>> path = "https://testazfs.blob.core.windows.net/test_caontainer/test1.json"
+            you can read and write csv file in azure blob storage
+            >>> azc.write_json(path=path, data={"": ""})
 
         """
         return self._put(path=path, data=json.dumps(data, **kwargs))
@@ -423,6 +481,10 @@ class AzFileClient:
     # ===================
 
     get = _get
+    get.__doc__ = _get.__doc__
     download = _get
+    download.__doc__ = _get.__doc__
     put = _put
+    put.__doc__ = _put.__doc__
     upload = _put
+    upload.__doc__ = _put.__doc__
