@@ -42,6 +42,30 @@ Installation
 
    pip install azfs
 
+Limitation
+==========
+
+authorization
+-------------
+
+Currently, only support `Azure Active Directory (AAD) token credential <https://docs.microsoft.com/azure/storage/common/storage-auth-aad>`_.
+
+Not support Connection String, or SAS, etc...
+
+types of storage
+----------------
+
++--------------+------+-----------+-------+------+-------+
+| account kind | Blob | Data Lake | Queue | File | Table |
++==============+======+===========+=======+======+=======+
+| StorageV2    | O    | O         | O     | X    | X     |
++--------------+------+-----------+-------+------+-------+
+| StorageV1    | O    | O         | O     | X    | X     |
++--------------+------+-----------+-------+------+-------+
+| BlobStorage  | O    |           |       |      |       |
++--------------+------+-----------+-------+------+-------+
+
+
 API Usage
 =========
 
