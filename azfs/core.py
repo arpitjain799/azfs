@@ -16,7 +16,7 @@ from azfs.utils import (
 class AzFileClient:
     """
 
-    azfs can
+    AzFileClient is
 
     * list files in blob (also with wildcard *),
     * check if file exists,
@@ -25,17 +25,8 @@ class AzFileClient:
 
     Examples:
         >>> import azfs
-        >>> import pandas as pd
         >>> credential = "[your credential]"
-        >>> azc = azfs.AzFileClient()
-        >>> path = "your blob file url, starts with https://..."
-        you can read and write csv file in azure blob storage
-        >>> df = azc.read_csv(path=path)
-        >>> azc.write_csv(path=path, df=df)
-        Using `with` statement, you can use `pandas`-like methods
-        >>> with azc:
-        >>>     df = pd.read_csv_az(path)
-        >>>     df.to_csv_az(path)
+        >>> azc = azfs.AzFileClient(credential=credential)
 
     """
 
@@ -52,8 +43,9 @@ class AzFileClient:
 
     def __enter__(self):
         """
-        with句でのread_csv_azとto_csv_azの関数追加処理
-        :return:
+        add ``read_csv_az()`` and ``to_csv_az`` to pandas module
+        Returns:
+
         """
         pd.__dict__['read_csv_az'] = self.read_csv
         pd.DataFrame.to_csv_az = self.to_csv(self)
@@ -61,11 +53,15 @@ class AzFileClient:
 
     def __exit__(self, exec_type, exec_value, traceback):
         """
-        with句で追加したread_csv_azとto_csv_azの削除
-        :param exec_type:
-        :param exec_value:
-        :param traceback:
-        :return:
+        remove ``read_csv_az()`` and ``to_csv_az`` from pandas module
+
+        Args:
+            exec_type:
+            exec_value:
+            traceback:
+
+        Returns:
+
         """
         pd.__dict__.pop('read_csv_az')
         pd.DataFrame.to_csv_az = None
@@ -159,8 +155,8 @@ class AzFileClient:
         copy the data from `src_path` to `dst_path`
 
         Args:
-            src_path:
-            dst_path:
+            src_path: Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_caontainer/test1.csv``
+            dst_path: Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_caontainer/test2.csv``
             overwrite:
 
         Returns:
@@ -180,8 +176,12 @@ class AzFileClient:
     def rm(self, path: str) -> bool:
         """
         delete the file in blob
-        :param path:
-        :return:
+
+        Args:
+            path: Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_caontainer/test1.csv``
+
+        Returns:
+
         """
         _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
         return AzfsClient.get(account_kind, credential=self.credential).rm(path=path)
@@ -189,15 +189,10 @@ class AzFileClient:
     def info(self, path: str) -> dict:
         """
         get file properties, such as
-
-        * name
-        * creation_time
-        * last_modified_time
-        * size
-        * content_hash(md5)
+        ``name``,  ``creation_time``, ``last_modified_time``, ``size``, ``content_hash(md5)``.
 
         Args:
-            path:
+            path: Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_caontainer/test1.csv``
 
         Returns:
             dict info of some file
@@ -302,13 +297,51 @@ class AzFileClient:
 
     def glob(self, pattern_path: str):
         """
-        currently only support * wildcard
+        Currently only support * wildcard.
+        By default, ``glob()`` lists specified files with formatted-URL.
 
         Args:
-            pattern_path: ex: https://<storage_account_name>.blob.core.windows.net/<container>/*/*.csv
+            pattern_path: ex: ``https://<storage_account_name>.blob.core.windows.net/<container>/*/*.csv``
 
         Returns:
 
+        Examples:
+            >>> import azfs
+            >>> azc = azfs.AzFileClient()
+            >>> path = "https://testazfs.blob.core.windows.net/test_caontainer"
+            ls() lists all files in some folder like
+            >>> azc.ls(path)
+            [
+                "test1.csv",
+                "test2.csv",
+                "test3.csv",
+                "test1.json",
+                "test2.json",
+                "directory_1",
+                "directory_2"
+            ]
+            glob() lists specified files according to the wildcard, and lists with formatted-URL by default
+            >>> pattern_path = "https://testazfs.blob.core.windows.net/test_caontainer/*.csv"
+            >>> azc.glob(path=path)
+            [
+                "https://testazfs.blob.core.windows.net/test_caontainer/test1.csv",
+                "https://testazfs.blob.core.windows.net/test_caontainer/test2.csv",
+                "https://testazfs.blob.core.windows.net/test_caontainer/test3.csv"
+            ]
+            glob() can use any path
+            >>> pattern_path = "https://testazfs.blob.core.windows.net/test_caontainer/test1.*"
+            >>> azc.glob(path=path)
+            [
+                "https://testazfs.blob.core.windows.net/test_caontainer/test1.csv",
+                "https://testazfs.blob.core.windows.net/test_caontainer/test1.json"
+            ]
+            also deeper folders
+            >>> pattern_path = "https://testazfs.blob.core.windows.net/test_caontainer/*/*.csv"
+            >>> azc.glob(path=path)
+            [
+                "https://testazfs.blob.core.windows.net/test_caontainer/directory_1/deeper_test1.csv",
+                "https://testazfs.blob.core.windows.net/test_caontainer/directory_2/deeper_test2.csv"
+            ]
         """
         if "*" not in pattern_path:
             raise AzfsInputError("no any `*` in the `pattern_path`")
@@ -337,7 +370,7 @@ class AzFileClient:
         特定のファイルを取得する関数
 
         Args:
-            path:
+            path: Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_caontainer/test1.csv``
             **kwargs:
 
         Returns:
@@ -361,13 +394,14 @@ class AzFileClient:
         gzip圧縮にも対応。
 
         Args:
-            path:
+            path: Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_caontainer/test1.csv``
             **kwargs:
 
         Returns:
 
         Examples:
             >>> import azfs
+            >>> import pandas as pd
             >>> azc = azfs.AzFileClient()
             >>> path = "https://testazfs.blob.core.windows.net/test_caontainer/test1.csv"
             you can read and write csv file in azure blob storage
@@ -385,7 +419,7 @@ class AzFileClient:
         upload data to blob or data_lake storage account
 
         Args:
-            path:
+            path: Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_caontainer/test1.csv``
             data:
 
         Returns:
@@ -408,7 +442,7 @@ class AzFileClient:
         output pandas dataframe to csv file in Datalake storage.
 
         Args:
-            path:
+            path: Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_caontainer/test1.csv``
             df:
             **kwargs:
 
@@ -435,7 +469,7 @@ class AzFileClient:
         read json file in Datalake storage.
 
         Args:
-            path:
+            path: Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_caontainer/test1.json``
             **kwargs:
 
         Returns:
@@ -459,7 +493,7 @@ class AzFileClient:
         output dict to json file in Datalake storage.
 
         Args:
-            path:
+            path: Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_caontainer/test1.json``
             data:
             **kwargs:
 
