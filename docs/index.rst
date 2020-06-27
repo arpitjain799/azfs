@@ -3,15 +3,15 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to azfs's documentation!
-================================
+azfs documentation
+==================
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
    sources/api
-   sources/version_history
+   sources/release_history
 
 Indices and tables
 ==================
