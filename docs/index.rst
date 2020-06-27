@@ -27,7 +27,6 @@ AzFS
 **AzFS** is to provide convenient Python read/write functions for Azure Storage Account.
 
 azfs can
---------
 
 * list files in blob (also with wildcard \*),
 * check if file exists,
@@ -37,6 +36,8 @@ azfs can
 
 Installation
 ============
+
+**AzFS** can be installed from pip.
 
 .. code-block:: shell
 
