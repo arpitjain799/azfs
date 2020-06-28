@@ -27,17 +27,16 @@ class AbstractClient(metaclass=MetaClient):
 
 class AzfsClient(AbstractClient):
     """
-    Interface of AzBlobClient and AzDataLakeClient.
+    Interface of AzBlobClient, AzDataLakeClient and AzQueueClient.
     Different instances can be obtained as below
 
-    blob_client = AzfsClient.get("blob", "***")
-    or
-    datalake_client = AzfsClient.get("dfs", "***")
-
-    AzfsClient provide easy way to access functions implemented in AzBlobClient and AzDataLakeClient, as below
-
-    # path is azure storage url
-    data = AzfsClient.get("blob", "***").download_data(path)
+    Examples:
+        >>> blob_client = AzfsClient.get("blob", "***")
+        # or
+        >>> datalake_client = AzfsClient.get("dfs", "***")
+        # AzfsClient provide easy way to access functions implemented in AzBlobClient and AzDataLakeClient, as below
+        # path is azure storage url
+        data = AzfsClient.get(account_kind="blob", credential="...").download_data(path)
 
     """
     CLIENTS = {}
@@ -45,9 +44,16 @@ class AzfsClient(AbstractClient):
     @classmethod
     def get(cls, account_kind: str, credential) -> Union[AzBlobClient, AzDataLakeClient]:
         """
-        get AzBlobClient or AzDataLakeClient depending on account_kind
-        :param account_kind: currently blob or dfs
-        :param credential: AzureDefaultCredential or string
-        :return:
+        get AzBlobClient, AzDataLakeClient or AzQueueClient depending on account_kind
+
+        Args:
+            account_kind: blob, dfs or queue
+            credential: AzureDefaultCredential or string
+
+        Returns:
+            Union[AzBlobClient, AzDataLakeClient, AzQueueClient]
+
+        Examples:
+            >>> AzBlobClient = AzfsClient(account_kind="blob", credential="...")
         """
         return cls.CLIENTS[account_kind](credential=credential)
