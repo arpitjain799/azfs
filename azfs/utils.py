@@ -195,19 +195,18 @@ def _ls_get_folder_name(file_path_list: list, file_path: str):
     :param file_path:
     :return:
     """
-    folders_in_file_path = []
+    file_path_block = "?P<file_path>"
     if not file_path == "":
         # check if file_path endswith `/`
         file_path = file_path if not file_path.endswith("/") else file_path[:-1]
-        file_path_pattern = rf"(?P<file_path>{file_path}/)(?P<folder>.*?/)(?P<rest>.*)"
-        for fp in file_path_list:
-            result = re.match(file_path_pattern, fp)
-            if result:
-                folders_in_file_path.append(result.group("folder"))
-    else:
-        file_path_pattern = rf"(?P<folder>.*?/)(?P<rest>.*)"
-        for fp in file_path_list:
-            result = re.match(file_path_pattern, fp)
-            if result:
-                folders_in_file_path.append(result.group("folder"))
+        file_path_block = f"?P<file_path>{file_path}/"
+    # create match pattern
+    file_path_pattern = rf"({file_path_block})(?P<folder>.*?/)(?P<rest>.*)"
+
+    folders_in_file_path = []
+    for fp in file_path_list:
+        result = re.match(file_path_pattern, fp)
+        if result:
+            folders_in_file_path.append(result.group("folder"))
+
     return list(set(folders_in_file_path))
