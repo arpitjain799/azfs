@@ -6,6 +6,8 @@
 AzFS
 ====
 
+code status
+
 .. image:: https://circleci.com/gh/gsy0911/azfs.svg?style=svg&circle-token=ccd8e1ece489b247bcaac84861ae725b0f89a605
     :target: https://circleci.com/gh/gsy0911/azfs
 
@@ -14,6 +16,12 @@ AzFS
 
 .. image:: https://img.shields.io/lgtm/grade/python/g/gsy0911/azfs.svg?logo=lgtm&logoWidth=18
     :target: https://lgtm.com/projects/g/gsy0911/azfs/context:python
+
+.. image:: https://readthedocs.org/projects/azfs/badge/?version=latest
+   :target: https://azfs.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation Status
+
+package status
 
 .. image:: https://img.shields.io/badge/python-3.6|3.7|3.8-blue.svg
    :target: https://www.python.org/downloads/release/python-377/
