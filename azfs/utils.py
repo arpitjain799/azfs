@@ -161,10 +161,24 @@ class BlobPathDecoder:
 
 
 def ls_filter(file_path_list: list, file_path: str):
-    filtered_list = []
-    filtered_list.extend(_ls_get_file_name(file_path_list=file_path_list, file_path=file_path))
-    filtered_list.extend(_ls_get_folder_name(file_path_list=file_path_list, file_path=file_path))
-    return filtered_list
+    return _ls_file_and_folder_filter(file_path_list=file_path_list, parent_path=file_path)
+
+
+def _ls_file_and_folder_filter(file_path_list: list, parent_path: str):
+    pattern = rf"(?P<file_path>{parent_path}/)?(?P<folder>.*?/)?(?P<blob>.*)"
+
+    ls_result_list = []
+    for fp in file_path_list:
+        result = re.match(pattern, fp)
+        if result:
+            # result_dict = result.groupdict()
+            if result['folder'] is None:
+                ls_result_list.append(result['blob'])
+            else:
+                ls_result_list.append(result['folder'])
+    ls_result_list = list(set(ls_result_list))
+    ls_result_list.sort()
+    return ls_result_list
 
 
 def _ls_get_file_name(file_path_list: list, file_path: str):
