@@ -42,6 +42,8 @@ file manipulate
 
 .. autofunction:: azfs.AzFileClient.rm
 
+.. autofunction:: azfs.AzFileClient.cp
+
 
 
 BlobPathDecoder

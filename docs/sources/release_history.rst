@@ -25,7 +25,7 @@ Release History
 0.1.6 (2020-06-02)
 ------------------
 
-* add test on ``Python 3.6`` and ``Python 3.8``
+* check compatibility on ``Python 3.6`` and ``Python 3.8``
 * modify ``glob()``: compile regex
 
 0.1.5 (2020-05-30)
@@ -33,7 +33,7 @@ Release History
 
 * implementing ``glob()``
 * add ``prefix``-parameter to ``ls()``
-* add `vQueue`` operation class
+* add ``Queue`` operation class
 
 0.1.4 (2020-05-14)
 ------------------
