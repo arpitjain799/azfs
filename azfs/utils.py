@@ -172,7 +172,41 @@ def _ls_file_and_folder_filter(file_path_list: list, parent_path: str):
         parent_path: 特定のフォルダの以下かどうかを判断する
 
     Returns:
+        file list
 
+    Examples:
+        >>> file_path_list = [
+                "file1.csv",
+                "file2.csv",
+                "file3.csv",
+                "dir/file4.csv",
+                "dir/file5.csv",
+                "dir/some/file6.csv"
+            ]
+        >>> _ls_file_and_folder_filter(file_path_list, "")
+        {'parent_path': None, 'folder': None, 'blob': 'file1.csv'}
+        {'parent_path': None, 'folder': None, 'blob': 'file2.csv'}
+        {'parent_path': None, 'folder': None, 'blob': 'file3.csv'}
+        {'parent_path': None, 'folder': 'dir/', 'blob': 'file4.csv'}
+        {'parent_path': None, 'folder': 'dir/', 'blob': 'file5.csv'}
+        {'parent_path': None, 'folder': 'dir/', 'blob': 'some/file6.csv'}
+        ['dir/', 'file1.csv', 'file2.csv', 'file3.csv']
+        >>> _ls_file_and_folder_filter(file_path_list, "dir")
+        {'parent_path': None, 'folder': None, 'blob': 'file1.csv'}
+        {'parent_path': None, 'folder': None, 'blob': 'file2.csv'}
+        {'parent_path': None, 'folder': None, 'blob': 'file3.csv'}
+        {'parent_path': 'dir/', 'folder': None, 'blob': 'file4.csv'}
+        {'parent_path': 'dir/', 'folder': None, 'blob': 'file5.csv'}
+        {'parent_path': 'dir/', 'folder': 'some/', 'blob': 'file6.csv'}
+        ['file4.csv', 'file5.csv', 'some/']
+        >>> _ls_file_and_folder_filter(file_path_list, "dir/some")
+        {'parent_path': None, 'folder': None, 'blob': 'file1.csv'}
+        {'parent_path': None, 'folder': None, 'blob': 'file2.csv'}
+        {'parent_path': None, 'folder': None, 'blob': 'file3.csv'}
+        {'parent_path': None, 'folder': 'dir/', 'blob': 'file4.csv'}
+        {'parent_path': None, 'folder': 'dir/', 'blob': 'file5.csv'}
+        {'parent_path': 'dir/some/', 'folder': None, 'blob': 'file6.csv'}
+        ['file6.csv']
     """
     # check if file_path endswith `/`
     if not parent_path == "":
