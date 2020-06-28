@@ -29,16 +29,21 @@ put/upload
 
 .. autofunction:: azfs.AzFileClient.write_json
 
-file manipulate
-^^^^^^^^^^^^^^^
+
+file enumerating
+^^^^^^^^^^^^^^^^
 
 .. autofunction:: azfs.AzFileClient.ls
 
 .. autofunction:: azfs.AzFileClient.glob
 
-.. autofunction:: azfs.AzFileClient.info
-
 .. autofunction:: azfs.AzFileClient.exists
+
+file manipulating
+^^^^^^^^^^^^^^^^^
+
+
+.. autofunction:: azfs.AzFileClient.info
 
 .. autofunction:: azfs.AzFileClient.rm
 

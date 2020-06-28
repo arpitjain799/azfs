@@ -28,7 +28,7 @@ AzFS
 
 azfs can
 
-* list files in blob (also with wildcard \*),
+* list files in blob (also with wildcard ``*``),
 * check if file exists,
 * read csv as pd.DataFrame, and json as dict from blob,
 * write pd.DataFrame as csv, and dict as json to blob,
@@ -74,6 +74,12 @@ API Usage
 create the client
 -----------------
 
+To manipulate files in Azure Blob Storage,
+firstly you need to create `AzFileClient <./sources/api.html#azfileclient>`_.
+
+Credential is not required if ``AzFileClient()`` is created on AAD (Azure Active Directory).
+
+
 .. code-block:: python
 
    import azfs
@@ -92,7 +98,8 @@ create the client
 download data
 -------------
 
-azfs can get csv or json data from blob storage.
+azfs provides function to download csv or json data from ``Azure Blob Storage``.
+API reference is `get/download <./sources/api.html#get-download>`_.
 
 .. code-block:: python
 
@@ -121,6 +128,10 @@ azfs can get csv or json data from blob storage.
 
 upload data
 -----------
+
+azfs also provides functions to upload csv or json data to ``Azure Blob Storage``.
+API reference is `put/upload <./sources/api.html#put-upload>`_.
+
 
 .. code-block:: python
 
@@ -155,6 +166,10 @@ upload data
 enumerating(ls, glob) or checking if file exists
 ------------------------------------------------
 
+``ls()`` lists all files in specified folder,
+and ``glob()`` lists pattern-matched files in all folder.
+API reference is `enumerating <./sources/api.html#file-enumerating>`_.
+
 .. code-block:: python
 
    import azfs
@@ -179,6 +194,9 @@ enumerating(ls, glob) or checking if file exists
 
 remove, copy files, etc...
 --------------------------
+
+azfs also provides remove and copy functions.
+API reference is `manipulating <./sources/api.html#file-manipulating>`_.
 
 .. code-block:: python
 
