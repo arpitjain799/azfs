@@ -165,17 +165,38 @@ def ls_filter(file_path_list: list, file_path: str):
 
 
 def _ls_file_and_folder_filter(file_path_list: list, parent_path: str):
-    pattern = rf"(?P<file_path>{parent_path}/)?(?P<folder>.*?/)?(?P<blob>.*)"
+    """
+
+    Args:
+        file_path_list: ファイル名とフォルダ名を取得する対象のリスト
+        parent_path: 特定のフォルダの以下かどうかを判断する
+
+    Returns:
+
+    """
+    # check if file_path endswith `/`
+    if not parent_path == "":
+        parent_path = parent_path if not parent_path.endswith("/") else parent_path[:-1]
+    pattern = rf"(?P<parent_path>{parent_path}/)?(?P<folder>.*?/)?(?P<blob>.*)"
 
     ls_result_list = []
     for fp in file_path_list:
         result = re.match(pattern, fp)
         if result:
-            # result_dict = result.groupdict()
-            if result['folder'] is None:
-                ls_result_list.append(result['blob'])
+            if parent_path == "":
+                if result['parent_path'] is None and result['folder'] is None:
+                    # 対象フォルダの直下なのでファイル名を取得する
+                    ls_result_list.append(result['blob'])
+                elif result['folder'] is not None:
+                    # フォルダの名前を取得
+                    ls_result_list.append(result['folder'])
             else:
-                ls_result_list.append(result['folder'])
+                if result['parent_path'] is not None and result['folder'] is None:
+                    # 対象フォルダの直下なのでファイル名を取得する
+                    ls_result_list.append(result['blob'])
+                elif result['parent_path'] is not None and result['folder'] is not None:
+                    # フォルダの名前を取得
+                    ls_result_list.append(result['folder'])
     ls_result_list = list(set(ls_result_list))
     ls_result_list.sort()
     return ls_result_list
