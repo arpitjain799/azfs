@@ -1,3 +1,4 @@
+from abc import abstractmethod
 import io
 import gzip
 from typing import Union
@@ -50,6 +51,7 @@ class ClientInterface:
             file_path=file_path,
             credential=self.credential)
 
+    @abstractmethod
     def _get_file_client(
             self,
             storage_account_url: str,
@@ -67,6 +69,7 @@ class ClientInterface:
         """
         raise NotImplementedError
 
+    @abstractmethod
     def _get_service_client(self):
         """
         abstract method to be implemented
@@ -86,6 +89,7 @@ class ClientInterface:
             file_system=file_system,
             credential=self.credential)
 
+    @abstractmethod
     def _get_container_client(
             self,
             storage_account_url: str,
@@ -103,6 +107,7 @@ class ClientInterface:
     def ls(self, path: str, file_path: str):
         return self._ls(path=path, file_path=file_path)
 
+    @abstractmethod
     def _ls(self, path: str, file_path: str):
         """
         abstract method to be implemented
@@ -130,6 +135,7 @@ class ClientInterface:
             file_to_read = file_bytes
         return file_to_read
 
+    @abstractmethod
     def _get(self, path: str, **kwargs):
         """
         abstract method to be implemented
@@ -141,6 +147,7 @@ class ClientInterface:
     def put(self, path: str, data):
         return self._put(path=path, data=data)
 
+    @abstractmethod
     def _put(self, path: str, data):
         """
         abstract method to be implemented
@@ -153,6 +160,7 @@ class ClientInterface:
     def info(self, path: str):
         return self._info(path=path)
 
+    @abstractmethod
     def _info(self, path: str):
         """
         abstract method to be implemented
@@ -164,6 +172,7 @@ class ClientInterface:
     def rm(self, path: str):
         return self._rm(path=path)
 
+    @abstractmethod
     def _rm(self, path: str):
         """
         abstract method to be implemented
