@@ -1,8 +1,8 @@
-from azfs.clients.client_interface import ClientInterface
+import base64
 from typing import Union
 from azure.identity import DefaultAzureCredential
 from azure.storage.queue import QueueClient
-import base64
+from .client_interface import ClientInterface
 
 
 class AzQueueClient(ClientInterface):

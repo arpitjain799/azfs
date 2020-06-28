@@ -1,7 +1,7 @@
-from azfs.clients.blob_client import AzBlobClient
-from azfs.clients.datalake_client import AzDataLakeClient
-from azfs.clients.queue_client import AzQueueClient
 from typing import Union
+from .blob_client import AzBlobClient
+from .datalake_client import AzDataLakeClient
+from .queue_client import AzQueueClient
 
 
 class MetaClient(type):

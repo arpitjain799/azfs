@@ -1,14 +1,11 @@
-from typing import Union
-from azure.identity import DefaultAzureCredential
 import io
 import gzip
-from azfs.utils import BlobPathDecoder
-from azure.storage.blob import (
-    BlobClient,
-    ContainerClient
-)
+from typing import Union
+from azure.identity import DefaultAzureCredential
+from azure.storage.blob import BlobClient, ContainerClient
 from azure.storage.filedatalake import DataLakeFileClient, FileSystemClient
 from azure.storage.queue import QueueClient
+from azfs.utils import BlobPathDecoder
 
 
 # define the types
