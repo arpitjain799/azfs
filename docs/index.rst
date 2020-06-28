@@ -217,14 +217,22 @@ API reference is `manipulating <./sources/api.html#file-manipulating>`_.
 
 
 
-For Developers
-==============
+For Users
+=========
 
 .. toctree::
    :maxdepth: 2
 
    sources/api
    sources/release_history
+
+For Developers
+==============
+
+.. toctree::
+   :maxdepth: 2
+
+   sources/development_api
 
 GitHub
 ------
