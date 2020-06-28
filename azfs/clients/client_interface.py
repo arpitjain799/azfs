@@ -1,14 +1,12 @@
-from typing import Union
-from azure.identity import DefaultAzureCredential
+from abc import abstractmethod
 import io
 import gzip
-from azfs.utils import BlobPathDecoder
-from azure.storage.blob import (
-    BlobClient,
-    ContainerClient
-)
+from typing import Union
+from azure.identity import DefaultAzureCredential
+from azure.storage.blob import BlobClient, ContainerClient
 from azure.storage.filedatalake import DataLakeFileClient, FileSystemClient
 from azure.storage.queue import QueueClient
+from azfs.utils import BlobPathDecoder
 
 
 # define the types
@@ -26,13 +24,14 @@ FileSystemClientType = Union[
 class ClientInterface:
     """
     The class provides Azure Blob and Datalake Container and File Client interface.
-    Abstract methods below are implemented in each class
-        * _get_file_client
-        * _get_service_client
-        * _get_container_client
-        * _ls
-        * _get
-        * _put
+    Abstract methods below are implemented in each inherited class
+
+    * _get_file_client
+    * _get_service_client
+    * _get_container_client
+    * _ls
+    * _get
+    * _put
     """
 
     def __init__(
@@ -43,8 +42,12 @@ class ClientInterface:
     def get_file_client_from_path(self, path: str) -> FileClientType:
         """
         get file_client from given path
-        :param path:
-        :return:
+
+        Args:
+            path: Azure path that ``BlobPathDecode()`` can decode
+
+        Returns:
+            Union[BlobClient, DataLakeFileClient, QueueClient]
         """
         storage_account_url, account_kind, file_system, file_path = BlobPathDecoder(path).get_with_url()
         return self._get_file_client(
@@ -53,6 +56,7 @@ class ClientInterface:
             file_path=file_path,
             credential=self.credential)
 
+    @abstractmethod
     def _get_file_client(
             self,
             storage_account_url: str,
@@ -70,6 +74,7 @@ class ClientInterface:
         """
         raise NotImplementedError
 
+    @abstractmethod
     def _get_service_client(self):
         """
         abstract method to be implemented
@@ -80,8 +85,12 @@ class ClientInterface:
     def get_container_client_from_path(self, path: str) -> FileSystemClientType:
         """
         get container_client from given path
-        :param path:
-        :return:
+
+        Args:
+            path: Azure path that ``BlobPathDecode()`` can decode
+
+        Returns:
+            Union[ContainerClient, FileSystemClient]
         """
         storage_account_url, _, file_system, _ = BlobPathDecoder(path).get_with_url()
         return self._get_container_client(
@@ -89,6 +98,7 @@ class ClientInterface:
             file_system=file_system,
             credential=self.credential)
 
+    @abstractmethod
     def _get_container_client(
             self,
             storage_account_url: str,
@@ -106,6 +116,7 @@ class ClientInterface:
     def ls(self, path: str, file_path: str):
         return self._ls(path=path, file_path=file_path)
 
+    @abstractmethod
     def _ls(self, path: str, file_path: str):
         """
         abstract method to be implemented
@@ -133,6 +144,7 @@ class ClientInterface:
             file_to_read = file_bytes
         return file_to_read
 
+    @abstractmethod
     def _get(self, path: str, **kwargs):
         """
         abstract method to be implemented
@@ -144,6 +156,7 @@ class ClientInterface:
     def put(self, path: str, data):
         return self._put(path=path, data=data)
 
+    @abstractmethod
     def _put(self, path: str, data):
         """
         abstract method to be implemented
@@ -156,6 +169,7 @@ class ClientInterface:
     def info(self, path: str):
         return self._info(path=path)
 
+    @abstractmethod
     def _info(self, path: str):
         """
         abstract method to be implemented
@@ -167,6 +181,7 @@ class ClientInterface:
     def rm(self, path: str):
         return self._rm(path=path)
 
+    @abstractmethod
     def _rm(self, path: str):
         """
         abstract method to be implemented

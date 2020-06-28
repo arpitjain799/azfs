@@ -1,7 +1,7 @@
-from azfs.clients.client_interface import ClientInterface
 from typing import Union
 from azure.identity import DefaultAzureCredential
 from azure.storage.filedatalake import DataLakeFileClient, FileSystemClient
+from .client_interface import ClientInterface
 
 
 class AzDataLakeClient(ClientInterface):
