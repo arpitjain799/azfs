@@ -24,13 +24,14 @@ FileSystemClientType = Union[
 class ClientInterface:
     """
     The class provides Azure Blob and Datalake Container and File Client interface.
-    Abstract methods below are implemented in each class
-        * _get_file_client
-        * _get_service_client
-        * _get_container_client
-        * _ls
-        * _get
-        * _put
+    Abstract methods below are implemented in each inherited class
+
+    * _get_file_client
+    * _get_service_client
+    * _get_container_client
+    * _ls
+    * _get
+    * _put
     """
 
     def __init__(
@@ -41,8 +42,12 @@ class ClientInterface:
     def get_file_client_from_path(self, path: str) -> FileClientType:
         """
         get file_client from given path
-        :param path:
-        :return:
+
+        Args:
+            path: Azure path that ``BlobPathDecode()`` can decode
+
+        Returns:
+            Union[BlobClient, DataLakeFileClient, QueueClient]
         """
         storage_account_url, account_kind, file_system, file_path = BlobPathDecoder(path).get_with_url()
         return self._get_file_client(
@@ -80,8 +85,12 @@ class ClientInterface:
     def get_container_client_from_path(self, path: str) -> FileSystemClientType:
         """
         get container_client from given path
-        :param path:
-        :return:
+
+        Args:
+            path: Azure path that ``BlobPathDecode()`` can decode
+
+        Returns:
+            Union[ContainerClient, FileSystemClient]
         """
         storage_account_url, _, file_system, _ = BlobPathDecoder(path).get_with_url()
         return self._get_container_client(
