@@ -63,11 +63,12 @@ class TestLsFilter:
             "dir/file5.csv",
             "dir/some/file6.csv"
         ]
+        # sorted by alphabetic order
         result_list = [
+            "dir/",
             "file1.csv",
             "file2.csv",
-            "file3.csv",
-            "dir/"
+            "file3.csv"
         ]
         result_list_v = ls_filter(file_path_list, "")
         assert result_list_v == result_list
@@ -78,4 +79,10 @@ class TestLsFilter:
             "some/"
         ]
         result_list_v = ls_filter(file_path_list, "dir")
+        assert result_list_v == result_list
+
+        result_list = [
+            "file6.csv"
+        ]
+        result_list_v = ls_filter(file_path_list, "dir/some")
         assert result_list_v == result_list

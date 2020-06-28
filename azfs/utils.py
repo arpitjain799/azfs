@@ -161,53 +161,76 @@ class BlobPathDecoder:
 
 
 def ls_filter(file_path_list: list, file_path: str):
-    filtered_list = []
-    filtered_list.extend(_ls_get_file_name(file_path_list=file_path_list, file_path=file_path))
-    filtered_list.extend(_ls_get_folder_name(file_path_list=file_path_list, file_path=file_path))
-    return filtered_list
+    return _ls_file_and_folder_filter(file_path_list=file_path_list, parent_path=file_path)
 
 
-def _ls_get_file_name(file_path_list: list, file_path: str):
+def _ls_file_and_folder_filter(file_path_list: list, parent_path: str):
     """
-    特定のフォルダ以下にあるファイル名を取得する。
-    :param file_path_list:
-    :param file_path:
-    :return:
-    """
-    filtered_file_path_list = []
-    if not file_path == "":
-        # check if file_path endswith `/`
-        file_path = file_path if not file_path.endswith("/") else file_path[:-1]
-        file_path_pattern = rf"({file_path}/)(.*)"
-        for fp in file_path_list:
-            result = re.match(file_path_pattern, fp)
-            if result:
-                filtered_file_path_list.append(result.group(2))
-    else:
-        filtered_file_path_list = file_path_list
-    return [f for f in filtered_file_path_list if "/" not in f]
 
+    Args:
+        file_path_list: ファイル名とフォルダ名を取得する対象のリスト
+        parent_path: 特定のフォルダの以下かどうかを判断する
 
-def _ls_get_folder_name(file_path_list: list, file_path: str):
+    Returns:
+        file list
+
+    Examples:
+        >>> file_path_list = [
+                "file1.csv",
+                "file2.csv",
+                "file3.csv",
+                "dir/file4.csv",
+                "dir/file5.csv",
+                "dir/some/file6.csv"
+            ]
+        >>> _ls_file_and_folder_filter(file_path_list, "")
+        {'parent_path': None, 'folder': None, 'blob': 'file1.csv'}
+        {'parent_path': None, 'folder': None, 'blob': 'file2.csv'}
+        {'parent_path': None, 'folder': None, 'blob': 'file3.csv'}
+        {'parent_path': None, 'folder': 'dir/', 'blob': 'file4.csv'}
+        {'parent_path': None, 'folder': 'dir/', 'blob': 'file5.csv'}
+        {'parent_path': None, 'folder': 'dir/', 'blob': 'some/file6.csv'}
+        ['dir/', 'file1.csv', 'file2.csv', 'file3.csv']
+        >>> _ls_file_and_folder_filter(file_path_list, "dir")
+        {'parent_path': None, 'folder': None, 'blob': 'file1.csv'}
+        {'parent_path': None, 'folder': None, 'blob': 'file2.csv'}
+        {'parent_path': None, 'folder': None, 'blob': 'file3.csv'}
+        {'parent_path': 'dir/', 'folder': None, 'blob': 'file4.csv'}
+        {'parent_path': 'dir/', 'folder': None, 'blob': 'file5.csv'}
+        {'parent_path': 'dir/', 'folder': 'some/', 'blob': 'file6.csv'}
+        ['file4.csv', 'file5.csv', 'some/']
+        >>> _ls_file_and_folder_filter(file_path_list, "dir/some")
+        {'parent_path': None, 'folder': None, 'blob': 'file1.csv'}
+        {'parent_path': None, 'folder': None, 'blob': 'file2.csv'}
+        {'parent_path': None, 'folder': None, 'blob': 'file3.csv'}
+        {'parent_path': None, 'folder': 'dir/', 'blob': 'file4.csv'}
+        {'parent_path': None, 'folder': 'dir/', 'blob': 'file5.csv'}
+        {'parent_path': 'dir/some/', 'folder': None, 'blob': 'file6.csv'}
+        ['file6.csv']
     """
-    特定のフォルダ以下にあるフォルダ名を取得する
-    :param file_path_list:
-    :param file_path:
-    :return:
-    """
-    folders_in_file_path = []
-    if not file_path == "":
-        # check if file_path endswith `/`
-        file_path = file_path if not file_path.endswith("/") else file_path[:-1]
-        file_path_pattern = rf"({file_path}/)(.*?/)(.*)"
-        for fp in file_path_list:
-            result = re.match(file_path_pattern, fp)
-            if result:
-                folders_in_file_path.append(result.group(2))
-    else:
-        file_path_pattern = rf"(.*?/)(.*)"
-        for fp in file_path_list:
-            result = re.match(file_path_pattern, fp)
-            if result:
-                folders_in_file_path.append(result.group(1))
-    return list(set(folders_in_file_path))
+    # check if file_path endswith `/`
+    if not parent_path == "":
+        parent_path = parent_path if not parent_path.endswith("/") else parent_path[:-1]
+    pattern = rf"(?P<parent_path>{parent_path}/)?(?P<folder>.*?/)?(?P<blob>.*)"
+
+    ls_result_list = []
+    for fp in file_path_list:
+        result = re.match(pattern, fp)
+        if result:
+            if parent_path == "":
+                if result['parent_path'] is None and result['folder'] is None:
+                    # 対象フォルダの直下なのでファイル名を取得する
+                    ls_result_list.append(result['blob'])
+                elif result['folder'] is not None:
+                    # フォルダの名前を取得
+                    ls_result_list.append(result['folder'])
+            else:
+                if result['parent_path'] is not None and result['folder'] is None:
+                    # 対象フォルダの直下なのでファイル名を取得する
+                    ls_result_list.append(result['blob'])
+                elif result['parent_path'] is not None and result['folder'] is not None:
+                    # フォルダの名前を取得
+                    ls_result_list.append(result['folder'])
+    ls_result_list = list(set(ls_result_list))
+    ls_result_list.sort()
+    return ls_result_list
