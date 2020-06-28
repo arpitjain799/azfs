@@ -6,6 +6,19 @@ from azfs.error import (
 
 
 class BlobPathDecoder:
+    """
+    Decode Azure Blob Storage URL format class
+
+    Examples:
+        >>> import azfs
+        >>> path = "https://testazfs.blob.core.windows.net/test_caontainer/test1.csv"
+        >>> blob_path_decoder = azfs.BlobPathDecoder()
+        >>> blob_path_decoder.decode(path=path).get()
+        (testazfs, blob, test_container, test1.csv)
+        >>> blob_path_decoder.decode(path=path).get_with_url()
+        (https://testazfs.blob.core.windows.net", blob, test_container, test1.csv)
+
+    """
     # pattern blocks
     _STORAGE_ACCOUNT = "(?P<storage_account>[a-z0-9]*)"
     _STORAGE_TYPE = "(?P<storage_type>dfs|blob|queue)"

@@ -1,0 +1,5 @@
+pandas
+azure-identity
+azure-storage-blob
+azure-storage-file-datalake
+azure-storage-queue
