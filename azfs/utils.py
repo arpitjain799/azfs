@@ -178,11 +178,11 @@ def _ls_get_file_name(file_path_list: list, file_path: str):
     if not file_path == "":
         # check if file_path endswith `/`
         file_path = file_path if not file_path.endswith("/") else file_path[:-1]
-        file_path_pattern = rf"({file_path}/)(.*)"
+        file_path_pattern = rf"(?P<file_path>{file_path}/)(?P<blob>.*)"
         for fp in file_path_list:
             result = re.match(file_path_pattern, fp)
             if result:
-                filtered_file_path_list.append(result.group(2))
+                filtered_file_path_list.append(result.group("blob"))
     else:
         filtered_file_path_list = file_path_list
     return [f for f in filtered_file_path_list if "/" not in f]
