@@ -41,9 +41,8 @@ class AzQueueClient(ClientInterface):
         Returns:
 
         """
-        queue_client = self._get_service_client(
-            storage_account_url=storage_account_url,
-            credential=credential
+        queue_client = self._get_service_client_from_url(
+            account_url=storage_account_url
         ).get_queue_client(
             queue=file_system
         )

@@ -40,10 +40,12 @@ class AzBlobClient(ClientInterface):
         Returns:
             BlobClient
         """
-        file_client = self._get_service_client(
-            storage_account_url=storage_account_url,
-            credential=credential
-        ).get_blob_client(container=file_system, blob=file_path)
+        file_client = self._get_service_client_from_url(
+            account_url=storage_account_url,
+        ).get_blob_client(
+            container=file_system,
+            blob=file_path
+        )
         return file_client
 
     def _get_container_client(
@@ -62,11 +64,11 @@ class AzBlobClient(ClientInterface):
         Returns:
             ContainerClient
         """
-        container_client = self._get_service_client(
-            storage_account_url=storage_account_url,
-            credential=credential
+        container_client = self._get_service_client_from_url(
+            account_url=storage_account_url,
         ).get_container_client(
-            container=file_system)
+            container=file_system
+        )
         return container_client
 
     def _ls(self, path: str, file_path: str):

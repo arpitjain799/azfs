@@ -41,9 +41,8 @@ class AzDataLakeClient(ClientInterface):
             DataLakeFileClient
 
         """
-        file_client = self._get_service_client(
-            storage_account_url=storage_account_url,
-            credential=credential
+        file_client = self._get_service_client_from_url(
+            account_url=storage_account_url,
         ).get_file_client(
             file_system=file_system,
             file_path=file_path)
@@ -66,9 +65,8 @@ class AzDataLakeClient(ClientInterface):
             FileSystemClient
 
         """
-        file_system_client = self._get_service_client(
-            storage_account_url=storage_account_url,
-            credential=credential
+        file_system_client = self._get_service_client_from_url(
+            account_url=storage_account_url
         ).get_file_system_client(
             file_system=file_system
         )

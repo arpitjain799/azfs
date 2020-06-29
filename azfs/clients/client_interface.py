@@ -39,6 +39,23 @@ class ClientInterface:
             credential: Union[str, DefaultAzureCredential]):
         self.credential = credential
 
+    @abstractmethod
+    def _get_service_client(
+            self,
+            storage_account_url: str,
+            credential: Union[DefaultAzureCredential, str]):
+        """
+        abstract method to be implemented
+        :return:
+        """
+        raise NotImplementedError
+
+    def _get_service_client_from_url(self, account_url):
+        return self._get_service_client(storage_account_url=account_url, credential=self.credential)
+
+    def get_service_client_from_url(self, account_url):
+        return self._get_service_client_from_url(account_url=account_url)
+
     def get_file_client_from_path(self, path: str) -> FileClientType:
         """
         get file_client from given path
@@ -70,20 +87,6 @@ class ClientInterface:
         :param file_system:
         :param file_path:
         :param credential:
-        :return:
-        """
-        raise NotImplementedError
-
-    def get_service_client_from_url(self, account_url):
-        return self._get_service_client(storage_account_url=account_url, credential=self.credential)
-
-    @abstractmethod
-    def _get_service_client(
-            self,
-            storage_account_url: str,
-            credential: Union[DefaultAzureCredential, str]):
-        """
-        abstract method to be implemented
         :return:
         """
         raise NotImplementedError
