@@ -9,30 +9,30 @@ class AzQueueClient(ClientInterface):
 
     def _get_service_client(
             self,
-            storage_account_url: str,
+            account_url: str,
             credential: Union[DefaultAzureCredential, str]):
         """
         get QueueServiceClient
 
         Args:
-            storage_account_url:
+            account_url:
             credential:
 
         Returns:
 
         """
-        return QueueServiceClient(account_url=storage_account_url, credential=credential)
+        return QueueServiceClient(account_url=account_url, credential=credential)
 
     def _get_file_client(
             self,
-            storage_account_url: str,
+            account_url: str,
             file_system: str,
             file_path: str) -> QueueClient:
         """
         get QueueClient
 
         Args:
-            storage_account_url:
+            account_url:
             file_system:
             file_path:
 
@@ -40,7 +40,7 @@ class AzQueueClient(ClientInterface):
 
         """
         queue_client = self._get_service_client_from_url(
-            account_url=storage_account_url
+            account_url=account_url
         ).get_queue_client(
             queue=file_system
         )
@@ -48,13 +48,13 @@ class AzQueueClient(ClientInterface):
 
     def _get_container_client(
             self,
-            storage_account_url: str,
+            account_url: str,
             file_system: str):
         """
         not used
 
         Args:
-            storage_account_url:
+            account_url:
             file_system:
 
         Returns:
