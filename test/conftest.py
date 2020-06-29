@@ -4,6 +4,7 @@ import pytest
 import azfs
 import pandas as pd
 import json
+import gzip
 
 # テスト対象のファイルへのパスを通している
 # pytestの設定
@@ -23,6 +24,26 @@ def _get_csv(mocker):
     :return:
     """
     return_value = b'name,age\nalice,10\nbob,10\n'
+    func_mock = mocker.MagicMock()
+    func_mock.return_value = return_value
+    yield func_mock
+
+
+@pytest.fixture()
+def _get_csv_gz(mocker):
+    """
+    original data is
+    data = {"1": {"name": "alice", "age": "10"}, "2": {"name": "bob", "age": "10"}}
+    df = pd.DataFrame.from_dict(data, orient="index")
+
+    Args:
+        mocker:
+
+    Returns:
+
+    """
+    data = b'name,age\nalice,10\nbob,10\n'
+    return_value = gzip.compress(data)
     func_mock = mocker.MagicMock()
     func_mock.return_value = return_value
     yield func_mock
