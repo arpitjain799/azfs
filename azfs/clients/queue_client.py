@@ -1,7 +1,7 @@
 import base64
 from typing import Union
 from azure.identity import DefaultAzureCredential
-from azure.storage.queue import QueueClient
+from azure.storage.queue import QueueClient, QueueServiceClient
 from .client_interface import ClientInterface
 
 
@@ -13,14 +13,19 @@ class AzQueueClient(ClientInterface):
             file_system: str,
             file_path: str,
             credential: Union[DefaultAzureCredential, str]) -> QueueClient:
-        queue_client = QueueClient(
-            account_url=storage_account_url,
-            queue_name=file_system,
-            credential=credential)
+        queue_client = self._get_service_client(
+            storage_account_url=storage_account_url,
+            credential=credential
+        ).get_queue_client(
+            queue=file_system
+        )
         return queue_client
 
-    def _get_service_client(self):
-        raise NotImplementedError
+    def _get_service_client(
+            self,
+            storage_account_url: str,
+            credential: Union[DefaultAzureCredential, str]):
+        return QueueServiceClient(account_url=storage_account_url, credential=credential)
 
     def _get_container_client(
             self,
