@@ -6,29 +6,62 @@ from .client_interface import ClientInterface
 
 class AzBlobClient(ClientInterface):
 
+    def _get_service_client(
+            self,
+            storage_account_url: str,
+            credential: Union[DefaultAzureCredential, str]) -> BlobServiceClient:
+        """
+        get BlobServiceClient
+
+        Args:
+            storage_account_url:
+            credential:
+
+        Returns:
+            BlobServiceClient
+        """
+        return BlobServiceClient(account_url=storage_account_url, credential=credential)
+
     def _get_file_client(
             self,
             storage_account_url: str,
             file_system: str,
             file_path: str,
             credential: Union[DefaultAzureCredential, str]) -> BlobClient:
+        """
+        get BlobClient
+
+        Args:
+            storage_account_url:
+            file_system:
+            file_path:
+            credential:
+
+        Returns:
+            BlobClient
+        """
         file_client = self._get_service_client(
             storage_account_url=storage_account_url,
             credential=credential
         ).get_blob_client(container=file_system, blob=file_path)
         return file_client
 
-    def _get_service_client(
-            self,
-            storage_account_url: str,
-            credential: Union[DefaultAzureCredential, str]) -> BlobServiceClient:
-        return BlobServiceClient(account_url=storage_account_url, credential=credential)
-
     def _get_container_client(
             self,
             storage_account_url: str,
             file_system: str,
             credential: Union[DefaultAzureCredential, str]) -> ContainerClient:
+        """
+        get ContainerClient
+
+        Args:
+            storage_account_url:
+            file_system:
+            credential:
+
+        Returns:
+            ContainerClient
+        """
         container_client = self._get_service_client(
             storage_account_url=storage_account_url,
             credential=credential
