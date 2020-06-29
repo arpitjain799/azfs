@@ -6,13 +6,41 @@ from .client_interface import ClientInterface
 
 class AzDataLakeClient(ClientInterface):
 
+    def _get_service_client(
+            self,
+            storage_account_url: str,
+            credential: Union[DefaultAzureCredential, str]) -> DataLakeServiceClient:
+        """
+        get DataLakeServiceClient
+
+        Args:
+            storage_account_url:
+            credential:
+
+        Returns:
+            DataLakeServiceClient
+        """
+        return DataLakeServiceClient(account_url=storage_account_url, credential=credential)
+
     def _get_file_client(
             self,
             storage_account_url: str,
             file_system: str,
             file_path: str,
             credential: Union[DefaultAzureCredential, str]) -> DataLakeFileClient:
+        """
+        get DataLakeFileClient
 
+        Args:
+            storage_account_url:
+            file_system:
+            file_path:
+            credential:
+
+        Returns:
+            DataLakeFileClient
+
+        """
         file_client = self._get_service_client(
             storage_account_url=storage_account_url,
             credential=credential
@@ -21,17 +49,23 @@ class AzDataLakeClient(ClientInterface):
             file_path=file_path)
         return file_client
 
-    def _get_service_client(
-            self,
-            storage_account_url: str,
-            credential: Union[DefaultAzureCredential, str]) -> DataLakeServiceClient:
-        return DataLakeServiceClient(account_url=storage_account_url, credential=credential)
-
     def _get_container_client(
             self,
             storage_account_url: str,
             file_system: str,
             credential: Union[DefaultAzureCredential, str]) -> FileSystemClient:
+        """
+        get FileSystemClient
+
+        Args:
+            storage_account_url:
+            file_system:
+            credential:
+
+        Returns:
+            FileSystemClient
+
+        """
         file_system_client = self._get_service_client(
             storage_account_url=storage_account_url,
             credential=credential
