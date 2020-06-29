@@ -11,7 +11,8 @@ class TestClientInterface:
     def test_not_implemented_error(self):
         client_interface = ClientInterface(credential="")
         # the file below is not exists
-        path = "https://testazfs.blob.core.windows.net/test_caontainer/test.csv"
+        account_url = "https://testazfs.blob.core.windows.net/"
+        path = f"{account_url}test_caontainer/test.csv"
         file_path = "test_caontainer"
 
         with pytest.raises(NotImplementedError):
@@ -35,6 +36,9 @@ class TestClientInterface:
         with pytest.raises(NotImplementedError):
             client_interface.get_file_client_from_path(path=path)
 
+        with pytest.raises(NotImplementedError):
+            client_interface.get_service_client_from_url(account_url=account_url)
+
 
 class TestReadCsv:
 
@@ -43,6 +47,20 @@ class TestReadCsv:
 
         # the file below is not exists
         path = "https://testazfs.blob.core.windows.net/test_caontainer/test.csv"
+
+        # read data from not-exist path
+        with var_azc:
+            df = pd.read_csv_az(path)
+        columns = df.columns
+        assert "name" in columns
+        assert "age" in columns
+        assert len(df.index) == 2
+
+    def test_blob_read_csv_gz(self, mocker, _get_csv_gz, var_azc):
+        mocker.patch.object(AzBlobClient, "_get", _get_csv_gz)
+
+        # the file below is not exists
+        path = "https://testazfs.blob.core.windows.net/test_caontainer/test.csv.gz"
 
         # read data from not-exist path
         with var_azc:

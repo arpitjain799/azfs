@@ -8,6 +8,7 @@ Release History
 0.1.9 ()
 ------------------
 
+* implement ``_get_service_client()``: to prepare adopting new authorization
 * code optimization: ``BlobPathDecoder`` class
 
 0.1.8 (2020-06-22)

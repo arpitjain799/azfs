@@ -39,6 +39,23 @@ class ClientInterface:
             credential: Union[str, DefaultAzureCredential]):
         self.credential = credential
 
+    @abstractmethod
+    def _get_service_client(
+            self,
+            account_url: str,
+            credential: Union[DefaultAzureCredential, str]):
+        """
+        abstract method to be implemented
+        :return:
+        """
+        raise NotImplementedError
+
+    def _get_service_client_from_url(self, account_url):
+        return self._get_service_client(account_url=account_url, credential=self.credential)
+
+    def get_service_client_from_url(self, account_url):
+        return self._get_service_client_from_url(account_url=account_url)
+
     def get_file_client_from_path(self, path: str) -> FileClientType:
         """
         get file_client from given path
@@ -49,35 +66,24 @@ class ClientInterface:
         Returns:
             Union[BlobClient, DataLakeFileClient, QueueClient]
         """
-        storage_account_url, account_kind, file_system, file_path = BlobPathDecoder(path).get_with_url()
+        account_url, account_kind, file_system, file_path = BlobPathDecoder(path).get_with_url()
         return self._get_file_client(
-            storage_account_url=storage_account_url,
+            account_url=account_url,
             file_system=file_system,
-            file_path=file_path,
-            credential=self.credential)
+            file_path=file_path)
 
     @abstractmethod
     def _get_file_client(
             self,
-            storage_account_url: str,
+            account_url: str,
             file_system: str,
-            file_path: str,
-            credential: Union[DefaultAzureCredential, str]):
+            file_path: str):
         """
         abstract method to be implemented
         get file_client from given path
-        :param storage_account_url:
+        :param account_url:
         :param file_system:
         :param file_path:
-        :param credential:
-        :return:
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    def _get_service_client(self):
-        """
-        abstract method to be implemented
         :return:
         """
         raise NotImplementedError
@@ -92,23 +98,20 @@ class ClientInterface:
         Returns:
             Union[ContainerClient, FileSystemClient]
         """
-        storage_account_url, _, file_system, _ = BlobPathDecoder(path).get_with_url()
+        account_url, _, file_system, _ = BlobPathDecoder(path).get_with_url()
         return self._get_container_client(
-            storage_account_url=storage_account_url,
-            file_system=file_system,
-            credential=self.credential)
+            account_url=account_url,
+            file_system=file_system)
 
     @abstractmethod
     def _get_container_client(
             self,
-            storage_account_url: str,
-            file_system: str,
-            credential: Union[DefaultAzureCredential, str]):
+            account_url: str,
+            file_system: str):
         """
         abstract method to be implemented
-        :param storage_account_url:
+        :param account_url:
         :param file_system:
-        :param credential:
         :return:
         """
         raise NotImplementedError

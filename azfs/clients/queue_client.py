@@ -1,32 +1,66 @@
 import base64
 from typing import Union
 from azure.identity import DefaultAzureCredential
-from azure.storage.queue import QueueClient
+from azure.storage.queue import QueueClient, QueueServiceClient
 from .client_interface import ClientInterface
 
 
 class AzQueueClient(ClientInterface):
 
+    def _get_service_client(
+            self,
+            account_url: str,
+            credential: Union[DefaultAzureCredential, str]):
+        """
+        get QueueServiceClient
+
+        Args:
+            account_url:
+            credential:
+
+        Returns:
+
+        """
+        return QueueServiceClient(account_url=account_url, credential=credential)
+
     def _get_file_client(
             self,
-            storage_account_url: str,
+            account_url: str,
             file_system: str,
-            file_path: str,
-            credential: Union[DefaultAzureCredential, str]) -> QueueClient:
-        queue_client = QueueClient(
-            account_url=storage_account_url,
-            queue_name=file_system,
-            credential=credential)
-        return queue_client
+            file_path: str) -> QueueClient:
+        """
+        get QueueClient
 
-    def _get_service_client(self):
-        raise NotImplementedError
+        Args:
+            account_url:
+            file_system:
+            file_path:
+
+        Returns:
+
+        """
+        queue_client = self._get_service_client_from_url(
+            account_url=account_url
+        ).get_queue_client(
+            queue=file_system
+        )
+        return queue_client
 
     def _get_container_client(
             self,
-            storage_account_url: str,
-            file_system: str,
-            credential: Union[DefaultAzureCredential, str]):
+            account_url: str,
+            file_system: str):
+        """
+        not used
+
+        Args:
+            account_url:
+            file_system:
+
+        Returns:
+
+        """
+
         raise NotImplementedError
 
     def _ls(self, path: str, file_path: str):

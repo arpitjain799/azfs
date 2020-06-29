@@ -1,37 +1,70 @@
 from typing import Union
 from azure.identity import DefaultAzureCredential
-from azure.storage.blob import BlobClient, ContainerClient
+from azure.storage.blob import BlobClient, ContainerClient, BlobServiceClient
 from .client_interface import ClientInterface
 
 
 class AzBlobClient(ClientInterface):
 
+    def _get_service_client(
+            self,
+            account_url: str,
+            credential: Union[DefaultAzureCredential, str]) -> BlobServiceClient:
+        """
+        get BlobServiceClient
+
+        Args:
+            account_url:
+            credential:
+
+        Returns:
+            BlobServiceClient
+        """
+        return BlobServiceClient(account_url=account_url, credential=credential)
+
     def _get_file_client(
             self,
-            storage_account_url: str,
+            account_url: str,
             file_system: str,
-            file_path: str,
-            credential: Union[DefaultAzureCredential, str]):
-        file_client = BlobClient(
-            account_url=storage_account_url,
-            container_name=file_system,
-            blob_name=file_path,
-            credential=credential
+            file_path: str) -> BlobClient:
+        """
+        get BlobClient
+
+        Args:
+            account_url:
+            file_system:
+            file_path:
+
+        Returns:
+            BlobClient
+        """
+        file_client = self._get_service_client_from_url(
+            account_url=account_url,
+        ).get_blob_client(
+            container=file_system,
+            blob=file_path
         )
         return file_client
 
-    def _get_service_client(self):
-        raise NotImplementedError
-
     def _get_container_client(
             self,
-            storage_account_url: str,
-            file_system: str,
-            credential: Union[DefaultAzureCredential, str]):
-        container_client = ContainerClient(
-            account_url=storage_account_url,
-            container_name=file_system,
-            credential=credential)
+            account_url: str,
+            file_system: str) -> ContainerClient:
+        """
+        get ContainerClient
+
+        Args:
+            account_url:
+            file_system:
+
+        Returns:
+            ContainerClient
+        """
+        container_client = self._get_service_client_from_url(
+            account_url=account_url,
+        ).get_container_client(
+            container=file_system
+        )
         return container_client
 
     def _ls(self, path: str, file_path: str):
