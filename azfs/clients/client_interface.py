@@ -75,7 +75,10 @@ class ClientInterface:
         raise NotImplementedError
 
     @abstractmethod
-    def _get_service_client(self):
+    def _get_service_client(
+            self,
+            storage_account_url: str,
+            credential: Union[DefaultAzureCredential, str]):
         """
         abstract method to be implemented
         :return:
