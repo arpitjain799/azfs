@@ -26,8 +26,7 @@ class AzDataLakeClient(ClientInterface):
             self,
             storage_account_url: str,
             file_system: str,
-            file_path: str,
-            credential: Union[DefaultAzureCredential, str]) -> DataLakeFileClient:
+            file_path: str) -> DataLakeFileClient:
         """
         get DataLakeFileClient
 
@@ -35,7 +34,6 @@ class AzDataLakeClient(ClientInterface):
             storage_account_url:
             file_system:
             file_path:
-            credential:
 
         Returns:
             DataLakeFileClient
@@ -51,15 +49,13 @@ class AzDataLakeClient(ClientInterface):
     def _get_container_client(
             self,
             storage_account_url: str,
-            file_system: str,
-            credential: Union[DefaultAzureCredential, str]) -> FileSystemClient:
+            file_system: str) -> FileSystemClient:
         """
         get FileSystemClient
 
         Args:
             storage_account_url:
             file_system:
-            credential:
 
         Returns:
             FileSystemClient
