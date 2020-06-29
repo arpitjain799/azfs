@@ -1,6 +1,6 @@
 from typing import Union
 from azure.identity import DefaultAzureCredential
-from azure.storage.blob import BlobClient, ContainerClient
+from azure.storage.blob import BlobClient, ContainerClient, BlobServiceClient
 from .client_interface import ClientInterface
 
 
@@ -11,27 +11,29 @@ class AzBlobClient(ClientInterface):
             storage_account_url: str,
             file_system: str,
             file_path: str,
-            credential: Union[DefaultAzureCredential, str]):
-        file_client = BlobClient(
-            account_url=storage_account_url,
-            container_name=file_system,
-            blob_name=file_path,
+            credential: Union[DefaultAzureCredential, str]) -> BlobClient:
+        file_client = self._get_service_client(
+            storage_account_url=storage_account_url,
             credential=credential
-        )
+        ).get_blob_client(container=file_system, blob=file_path)
         return file_client
 
-    def _get_service_client(self):
-        raise NotImplementedError
+    def _get_service_client(
+            self,
+            storage_account_url: str,
+            credential: Union[DefaultAzureCredential, str]) -> BlobServiceClient:
+        return BlobServiceClient(account_url=storage_account_url, credential=credential)
 
     def _get_container_client(
             self,
             storage_account_url: str,
             file_system: str,
-            credential: Union[DefaultAzureCredential, str]):
-        container_client = ContainerClient(
-            account_url=storage_account_url,
-            container_name=file_system,
-            credential=credential)
+            credential: Union[DefaultAzureCredential, str]) -> ContainerClient:
+        container_client = self._get_service_client(
+            storage_account_url=storage_account_url,
+            credential=credential
+        ).get_container_client(
+            container=file_system)
         return container_client
 
     def _ls(self, path: str, file_path: str):
