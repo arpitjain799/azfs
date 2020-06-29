@@ -74,6 +74,9 @@ class ClientInterface:
         """
         raise NotImplementedError
 
+    def get_service_client_from_url(self, account_url):
+        return self._get_service_client(storage_account_url=account_url, credential=self.credential)
+
     @abstractmethod
     def _get_service_client(
             self,
