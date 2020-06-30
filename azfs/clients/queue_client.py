@@ -51,7 +51,7 @@ class AzQueueClient(ClientInterface):
             account_url: str,
             file_system: str):
         """
-        not used
+        no correspond method to _container_client() in QueueClient
 
         Args:
             account_url:
@@ -69,9 +69,13 @@ class AzQueueClient(ClientInterface):
     def _get(self, path: str, **kwargs):
         """
 
-        :param path:
-        :param kwargs:
-        :return:
+        Args:
+            path:
+            **kwargs: ``delete`` or ``delete_after_receive`` are acceptable, and it means after you get message
+                from queue, the message you receive will be deleted. By default, the message will not deleted.
+
+        Returns:
+
         """
         delete_after_receive = True
         if "delete" in kwargs:
@@ -97,6 +101,19 @@ class AzQueueClient(ClientInterface):
             return {"status": "error", "message": "queue not found"}
 
     def _put(self, path: str, data):
+        """
+        put message in queue with base64-encoded.
+
+        Args:
+            path:
+            data:
+
+        Returns:
+
+        See Also:
+            https://azuresdkdocs.blob.core.windows.net/$web/python/azure-storage-queue/12.1.0/_modules/azure/storage/queue/_message_encoding.html
+
+        """
         # encode with base64
         encoded_data = base64.b64encode(data.encode('utf-8')).decode('utf-8')
         put_data = self.get_file_client_from_path(path).send_message(encoded_data)
@@ -105,16 +122,24 @@ class AzQueueClient(ClientInterface):
 
     def _info(self, path: str):
         """
-        no correspond method to _info()
-        :param path:
-        :return:
+        no correspond method to _info() in QueueClient
+
+        Args:
+            path:
+
+        Returns:
+
         """
         raise NotImplementedError
 
     def _rm(self, path: str):
         """
-        no correspond method to _rm()
-        :param path:
-        :return:
+        no correspond method to _rm() in QueueClient
+
+        Args:
+            path:
+
+        Returns:
+
         """
         raise NotImplementedError

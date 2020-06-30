@@ -34,9 +34,9 @@ package status
 
 **AzFS** is to provide convenient Python read/write functions for Azure Storage Account.
 
-azfs can
+``AzFS`` can
 
-* list files in blob (also with wildcard ``*``),
+* list files in blob (also filtered with wildcard ``*``),
 * check if file exists,
 * read csv as pd.DataFrame, and json as dict from blob,
 * write pd.DataFrame as csv, and dict as json to blob,
@@ -60,9 +60,12 @@ authorization
 Currently, only support `Azure Active Directory (AAD) token credential <https://docs.microsoft.com/azure/storage/common/storage-auth-aad>`_.
 
 Not support Connection String, or SAS, etc...
+(Soon it will be supported.)
 
 types of storage
 ----------------
+
+The table below shows the compatibility read/access of ``AzFS``.
 
 +--------------+------+-----------+-------+------+-------+
 | account kind | Blob | Data Lake | Queue | File | Table |
@@ -106,7 +109,7 @@ Credential is not required if ``AzFileClient()`` is created on AAD (Azure Active
 download data
 -------------
 
-azfs provides function to download csv or json data from ``Azure Blob Storage``.
+``AzFS`` provides function to download csv or json data from ``Azure Blob Storage``.
 API reference is `get/download <./sources/api.html#get-download>`_.
 
 .. code-block:: python
@@ -137,7 +140,7 @@ API reference is `get/download <./sources/api.html#get-download>`_.
 upload data
 -----------
 
-azfs also provides functions to upload csv or json data to ``Azure Blob Storage``.
+``AzFS`` also provides functions to upload csv or json data to ``Azure Blob Storage``.
 API reference is `put/upload <./sources/api.html#put-upload>`_.
 
 
@@ -203,7 +206,7 @@ API reference is `enumerating <./sources/api.html#file-enumerating>`_.
 remove, copy files, etc...
 --------------------------
 
-azfs also provides remove and copy functions.
+``AzFS`` also provides remove and copy functions.
 API reference is `manipulating <./sources/api.html#file-manipulating>`_.
 
 .. code-block:: python
@@ -257,5 +260,4 @@ Indices and tables
 ==================
 
 * :ref:`genindex`
-* :ref:`modindex`
 * :ref:`search`

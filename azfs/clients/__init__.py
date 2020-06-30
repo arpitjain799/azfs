@@ -27,16 +27,15 @@ class AbstractClient(metaclass=MetaClient):
 
 class AzfsClient(AbstractClient):
     """
-    Interface of AzBlobClient, AzDataLakeClient and AzQueueClient.
-    Different instances can be obtained as below
+    Abstract Client for AzBlobClient, AzDataLakeClient and AzQueueClient.
 
     Examples:
         >>> blob_client = AzfsClient.get("blob", "***")
         # or
         >>> datalake_client = AzfsClient.get("dfs", "***")
         # AzfsClient provide easy way to access functions implemented in AzBlobClient and AzDataLakeClient, as below
-        # path is azure storage url
-        data = AzfsClient.get(account_kind="blob", credential="...").download_data(path)
+        >>> data_path = "https://testazfs.blob.core.windows.net/test_container/test1.json"
+        >>> data = AzfsClient.get(account_kind="blob", credential="...").get(path=data_path)
 
     """
     CLIENTS = {}

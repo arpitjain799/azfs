@@ -84,7 +84,7 @@ class AzFileClient:
         check if specified file exists or not.
 
         Args:
-            path: Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_caontainer/test1.csv``
+            path: Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_container/test1.csv``
 
         Returns:
             ``True`` if files exists, otherwise ``False``
@@ -92,10 +92,10 @@ class AzFileClient:
         Examples:
             >>> import azfs
             >>> azc = azfs.AzFileClient()
-            >>> path = "https://testazfs.blob.core.windows.net/test_caontainer/test1.csv"
+            >>> path = "https://testazfs.blob.core.windows.net/test_container/test1.csv"
             >>> azc.exists(path=path)
             True
-            >>> path = "https://testazfs.blob.core.windows.net/test_caontainer/not_exist_test1.csv"
+            >>> path = "https://testazfs.blob.core.windows.net/test_container/not_exist_test1.csv"
             >>> azc.exists(path=path)
             False
 
@@ -112,7 +112,7 @@ class AzFileClient:
         list blob file from blob or dfs.
 
         Args:
-            path: Azure Blob path URL format, ex: https://testazfs.blob.core.windows.net/test_caontainer
+            path: Azure Blob path URL format, ex: https://testazfs.blob.core.windows.net/test_container
             attach_prefix: return full_path if True, return only name
 
         Returns:
@@ -121,7 +121,7 @@ class AzFileClient:
         Examples:
             >>> import azfs
             >>> azc = azfs.AzFileClient()
-            >>> path = "https://testazfs.blob.core.windows.net/test_caontainer"
+            >>> path = "https://testazfs.blob.core.windows.net/test_container"
             >>> azc.ls(path)
             [
                 "test1.csv",
@@ -132,11 +132,11 @@ class AzFileClient:
             ]
             >>> azc.ls(path=path, attach_prefix=True)
             [
-                "https://testazfs.blob.core.windows.net/test_caontainer/test1.csv",
-                "https://testazfs.blob.core.windows.net/test_caontainer/test2.csv",
-                "https://testazfs.blob.core.windows.net/test_caontainer/test3.csv",
-                "https://testazfs.blob.core.windows.net/test_caontainer/directory_1",
-                "https://testazfs.blob.core.windows.net/test_caontainer/directory_2"
+                "https://testazfs.blob.core.windows.net/test_container/test1.csv",
+                "https://testazfs.blob.core.windows.net/test_container/test2.csv",
+                "https://testazfs.blob.core.windows.net/test_container/test3.csv",
+                "https://testazfs.blob.core.windows.net/test_container/directory_1",
+                "https://testazfs.blob.core.windows.net/test_container/directory_2"
             ]
 
         """
@@ -162,9 +162,9 @@ class AzFileClient:
 
         Args:
             src_path:
-                Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_caontainer/test1.csv``
+                Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_container/test1.csv``
             dst_path:
-                Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_caontainer/test2.csv``
+                Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_container/test2.csv``
             overwrite:
 
         Returns:
@@ -186,7 +186,7 @@ class AzFileClient:
         delete the file in blob
 
         Args:
-            path: Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_caontainer/test1.csv``
+            path: Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_container/test1.csv``
 
         Returns:
             True if target file is correctly removed.
@@ -201,7 +201,7 @@ class AzFileClient:
         ``name``,  ``creation_time``, ``last_modified_time``, ``size``, ``content_hash(md5)``.
 
         Args:
-            path: Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_caontainer/test1.csv``
+            path: Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_container/test1.csv``
 
         Returns:
             dict info of some file
@@ -209,7 +209,7 @@ class AzFileClient:
         Examples:
             >>> import azfs
             >>> azc = azfs.AzFileClient()
-            >>> path = "https://testazfs.blob.core.windows.net/test_caontainer/test1.csv"
+            >>> path = "https://testazfs.blob.core.windows.net/test_container/test1.csv"
             >>> azc.info(path=path)
             {
                 "name": "test1.csv",
@@ -308,7 +308,7 @@ class AzFileClient:
 
     def glob(self, pattern_path: str):
         """
-        Currently only support * wildcard.
+        Currently only support ``* (wildcard)`` .
         By default, ``glob()`` lists specified files with formatted-URL.
 
         Args:
@@ -320,7 +320,7 @@ class AzFileClient:
         Examples:
             >>> import azfs
             >>> azc = azfs.AzFileClient()
-            >>> path = "https://testazfs.blob.core.windows.net/test_caontainer"
+            >>> path = "https://testazfs.blob.core.windows.net/test_container"
             ls() lists all files in some folder like
             >>> azc.ls(path)
             [
@@ -333,26 +333,26 @@ class AzFileClient:
                 "directory_2"
             ]
             glob() lists specified files according to the wildcard, and lists with formatted-URL by default
-            >>> pattern_path = "https://testazfs.blob.core.windows.net/test_caontainer/*.csv"
-            >>> azc.glob(path=path)
+            >>> pattern_path = "https://testazfs.blob.core.windows.net/test_container/*.csv"
+            >>> azc.glob(path=pattern_path)
             [
-                "https://testazfs.blob.core.windows.net/test_caontainer/test1.csv",
-                "https://testazfs.blob.core.windows.net/test_caontainer/test2.csv",
-                "https://testazfs.blob.core.windows.net/test_caontainer/test3.csv"
+                "https://testazfs.blob.core.windows.net/test_container/test1.csv",
+                "https://testazfs.blob.core.windows.net/test_container/test2.csv",
+                "https://testazfs.blob.core.windows.net/test_container/test3.csv"
             ]
             glob() can use any path
-            >>> pattern_path = "https://testazfs.blob.core.windows.net/test_caontainer/test1.*"
-            >>> azc.glob(path=path)
+            >>> pattern_path = "https://testazfs.blob.core.windows.net/test_container/test1.*"
+            >>> azc.glob(path=pattern_path)
             [
-                "https://testazfs.blob.core.windows.net/test_caontainer/test1.csv",
-                "https://testazfs.blob.core.windows.net/test_caontainer/test1.json"
+                "https://testazfs.blob.core.windows.net/test_container/test1.csv",
+                "https://testazfs.blob.core.windows.net/test_container/test1.json"
             ]
             also deeper folders
-            >>> pattern_path = "https://testazfs.blob.core.windows.net/test_caontainer/*/*.csv"
-            >>> azc.glob(path=path)
+            >>> pattern_path = "https://testazfs.blob.core.windows.net/test_container/*/*.csv"
+            >>> azc.glob(path=pattern_path)
             [
-                "https://testazfs.blob.core.windows.net/test_caontainer/directory_1/deeper_test1.csv",
-                "https://testazfs.blob.core.windows.net/test_caontainer/directory_2/deeper_test2.csv"
+                "https://testazfs.blob.core.windows.net/test_container/directory_1/deeper_test1.csv",
+                "https://testazfs.blob.core.windows.net/test_container/directory_2/deeper_test2.csv"
             ]
         """
         if "*" not in pattern_path:
@@ -381,7 +381,7 @@ class AzFileClient:
         get data from Azure Blob Storage.
 
         Args:
-            path: Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_caontainer/test1.csv``
+            path: Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_container/test1.csv``
             **kwargs:
 
         Returns:
@@ -390,7 +390,7 @@ class AzFileClient:
         Examples:
             >>> import azfs
             >>> azc = azfs.AzFileClient()
-            >>> path = "https://testazfs.blob.core.windows.net/test_caontainer/test1.csv"
+            >>> path = "https://testazfs.blob.core.windows.net/test_container/test1.csv"
             you can read csv file in azure blob storage
             >>> data = azc.get(path=path)
             `download()` is same method as `get()`
@@ -406,7 +406,7 @@ class AzFileClient:
         support ``csv`` and also ``csv.gz``.
 
         Args:
-            path: Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_caontainer/test1.csv``
+            path: Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_container/test1.csv``
             **kwargs: keywords to put df.read_csv(), such as ``header``, ``encoding``.
 
         Returns:
@@ -416,7 +416,7 @@ class AzFileClient:
             >>> import azfs
             >>> import pandas as pd
             >>> azc = azfs.AzFileClient()
-            >>> path = "https://testazfs.blob.core.windows.net/test_caontainer/test1.csv"
+            >>> path = "https://testazfs.blob.core.windows.net/test_container/test1.csv"
             you can read and write csv file in azure blob storage
             >>> df = azc.read_csv(path=path)
             Using `with` statement, you can use `pandas`-like methods
@@ -432,7 +432,7 @@ class AzFileClient:
         upload data to blob or data_lake storage.
 
         Args:
-            path: Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_caontainer/test1.csv``
+            path: Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_container/test1.csv``
             data: some data to upload.
 
         Returns:
@@ -441,7 +441,7 @@ class AzFileClient:
         Examples:
             >>> import azfs
             >>> azc = azfs.AzFileClient()
-            >>> path = "https://testazfs.blob.core.windows.net/test_caontainer/test1.csv"
+            >>> path = "https://testazfs.blob.core.windows.net/test_container/test1.csv"
             you can write file in azure blob storage
             >>> data = azc.put(path=path)
             `download()` is same method as `get()`
@@ -456,7 +456,7 @@ class AzFileClient:
         output pandas dataframe to csv file in Datalake storage.
 
         Args:
-            path: Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_caontainer/test1.csv``.
+            path: Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_container/test1.csv``.
             df: pd.DataFrame to upload.
             **kwargs: keywords to put df.to_csv(), such as ``encoding``, ``index``.
 
@@ -466,7 +466,7 @@ class AzFileClient:
         Examples:
             >>> import azfs
             >>> azc = azfs.AzFileClient()
-            >>> path = "https://testazfs.blob.core.windows.net/test_caontainer/test1.csv"
+            >>> path = "https://testazfs.blob.core.windows.net/test_container/test1.csv"
             you can read and write csv file in azure blob storage
             >>> azc.write_csv(path=path, df=df)
             Using `with` statement, you can use `pandas`-like methods
@@ -483,7 +483,7 @@ class AzFileClient:
         read json file in Datalake storage.
 
         Args:
-            path: Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_caontainer/test1.json``
+            path: Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_container/test1.json``
             **kwargs: keywords to put json.loads(), such as ``parse_float``.
 
         Returns:
@@ -492,7 +492,7 @@ class AzFileClient:
         Examples:
             >>> import azfs
             >>> azc = azfs.AzFileClient()
-            >>> path = "https://testazfs.blob.core.windows.net/test_caontainer/test1.json"
+            >>> path = "https://testazfs.blob.core.windows.net/test_container/test1.json"
             you can read and write csv file in azure blob storage
             >>> azc.read_json(path=path)
 
@@ -507,7 +507,7 @@ class AzFileClient:
         output dict to json file in Datalake storage.
 
         Args:
-            path: Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_caontainer/test1.json``
+            path: Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_container/test1.json``
             data: dict to upload
             **kwargs: keywords to put json.loads(), such as ``indent``.
 
@@ -517,7 +517,7 @@ class AzFileClient:
         Examples:
             >>> import azfs
             >>> azc = azfs.AzFileClient()
-            >>> path = "https://testazfs.blob.core.windows.net/test_caontainer/test1.json"
+            >>> path = "https://testazfs.blob.core.windows.net/test_container/test1.json"
             you can read and write csv file in azure blob storage
             >>> azc.write_json(path=path, data={"": ""})
 
