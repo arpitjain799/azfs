@@ -23,7 +23,7 @@ FileSystemClientType = Union[
 
 class ClientInterface:
     """
-    The class provides Azure Blob and Datalake Container and File Client interface.
+    The class provides Azure Blob, DataLake and Queue Client interface.
     Abstract methods below are implemented in each inherited class
 
     * _get_file_client
@@ -45,8 +45,14 @@ class ClientInterface:
             account_url: str,
             credential: Union[DefaultAzureCredential, str]):
         """
-        abstract method to be implemented
-        :return:
+        get service_client for Blob, DataLake or Queue Service Client with credential.
+
+        Args:
+            account_url: account_url ends with ``/``
+            credential: DefaultCredential or string
+
+        Returns:
+
         """
         raise NotImplementedError
 
