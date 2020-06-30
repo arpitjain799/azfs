@@ -24,7 +24,7 @@ FileSystemClientType = Union[
 class ClientInterface:
     """
     The class provides Azure Blob, DataLake and Queue Client interface.
-    Abstract methods below are implemented in each inherited class
+    Abstract methods below are implemented in each inherited classes.
 
     * _get_file_client
     * _get_service_client
