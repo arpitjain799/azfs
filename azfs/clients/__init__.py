@@ -1,7 +1,7 @@
-from azfs.clients.blob_client import AzBlobClient
-from azfs.clients.datalake_client import AzDataLakeClient
-from azfs.clients.queue_client import AzQueueClient
 from typing import Union
+from .blob_client import AzBlobClient
+from .datalake_client import AzDataLakeClient
+from .queue_client import AzQueueClient
 
 
 class MetaClient(type):
@@ -27,17 +27,15 @@ class AbstractClient(metaclass=MetaClient):
 
 class AzfsClient(AbstractClient):
     """
-    Interface of AzBlobClient and AzDataLakeClient.
-    Different instances can be obtained as below
+    Abstract Client for AzBlobClient, AzDataLakeClient and AzQueueClient.
 
-    blob_client = AzfsClient.get("blob", "***")
-    or
-    datalake_client = AzfsClient.get("dfs", "***")
-
-    AzfsClient provide easy way to access functions implemented in AzBlobClient and AzDataLakeClient, as below
-
-    # path is azure storage url
-    data = AzfsClient.get("blob", "***").download_data(path)
+    Examples:
+        >>> blob_client = AzfsClient.get("blob", "***")
+        # or
+        >>> datalake_client = AzfsClient.get("dfs", "***")
+        # AzfsClient provide easy way to access functions implemented in AzBlobClient and AzDataLakeClient, as below
+        >>> data_path = "https://testazfs.blob.core.windows.net/test_container/test1.json"
+        >>> data = AzfsClient.get(account_kind="blob", credential="...").get(path=data_path)
 
     """
     CLIENTS = {}
@@ -45,9 +43,16 @@ class AzfsClient(AbstractClient):
     @classmethod
     def get(cls, account_kind: str, credential) -> Union[AzBlobClient, AzDataLakeClient]:
         """
-        get AzBlobClient or AzDataLakeClient depending on account_kind
-        :param account_kind: currently blob or dfs
-        :param credential: AzureDefaultCredential or string
-        :return:
+        get AzBlobClient, AzDataLakeClient or AzQueueClient depending on account_kind
+
+        Args:
+            account_kind: blob, dfs or queue
+            credential: AzureDefaultCredential or string
+
+        Returns:
+            Union[AzBlobClient, AzDataLakeClient, AzQueueClient]
+
+        Examples:
+            >>> AzBlobClient = AzfsClient(account_kind="blob", credential="...")
         """
         return cls.CLIENTS[account_kind](credential=credential)

@@ -1,37 +1,72 @@
-from azfs.clients.client_interface import ClientInterface
 from typing import Union
 from azure.identity import DefaultAzureCredential
-from azure.storage.filedatalake import DataLakeFileClient, FileSystemClient
+from azure.storage.filedatalake import DataLakeFileClient, FileSystemClient, DataLakeServiceClient
+from .client_interface import ClientInterface
 
 
 class AzDataLakeClient(ClientInterface):
 
+    def _get_service_client(
+            self,
+            account_url: str,
+            credential: Union[DefaultAzureCredential, str]) -> DataLakeServiceClient:
+        """
+        get DataLakeServiceClient
+
+        Args:
+            account_url:
+            credential:
+
+        Returns:
+            DataLakeServiceClient
+        """
+        return DataLakeServiceClient(account_url=account_url, credential=credential)
+
     def _get_file_client(
             self,
-            storage_account_url: str,
+            account_url: str,
             file_system: str,
-            file_path: str,
-            credential: Union[DefaultAzureCredential, str]):
-        file_client = DataLakeFileClient(
-            storage_account_url,
-            file_system,
-            file_path,
-            credential=credential)
-        return file_client
+            file_path: str) -> DataLakeFileClient:
+        """
+        get DataLakeFileClient
 
-    def _get_service_client(self):
-        raise NotImplementedError
+        Args:
+            account_url:
+            file_system:
+            file_path:
+
+        Returns:
+            DataLakeFileClient
+
+        """
+        file_client = self._get_service_client_from_url(
+            account_url=account_url,
+        ).get_file_client(
+            file_system=file_system,
+            file_path=file_path)
+        return file_client
 
     def _get_container_client(
             self,
-            storage_account_url: str,
-            file_system: str,
-            credential: Union[DefaultAzureCredential, str]):
-        file_system = FileSystemClient(
-            account_url=storage_account_url,
-            file_system_name=file_system,
-            credential=credential)
-        return file_system
+            account_url: str,
+            file_system: str) -> FileSystemClient:
+        """
+        get FileSystemClient
+
+        Args:
+            account_url:
+            file_system:
+
+        Returns:
+            FileSystemClient
+
+        """
+        file_system_client = self._get_service_client_from_url(
+            account_url=account_url
+        ).get_file_system_client(
+            file_system=file_system
+        )
+        return file_system_client
 
     def _ls(self, path: str, file_path: str):
         file_list = \

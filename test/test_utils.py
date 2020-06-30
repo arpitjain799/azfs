@@ -18,6 +18,7 @@ class TestBlobPathDecoder:
         ("https://test.blob.core.windows.net/test", "test", "blob", "test", ""),
         ("https://test.blob.core.windows.net/", "test", "blob", "", ""),
         ("blob/test/test/test_file.csv", "test", "blob", "test", "test_file.csv"),
+        ("/blob/test/test/test_file.csv", "test", "blob", "test", "test_file.csv"),
         # datalake storage
         ("https://test.dfs.core.windows.net/test/test_file.csv", "test", "dfs", "test", "test_file.csv"),
         ("https://test.dfs.core.windows.net/test/dir/test_file.csv", "test", "dfs", "test", "dir/test_file.csv"),
@@ -25,6 +26,7 @@ class TestBlobPathDecoder:
         ("https://test.dfs.core.windows.net/test", "test", "dfs", "test", ""),
         ("https://test.dfs.core.windows.net/", "test", "dfs", "", ""),
         ("dfs/test/test/test_file.csv", "test", "dfs", "test", "test_file.csv"),
+        ("/dfs/test/test/test_file.csv", "test", "dfs", "test", "test_file.csv"),
     ])
     def test_path_decoder_pass(self, path, storage_account_name, account_type, container_name, blob_file):
         bpd = BlobPathDecoder()
@@ -61,11 +63,12 @@ class TestLsFilter:
             "dir/file5.csv",
             "dir/some/file6.csv"
         ]
+        # sorted by alphabetic order
         result_list = [
+            "dir/",
             "file1.csv",
             "file2.csv",
-            "file3.csv",
-            "dir/"
+            "file3.csv"
         ]
         result_list_v = ls_filter(file_path_list, "")
         assert result_list_v == result_list
@@ -76,4 +79,10 @@ class TestLsFilter:
             "some/"
         ]
         result_list_v = ls_filter(file_path_list, "dir")
+        assert result_list_v == result_list
+
+        result_list = [
+            "file6.csv"
+        ]
+        result_list_v = ls_filter(file_path_list, "dir/some")
         assert result_list_v == result_list
