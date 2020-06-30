@@ -334,7 +334,7 @@ class AzFileClient:
             ]
             glob() lists specified files according to the wildcard, and lists with formatted-URL by default
             >>> pattern_path = "https://testazfs.blob.core.windows.net/test_caontainer/*.csv"
-            >>> azc.glob(path=path)
+            >>> azc.glob(path=pattern_path)
             [
                 "https://testazfs.blob.core.windows.net/test_caontainer/test1.csv",
                 "https://testazfs.blob.core.windows.net/test_caontainer/test2.csv",
@@ -342,14 +342,14 @@ class AzFileClient:
             ]
             glob() can use any path
             >>> pattern_path = "https://testazfs.blob.core.windows.net/test_caontainer/test1.*"
-            >>> azc.glob(path=path)
+            >>> azc.glob(path=pattern_path)
             [
                 "https://testazfs.blob.core.windows.net/test_caontainer/test1.csv",
                 "https://testazfs.blob.core.windows.net/test_caontainer/test1.json"
             ]
             also deeper folders
             >>> pattern_path = "https://testazfs.blob.core.windows.net/test_caontainer/*/*.csv"
-            >>> azc.glob(path=path)
+            >>> azc.glob(path=pattern_path)
             [
                 "https://testazfs.blob.core.windows.net/test_caontainer/directory_1/deeper_test1.csv",
                 "https://testazfs.blob.core.windows.net/test_caontainer/directory_2/deeper_test2.csv"
