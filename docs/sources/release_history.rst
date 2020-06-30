@@ -5,7 +5,7 @@ Release History
    :maxdepth: 4
 
 
-0.1.9 ()
+0.1.9 (2020-06-30)
 ------------------
 
 * implement ``_get_service_client()``: to prepare adopting new authorization
