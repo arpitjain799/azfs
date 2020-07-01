@@ -37,12 +37,25 @@ class AzFileClient:
     """
 
     class AzContextManager:
+        """
+        AzContextManger provides easy way to set new function as attribute to another package like pandas.
+        """
         def __init__(self):
-            self.register_function_to_dict_list = []
-            self.register_function_to_proxy_list = []
             self.register_list = []
 
         def register(self, _as: str, _to: object):
+            """
+            register decorated function to self.register_list.
+
+
+            Args:
+                _as: new method name
+                _to: assign to class or object
+
+            Returns:
+                decorated function
+
+            """
             def _register(function):
                 function_info = {
                     "assign_as": _as,
@@ -54,11 +67,28 @@ class AzFileClient:
 
             return _register
 
-        def attach(self, client):
+        def attach(self, client: object):
+            """
+            set new function as attribute based on self.register_list
+
+            Args:
+                client: set AzFileClient always
+
+            Returns:
+                None
+
+            """
             for f in self.register_list:
                 setattr(f['assign_to'], f['assign_as'], f['function'](client))
 
         def detach(self):
+            """
+            set None based on self.register_list
+
+            Returns:
+                None
+
+            """
             for f in self.register_list:
                 setattr(f['assign_to'], f['assign_as'], None)
 
@@ -97,14 +127,6 @@ class AzFileClient:
 
         """
         self._az_context_manager.detach()
-
-    @staticmethod
-    @_az_context_manager.register(_as="to_csv_az", _to=pd.DataFrame)
-    def _to_csv(az_file_client):
-        def inner(self, path, **kwargs):
-            df = self if isinstance(self, pd.DataFrame) else None
-            return az_file_client.write_csv(path=path, df=df, **kwargs)
-        return inner
 
     def exists(self, path: str) -> bool:
         """
@@ -430,6 +452,16 @@ class AzFileClient:
     @staticmethod
     @_az_context_manager.register(_as="read_csv_az", _to=pd)
     def _read_csv(az_file_client):
+        """
+        used in context-clause.
+
+        Args:
+            az_file_client: set self
+
+        Returns:
+            inner function
+
+        """
         def inner(path, **kwargs):
             return az_file_client.read_csv(path=path, **kwargs)
         return inner
@@ -484,6 +516,23 @@ class AzFileClient:
         """
         _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
         return AzfsClient.get(account_kind, credential=self.credential).put(path=path, data=data)
+
+    @staticmethod
+    @_az_context_manager.register(_as="to_csv_az", _to=pd.DataFrame)
+    def _to_csv(az_file_client):
+        """
+        used in context-clause.
+
+        Args:
+            az_file_client: set self
+
+        Returns:
+            inner function
+        """
+        def inner(self, path, **kwargs):
+            df = self if isinstance(self, pd.DataFrame) else None
+            return az_file_client.write_csv(path=path, df=df, **kwargs)
+        return inner
 
     def write_csv(self, path: str, df: pd.DataFrame, **kwargs) -> bool:
         """
