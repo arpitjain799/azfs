@@ -36,6 +36,34 @@ class AzFileClient:
         >>> azc = azfs.AzFileClient(credential=credential)
     """
 
+    class AzContextManager:
+        def __init__(self):
+            self.register_function_to_dict_list = []
+            self.register_function_to_proxy_list = []
+            self.register_list = []
+
+        def register(self, _as: str, _to: object):
+            def _register(function):
+                function_info = {
+                    "assign_as": _as,
+                    "assign_to": _to,
+                    "function": function
+                }
+                self.register_list.append(function_info)
+                return function
+
+            return _register
+
+        def attach(self, client):
+            for f in self.register_list:
+                setattr(f['assign_to'], f['assign_as'], f['function'](client))
+
+        def detach(self):
+            for f in self.register_list:
+                setattr(f['assign_to'], f['assign_as'], None)
+
+    _az_context_manager = AzContextManager()
+
     def __init__(
             self,
             credential: Optional[Union[str, DefaultAzureCredential]] = None):
@@ -53,8 +81,7 @@ class AzFileClient:
         Returns:
 
         """
-        pd.__dict__['read_csv_az'] = self.read_csv
-        pd.DataFrame.to_csv_az = self.to_csv(self)
+        self._az_context_manager.attach(client=self)
         return self
 
     def __exit__(self, exec_type, exec_value, traceback):
@@ -69,11 +96,11 @@ class AzFileClient:
         Returns:
 
         """
-        pd.__dict__.pop('read_csv_az')
-        pd.DataFrame.to_csv_az = None
+        self._az_context_manager.detach()
 
     @staticmethod
-    def to_csv(az_file_client):
+    @_az_context_manager.register(_as="to_csv_az", _to=pd.DataFrame)
+    def _to_csv(az_file_client):
         def inner(self, path, **kwargs):
             df = self if isinstance(self, pd.DataFrame) else None
             return az_file_client.write_csv(path=path, df=df, **kwargs)
@@ -399,6 +426,13 @@ class AzFileClient:
         """
         _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
         return AzfsClient.get(account_kind, credential=self.credential).get(path=path, **kwargs)
+
+    @staticmethod
+    @_az_context_manager.register(_as="read_csv_az", _to=pd)
+    def _read_csv(az_file_client):
+        def inner(path, **kwargs):
+            return az_file_client.read_csv(path=path, **kwargs)
+        return inner
 
     def read_csv(self, path: str, **kwargs) -> pd.DataFrame:
         """
