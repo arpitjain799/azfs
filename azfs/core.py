@@ -57,12 +57,31 @@ class AzFileClient:
 
             """
             def _register(function):
+                def wrapper(*args, **kwargs):
+                    def new_function(*args2, **kwargs2):
+                        print("======================")
+                        print(f"args: {args}")
+                        print(f"kwargs: {kwargs}")
+                        print("======================")
+                        print(f"args2: {args2}")
+                        print(f"kwargs2: {kwargs2}")
+                        target_function = getattr(kwargs['az_file_client_instance'], function.__name__)
+
+                        df = args2[0] if isinstance(args2[0], pd.DataFrame) else None
+                        if df is not None:
+                            kwargs2['df'] = args2[0]
+                            return target_function(*args2[1:], **kwargs2)
+                        return target_function(*args2, **kwargs2)
+
+                    return new_function
+
                 function_info = {
                     "assign_as": _as,
                     "assign_to": _to,
-                    "function": function
+                    "function": wrapper
                 }
                 self.register_list.append(function_info)
+
                 return function
 
             return _register
@@ -79,7 +98,7 @@ class AzFileClient:
 
             """
             for f in self.register_list:
-                setattr(f['assign_to'], f['assign_as'], f['function'](client))
+                setattr(f['assign_to'], f['assign_as'], f['function'](az_file_client_instance=client))
 
         def detach(self):
             """
@@ -450,7 +469,6 @@ class AzFileClient:
         return AzfsClient.get(account_kind, credential=self.credential).get(path=path, **kwargs)
 
     @staticmethod
-    @_az_context_manager.register(_as="read_csv_az", _to=pd)
     def _read_csv(az_file_client):
         """
         used in context-clause.
@@ -466,6 +484,7 @@ class AzFileClient:
             return az_file_client.read_csv(path=path, **kwargs)
         return inner
 
+    @_az_context_manager.register(_as="read_csv_az", _to=pd)
     def read_csv(self, path: str, **kwargs) -> pd.DataFrame:
         """
         get csv data as pd.DataFrame from Azure Blob Storage.
@@ -518,7 +537,6 @@ class AzFileClient:
         return AzfsClient.get(account_kind, credential=self.credential).put(path=path, data=data)
 
     @staticmethod
-    @_az_context_manager.register(_as="to_csv_az", _to=pd.DataFrame)
     def _to_csv(az_file_client):
         """
         used in context-clause.
@@ -534,6 +552,7 @@ class AzFileClient:
             return az_file_client.write_csv(path=path, df=df, **kwargs)
         return inner
 
+    @_az_context_manager.register(_as="to_csv_az", _to=pd.DataFrame)
     def write_csv(self, path: str, df: pd.DataFrame, **kwargs) -> bool:
         """
         output pandas dataframe to csv file in Datalake storage.
