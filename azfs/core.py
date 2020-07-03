@@ -149,8 +149,10 @@ class AzFileClient:
 
     def __enter__(self):
         """
-        add ``read_csv_az()`` and ``to_csv_az`` to pandas module
+        add some functions to pandas module based on AzContextManger()
+
         Returns:
+            instance of AzFileClient
 
         """
         self._az_context_manager.attach(client=self)
@@ -158,7 +160,7 @@ class AzFileClient:
 
     def __exit__(self, exec_type, exec_value, traceback):
         """
-        remove ``read_csv_az()`` and ``to_csv_az`` from pandas module
+        remove some functions from pandas module based on AzContextManager()
 
         Args:
             exec_type:
@@ -166,7 +168,7 @@ class AzFileClient:
             traceback:
 
         Returns:
-
+            None
         """
         self._az_context_manager.detach()
 
