@@ -491,22 +491,6 @@ class AzFileClient:
         _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
         return AzfsClient.get(account_kind, credential=self.credential).get(path=path, **kwargs)
 
-    @staticmethod
-    def _read_csv(az_file_client):
-        """
-        used in context-clause.
-
-        Args:
-            az_file_client: set self
-
-        Returns:
-            inner function
-
-        """
-        def inner(path, **kwargs):
-            return az_file_client.read_csv(path=path, **kwargs)
-        return inner
-
     @_az_context_manager.register(_as="read_csv_az", _to=pd)
     def read_csv(self, path: str, **kwargs) -> pd.DataFrame:
         """
@@ -558,22 +542,6 @@ class AzFileClient:
         """
         _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
         return AzfsClient.get(account_kind, credential=self.credential).put(path=path, data=data)
-
-    @staticmethod
-    def _to_csv(az_file_client):
-        """
-        used in context-clause.
-
-        Args:
-            az_file_client: set self
-
-        Returns:
-            inner function
-        """
-        def inner(self, path, **kwargs):
-            df = self if isinstance(self, pd.DataFrame) else None
-            return az_file_client.write_csv(path=path, df=df, **kwargs)
-        return inner
 
     @_az_context_manager.register(_as="to_csv_az", _to=pd.DataFrame)
     def write_csv(self, path: str, df: pd.DataFrame, **kwargs) -> bool:
