@@ -36,6 +36,106 @@ class AzFileClient:
         >>> azc = azfs.AzFileClient(credential=credential)
     """
 
+    class AzContextManager:
+        """
+        AzContextManger provides easy way to set new function as attribute to another package like pandas.
+        """
+        def __init__(self):
+            self.register_list = []
+
+        def register(self, _as: str, _to: object):
+            """
+            register decorated function to self.register_list.
+
+
+            Args:
+                _as: new method name
+                _to: assign to class or object
+
+            Returns:
+                decorated function
+
+            """
+            def _register(function):
+                """
+                append ``wrapper`` function
+
+                Args:
+                    function:
+
+                Returns:
+
+                """
+                def wrapper(class_instance):
+                    """
+                    accept instance in kwargs as name of ``az_file_client_instance``
+
+                    Args:
+                        class_instance: always instance of AzFileClient
+
+                    Returns:
+
+                    """
+
+                    def new_function(*args, **kwargs):
+                        """
+                        actual wrapped function
+
+                        Args:
+                            *args:
+                            **kwargs:
+
+                        Returns:
+
+                        """
+                        target_function = getattr(class_instance, function.__name__)
+
+                        df = args[0] if isinstance(args[0], pd.DataFrame) else None
+                        if df is not None:
+                            kwargs['df'] = args[0]
+                            return target_function(*args[1:], **kwargs)
+                        return target_function(*args, **kwargs)
+
+                    return new_function
+
+                function_info = {
+                    "assign_as": _as,
+                    "assign_to": _to,
+                    "function": wrapper
+                }
+                self.register_list.append(function_info)
+
+                return function
+
+            return _register
+
+        def attach(self, client: object):
+            """
+            set new function as attribute based on self.register_list
+
+            Args:
+                client: set AzFileClient always
+
+            Returns:
+                None
+
+            """
+            for f in self.register_list:
+                setattr(f['assign_to'], f['assign_as'], f['function'](class_instance=client))
+
+        def detach(self):
+            """
+            set None based on self.register_list
+
+            Returns:
+                None
+
+            """
+            for f in self.register_list:
+                setattr(f['assign_to'], f['assign_as'], None)
+
+    _az_context_manager = AzContextManager()
+
     def __init__(
             self,
             credential: Optional[Union[str, DefaultAzureCredential]] = None):
@@ -49,17 +149,18 @@ class AzFileClient:
 
     def __enter__(self):
         """
-        add ``read_csv_az()`` and ``to_csv_az`` to pandas module
+        add some functions to pandas module based on AzContextManger()
+
         Returns:
+            instance of AzFileClient
 
         """
-        pd.__dict__['read_csv_az'] = self.read_csv
-        pd.DataFrame.to_csv_az = self.to_csv(self)
+        self._az_context_manager.attach(client=self)
         return self
 
     def __exit__(self, exec_type, exec_value, traceback):
         """
-        remove ``read_csv_az()`` and ``to_csv_az`` from pandas module
+        remove some functions from pandas module based on AzContextManager()
 
         Args:
             exec_type:
@@ -67,17 +168,9 @@ class AzFileClient:
             traceback:
 
         Returns:
-
+            None
         """
-        pd.__dict__.pop('read_csv_az')
-        pd.DataFrame.to_csv_az = None
-
-    @staticmethod
-    def to_csv(az_file_client):
-        def inner(self, path, **kwargs):
-            df = self if isinstance(self, pd.DataFrame) else None
-            return az_file_client.write_csv(path=path, df=df, **kwargs)
-        return inner
+        self._az_context_manager.detach()
 
     def exists(self, path: str) -> bool:
         """
@@ -400,6 +493,7 @@ class AzFileClient:
         _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
         return AzfsClient.get(account_kind, credential=self.credential).get(path=path, **kwargs)
 
+    @_az_context_manager.register(_as="read_csv_az", _to=pd)
     def read_csv(self, path: str, **kwargs) -> pd.DataFrame:
         """
         get csv data as pd.DataFrame from Azure Blob Storage.
@@ -451,6 +545,7 @@ class AzFileClient:
         _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
         return AzfsClient.get(account_kind, credential=self.credential).put(path=path, data=data)
 
+    @_az_context_manager.register(_as="to_csv_az", _to=pd.DataFrame)
     def write_csv(self, path: str, df: pd.DataFrame, **kwargs) -> bool:
         """
         output pandas dataframe to csv file in Datalake storage.
