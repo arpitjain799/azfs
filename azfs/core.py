@@ -57,21 +57,44 @@ class AzFileClient:
 
             """
             def _register(function):
-                def wrapper(*args, **kwargs):
-                    def new_function(*args2, **kwargs2):
-                        print("======================")
-                        print(f"args: {args}")
-                        print(f"kwargs: {kwargs}")
-                        print("======================")
-                        print(f"args2: {args2}")
-                        print(f"kwargs2: {kwargs2}")
-                        target_function = getattr(kwargs['az_file_client_instance'], function.__name__)
+                """
+                append ``wrapper`` function
 
-                        df = args2[0] if isinstance(args2[0], pd.DataFrame) else None
+                Args:
+                    function:
+
+                Returns:
+
+                """
+                def wrapper(class_instance):
+                    """
+                    accept instance in kwargs as name of ``az_file_client_instance``
+
+                    Args:
+                        class_instance: always instance of AzFileClient
+
+                    Returns:
+
+                    """
+
+                    def new_function(*args, **kwargs):
+                        """
+                        actual wrapped function
+
+                        Args:
+                            *args:
+                            **kwargs:
+
+                        Returns:
+
+                        """
+                        target_function = getattr(class_instance, function.__name__)
+
+                        df = args[0] if isinstance(args[0], pd.DataFrame) else None
                         if df is not None:
-                            kwargs2['df'] = args2[0]
-                            return target_function(*args2[1:], **kwargs2)
-                        return target_function(*args2, **kwargs2)
+                            kwargs['df'] = args[0]
+                            return target_function(*args[1:], **kwargs)
+                        return target_function(*args, **kwargs)
 
                     return new_function
 
@@ -98,7 +121,7 @@ class AzFileClient:
 
             """
             for f in self.register_list:
-                setattr(f['assign_to'], f['assign_as'], f['function'](az_file_client_instance=client))
+                setattr(f['assign_to'], f['assign_as'], f['function'](class_instance=client))
 
         def detach(self):
             """
