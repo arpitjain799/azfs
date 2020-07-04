@@ -205,7 +205,7 @@ class TestToCsv:
 
 
 class TestToTsv:
-    def test_blob_to_csv(self, mocker, _put, var_azc, var_df):
+    def test_blob_to_table(self, mocker, _put, var_azc, var_df):
         mocker.patch.object(AzBlobClient, "_put", _put)
 
         # the file below is not exists
@@ -215,7 +215,7 @@ class TestToTsv:
             result = var_df.to_table_az(path)
         assert result
 
-    def test_dfs_to_csv(self, mocker, _put, var_azc, var_df):
+    def test_dfs_to_table(self, mocker, _put, var_azc, var_df):
         mocker.patch.object(AzDataLakeClient, "_put", _put)
 
         # the file below is not exists
@@ -224,6 +224,44 @@ class TestToTsv:
         with var_azc:
             result = var_df.to_table_az(path)
         assert result
+
+
+class TestToPickle:
+    def test_blob_to_pickle(self, mocker, _put, var_azc, var_df):
+        mocker.patch.object(AzBlobClient, "_put", _put)
+
+        # the file below is not exists
+        path = "https://testazfs.blob.core.windows.net/test_caontainer/test.pkl"
+
+        with var_azc:
+            result = var_df.to_pickle_az(path)
+            assert result
+            result = var_df.to_pickle_az(path, compression=None)
+            assert result
+            result = var_df.to_pickle_az(path, compression="gzip")
+            assert result
+            result = var_df.to_pickle_az(path, compression="bz2")
+            assert result
+            result = var_df.to_pickle_az(path, compression="xz")
+            assert result
+
+    def test_dfs_to_pickle(self, mocker, _put, var_azc, var_df):
+        mocker.patch.object(AzDataLakeClient, "_put", _put)
+
+        # the file below is not exists
+        path = "https://testazfs.dfs.core.windows.net/test_caontainer/test.pkl"
+
+        with var_azc:
+            result = var_df.to_pickle_az(path)
+            assert result
+            result = var_df.to_pickle_az(path, compression=None)
+            assert result
+            result = var_df.to_pickle_az(path, compression="gzip")
+            assert result
+            result = var_df.to_pickle_az(path, compression="bz2")
+            assert result
+            result = var_df.to_pickle_az(path, compression="xz")
+            assert result
 
 
 class TestToJson:
