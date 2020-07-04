@@ -533,6 +533,11 @@ class AzFileClient:
         file_to_read = self._get(path)
         return pd.read_csv(file_to_read, **kwargs)
 
+    @_az_context_manager.register(_as="read_table_az", _to=pd)
+    def read_table(self, path: str, **kwargs) -> pd.DataFrame:
+        file_to_read = self._get(path)
+        return pd.read_table(file_to_read, **kwargs)
+
     def _put(self, path: str, data) -> bool:
         """
         upload data to blob or data_lake storage.
@@ -579,11 +584,14 @@ class AzFileClient:
             Using `with` statement, you can use `pandas`-like methods
             >>> with azc:
             >>>     df.to_csv_az(path)
-
-
         """
         csv_str = df.to_csv(**kwargs).encode("utf-8")
         return self._put(path=path, data=csv_str)
+
+    @_az_context_manager.register(_as="to_table_az", _to=pd.DataFrame)
+    def write_table(self, path: str, df: pd.DataFrame, **kwargs) -> bool:
+        table_str = df.to_csv(sep="\t", **kwargs).encode("utf-8")
+        return self._put(path=path, data=table_str)
 
     def read_json(self, path: str, **kwargs) -> dict:
         """
