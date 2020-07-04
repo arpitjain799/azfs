@@ -1,6 +1,6 @@
-import azfs
 from azfs.clients.blob_client import AzBlobClient
 from azure.storage.blob import BlobClient, ContainerClient
+import azfs
 
 credential = ""
 azc = azfs.AzFileClient()
@@ -48,6 +48,17 @@ def test_blob_info(mocker):
     assert check_sum == "etag"
     result = azc.isfile(path=test_file_path)
     assert result
+
+
+def test_blob_info_error(mocker):
+    func_mock = mocker.MagicMock()
+    func_mock.side_effect = IOError
+    mocker.patch.object(BlobClient, "get_blob_properties", func_mock)
+
+    result = azc.isfile(path=test_file_path)
+    assert not result
+    result = azc.isdir(path=test_file_path)
+    assert not result
 
 
 def test_blob_upload(mocker):

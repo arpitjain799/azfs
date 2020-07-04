@@ -8,6 +8,7 @@ Release History
 0.1.10 ()
 ------------------
 
+* implement new functions: read/write ``pickle`` and ``tsv`` format.
 * implement ``AzContextManager()``: to prepare adopting new authorization
 * code optimization ``glob()``: make execution faster, and add limitation (not allowed to glob() in root folder under a container)
 

@@ -1,10 +1,14 @@
-import sys
+import bz2
+import gzip
+import io
+import json
+import lzma
 import os
+import pickle
+import sys
+import pandas as pd
 import pytest
 import azfs
-import pandas as pd
-import json
-import gzip
 
 # テスト対象のファイルへのパスを通している
 # pytestの設定
@@ -44,6 +48,65 @@ def _get_csv_gz(mocker):
     """
     data = b'name,age\nalice,10\nbob,10\n'
     return_value = gzip.compress(data)
+    func_mock = mocker.MagicMock()
+    func_mock.return_value = return_value
+    yield func_mock
+
+
+@pytest.fixture()
+def _get_table(mocker):
+    """
+    original data is
+    data = {"1": {"name": "alice", "age": "10"}, "2": {"name": "bob", "age": "10"}}
+    df = pd.DataFrame.from_dict(data, orient="index")
+    :param mocker:
+    :return:
+    """
+    return_value = b'\tname\tage\n1\talice\t10\n2\tbob\t10\n'
+    func_mock = mocker.MagicMock()
+    func_mock.return_value = return_value
+    yield func_mock
+
+
+@pytest.fixture()
+def _get_pickle(mocker):
+    data = {"1": {"name": "alice", "age": "10"}, "2": {"name": "bob", "age": "10"}}
+    df = pd.DataFrame.from_dict(data, orient="index")
+    p = pickle.dumps(df)
+    return_value = io.BytesIO(p)
+    func_mock = mocker.MagicMock()
+    func_mock.return_value = return_value
+    yield func_mock
+
+
+@pytest.fixture()
+def _get_pickle_gzip(mocker):
+    data = {"1": {"name": "alice", "age": "10"}, "2": {"name": "bob", "age": "10"}}
+    df = pd.DataFrame.from_dict(data, orient="index")
+    p = pickle.dumps(df)
+    return_value = io.BytesIO(gzip.compress(p))
+    func_mock = mocker.MagicMock()
+    func_mock.return_value = return_value
+    yield func_mock
+
+
+@pytest.fixture()
+def _get_pickle_bz2(mocker):
+    data = {"1": {"name": "alice", "age": "10"}, "2": {"name": "bob", "age": "10"}}
+    df = pd.DataFrame.from_dict(data, orient="index")
+    p = pickle.dumps(df)
+    return_value = io.BytesIO(bz2.compress(p))
+    func_mock = mocker.MagicMock()
+    func_mock.return_value = return_value
+    yield func_mock
+
+
+@pytest.fixture()
+def _get_pickle_xz(mocker):
+    data = {"1": {"name": "alice", "age": "10"}, "2": {"name": "bob", "age": "10"}}
+    df = pd.DataFrame.from_dict(data, orient="index")
+    p = pickle.dumps(df)
+    return_value = io.BytesIO(lzma.compress(p))
     func_mock = mocker.MagicMock()
     func_mock.return_value = return_value
     yield func_mock
