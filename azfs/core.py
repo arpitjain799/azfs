@@ -2,6 +2,7 @@ import io
 import re
 from typing import Union, Optional
 import json
+import pickle
 import pandas as pd
 from azure.identity import DefaultAzureCredential
 from azure.core.exceptions import ResourceNotFoundError
@@ -538,6 +539,11 @@ class AzFileClient:
         file_to_read = self._get(path)
         return pd.read_table(file_to_read, **kwargs)
 
+    @_az_context_manager.register(_as="read_pickle_az", _to=pd)
+    def read_pickle(self, path: str):
+        file_to_read = self._get(path)
+        return pd.DataFrame(pickle.loads(file_to_read.read()))
+
     def _put(self, path: str, data) -> bool:
         """
         upload data to blob or data_lake storage.
@@ -592,6 +598,11 @@ class AzFileClient:
     def write_table(self, path: str, df: pd.DataFrame, **kwargs) -> bool:
         table_str = df.to_csv(sep="\t", **kwargs).encode("utf-8")
         return self._put(path=path, data=table_str)
+
+    @_az_context_manager.register(_as="to_pickle_az", _to=pd.DataFrame)
+    def write_pickle(self, path: str, df: pd.DataFrame) -> bool:
+        serialized_data = pickle.dumps(df)
+        return self._put(path=path, data=serialized_data)
 
     def read_json(self, path: str, **kwargs) -> dict:
         """
