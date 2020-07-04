@@ -543,14 +543,14 @@ class AzFileClient:
         return pd.read_table(file_to_read, **kwargs)
 
     @_az_context_manager.register(_as="read_pickle_az", _to=pd)
-    def read_pickle(self, path: str, compression="gzip"):
-        file_to_read = self._get(path)
+    def read_pickle(self, path: str, compression="gzip") -> pd.DataFrame:
+        file_to_read = self._get(path).read()
         if compression == "gzip":
-            file_to_read = gzip.decompress(file_to_read.read())
+            file_to_read = gzip.decompress(file_to_read)
         elif compression == "bz2":
-            file_to_read = bz2.decompress(file_to_read.read())
+            file_to_read = bz2.decompress(file_to_read)
         elif compression == "xz":
-            file_to_read = lzma.decompress(file_to_read.read())
+            file_to_read = lzma.decompress(file_to_read)
         return pd.DataFrame(pickle.loads(file_to_read))
 
     def _put(self, path: str, data) -> bool:

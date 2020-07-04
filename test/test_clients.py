@@ -85,6 +85,65 @@ class TestReadCsv:
         assert len(df.index) == 2
 
 
+class TestReadPickle:
+
+    def test_blob_read_pickle(self, mocker, _get_pickle, var_azc):
+        mocker.patch.object(AzBlobClient, "_get", _get_pickle)
+
+        # the file below is not exists
+        path = "https://testazfs.blob.core.windows.net/test_caontainer/test.pkl"
+
+        # read data from not-exist path
+        with var_azc:
+            df = pd.read_pickle_az(path, compression=None)
+        columns = df.columns
+        assert "name" in columns
+        assert "age" in columns
+        assert len(df.index) == 2
+
+    def test_blob_read_pickle_gzip(self, mocker, _get_pickle_gzip, var_azc):
+        mocker.patch.object(AzBlobClient, "_get", _get_pickle_gzip)
+
+        # the file below is not exists
+        path = "https://testazfs.blob.core.windows.net/test_caontainer/test.pkl"
+
+        # read data from not-exist path
+        with var_azc:
+            df = pd.read_pickle_az(path, compression="gzip")
+        columns = df.columns
+        assert "name" in columns
+        assert "age" in columns
+        assert len(df.index) == 2
+
+    def test_blob_read_pickle_bz2(self, mocker, _get_pickle_bz2, var_azc):
+        mocker.patch.object(AzBlobClient, "_get", _get_pickle_bz2)
+
+        # the file below is not exists
+        path = "https://testazfs.blob.core.windows.net/test_caontainer/test.pkl"
+
+        # read data from not-exist path
+        with var_azc:
+            df = pd.read_pickle_az(path, compression="bz2")
+        columns = df.columns
+        assert "name" in columns
+        assert "age" in columns
+        assert len(df.index) == 2
+
+    def test_blob_read_pickle_xz(self, mocker, _get_pickle_xz, var_azc):
+        mocker.patch.object(AzBlobClient, "_get", _get_pickle_xz)
+
+        # the file below is not exists
+        path = "https://testazfs.blob.core.windows.net/test_caontainer/test.pkl"
+
+        # read data from not-exist path
+        with var_azc:
+            df = pd.read_pickle_az(path, compression="xz")
+        columns = df.columns
+        assert "name" in columns
+        assert "age" in columns
+        assert len(df.index) == 2
+
+
 class TestReadJson:
 
     def test_blob_read_json(self, mocker, _get_json, var_azc, var_json):
