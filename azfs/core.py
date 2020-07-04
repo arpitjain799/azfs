@@ -413,7 +413,7 @@ class AzFileClient:
         Examples:
             >>> import azfs
             >>> azc = azfs.AzFileClient()
-            >>> path = "https://testazfs.blob.core.windows.net/test_container"
+            >>> path = "https://testazfs.blob.core.windows.net/test_container/some_folder"
             ls() lists all files in some folder like
             >>> azc.ls(path)
             [
@@ -426,27 +426,30 @@ class AzFileClient:
                 "directory_2"
             ]
             glob() lists specified files according to the wildcard, and lists with formatted-URL by default
-            >>> pattern_path = "https://testazfs.blob.core.windows.net/test_container/*.csv"
+            >>> pattern_path = "https://testazfs.blob.core.windows.net/test_container/some_folder/*.csv"
             >>> azc.glob(path=pattern_path)
             [
-                "https://testazfs.blob.core.windows.net/test_container/test1.csv",
-                "https://testazfs.blob.core.windows.net/test_container/test2.csv",
-                "https://testazfs.blob.core.windows.net/test_container/test3.csv"
+                "https://testazfs.blob.core.windows.net/test_container/some_folder/test1.csv",
+                "https://testazfs.blob.core.windows.net/test_container/some_folder/test2.csv",
+                "https://testazfs.blob.core.windows.net/test_container/some_folder/test3.csv"
             ]
             glob() can use any path
-            >>> pattern_path = "https://testazfs.blob.core.windows.net/test_container/test1.*"
+            >>> pattern_path = "https://testazfs.blob.core.windows.net/test_container/some_folder/test1.*"
             >>> azc.glob(path=pattern_path)
             [
-                "https://testazfs.blob.core.windows.net/test_container/test1.csv",
-                "https://testazfs.blob.core.windows.net/test_container/test1.json"
+                "https://testazfs.blob.core.windows.net/test_container/some_folder/test1.csv",
+                "https://testazfs.blob.core.windows.net/test_container/some_folder/test1.json"
             ]
             also deeper folders
-            >>> pattern_path = "https://testazfs.blob.core.windows.net/test_container/*/*.csv"
+            >>> pattern_path = "https://testazfs.blob.core.windows.net/test_container/some_folder/*/*.csv"
             >>> azc.glob(path=pattern_path)
             [
-                "https://testazfs.blob.core.windows.net/test_container/directory_1/deeper_test1.csv",
-                "https://testazfs.blob.core.windows.net/test_container/directory_2/deeper_test2.csv"
+                "https://testazfs.blob.core.windows.net/test_container/some_folder/directory_1/deeper_test1.csv",
+                "https://testazfs.blob.core.windows.net/test_container/some_folder/directory_2/deeper_test2.csv"
             ]
+
+        Raises:
+            AzfsInputError: when ``*`` is used in root_flder under a container.
         """
         if "*" not in pattern_path:
             raise AzfsInputError("no any `*` in the `pattern_path`")
