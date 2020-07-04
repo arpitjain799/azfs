@@ -183,38 +183,44 @@ class TestGlob:
         path = "https://testazfs.blob.core.windows.net/test_caontainer/test1.csv"
         with pytest.raises(AzfsInputError):
             var_azc.glob(path)
+        path = "https://testazfs.blob.core.windows.net/test_caontainer/*"
+        with pytest.raises(AzfsInputError):
+            var_azc.glob(path)
 
     def test_blob_glob(self, mocker, _ls_for_glob, var_azc):
         mocker.patch.object(AzBlobClient, "_ls", _ls_for_glob)
 
         # the file below is not exists
-        path = "https://testazfs.blob.core.windows.net/test_caontainer/*.csv"
+        path = "https://testazfs.blob.core.windows.net/test_caontainer/root_folder/*.csv"
         file_list = var_azc.glob(pattern_path=path)
         assert len(file_list) == 2
-        assert "https://testazfs.blob.core.windows.net/test_caontainer/test1.csv" in file_list
-        assert "https://testazfs.blob.core.windows.net/test_caontainer/test2.csv" in file_list
+        assert "https://testazfs.blob.core.windows.net/test_caontainer/root_folder/test1.csv" in file_list
+        assert "https://testazfs.blob.core.windows.net/test_caontainer/root_folder/test2.csv" in file_list
 
-        path = "https://testazfs.blob.core.windows.net/test_caontainer/*.json"
+        path = "https://testazfs.blob.core.windows.net/test_caontainer/root_folder/*.json"
         file_list = var_azc.glob(pattern_path=path)
         assert len(file_list) == 1
-        assert "https://testazfs.blob.core.windows.net/test_caontainer/test1.json" in file_list
+        assert "https://testazfs.blob.core.windows.net/test_caontainer/root_folder/test1.json" in file_list
 
-        path = "https://testazfs.blob.core.windows.net/test_caontainer/*/*.csv"
+        path = "https://testazfs.blob.core.windows.net/test_caontainer/root_folder/*/*.csv"
         file_list = var_azc.glob(pattern_path=path)
         assert len(file_list) == 4
-        assert "https://testazfs.blob.core.windows.net/test_caontainer/dir1/test1.csv" in file_list
-        assert "https://testazfs.blob.core.windows.net/test_caontainer/dir1/test2.csv" in file_list
-        assert "https://testazfs.blob.core.windows.net/test_caontainer/dir2/test1.csv" in file_list
-        assert "https://testazfs.blob.core.windows.net/test_caontainer/dir2/test2.csv" in file_list
+        assert "https://testazfs.blob.core.windows.net/test_caontainer/root_folder/dir1/test1.csv" in file_list
+        assert "https://testazfs.blob.core.windows.net/test_caontainer/root_folder/dir1/test2.csv" in file_list
+        assert "https://testazfs.blob.core.windows.net/test_caontainer/root_folder/dir2/test1.csv" in file_list
+        assert "https://testazfs.blob.core.windows.net/test_caontainer/root_folder/dir2/test2.csv" in file_list
 
-        path = "https://testazfs.blob.core.windows.net/test_caontainer/dir1/*.csv"
+        path = "https://testazfs.blob.core.windows.net/test_caontainer/root_folder/dir1/*.csv"
         file_list = var_azc.glob(pattern_path=path)
         assert len(file_list) == 2
-        assert "https://testazfs.blob.core.windows.net/test_caontainer/dir1/test1.csv" in file_list
-        assert "https://testazfs.blob.core.windows.net/test_caontainer/dir1/test2.csv" in file_list
+        assert "https://testazfs.blob.core.windows.net/test_caontainer/root_folder/dir1/test1.csv" in file_list
+        assert "https://testazfs.blob.core.windows.net/test_caontainer/root_folder/dir1/test2.csv" in file_list
 
     def test_dfs_glob_error(self, var_azc):
-        path = "https://testazfs.dfs.core.windows.net/test_caontainer/test1.csv"
+        path = "https://testazfs.dfs.core.windows.net/test_caontainer/root_folder/test1.csv"
+        with pytest.raises(AzfsInputError):
+            var_azc.glob(path)
+        path = "https://testazfs.dfs.core.windows.net/test_caontainer/*"
         with pytest.raises(AzfsInputError):
             var_azc.glob(path)
 
@@ -222,30 +228,30 @@ class TestGlob:
         mocker.patch.object(AzDataLakeClient, "_ls", _ls_for_glob)
 
         # the file below is not exists
-        path = "https://testazfs.dfs.core.windows.net/test_caontainer/*.csv"
+        path = "https://testazfs.dfs.core.windows.net/test_caontainer/root_folder/*.csv"
         file_list = var_azc.glob(pattern_path=path)
         assert len(file_list) == 2
-        assert "https://testazfs.dfs.core.windows.net/test_caontainer/test1.csv" in file_list
-        assert "https://testazfs.dfs.core.windows.net/test_caontainer/test2.csv" in file_list
+        assert "https://testazfs.dfs.core.windows.net/test_caontainer/root_folder/test1.csv" in file_list
+        assert "https://testazfs.dfs.core.windows.net/test_caontainer/root_folder/test2.csv" in file_list
 
-        path = "https://testazfs.dfs.core.windows.net/test_caontainer/*.json"
+        path = "https://testazfs.dfs.core.windows.net/test_caontainer/root_folder/*.json"
         file_list = var_azc.glob(pattern_path=path)
         assert len(file_list) == 1
-        assert "https://testazfs.dfs.core.windows.net/test_caontainer/test1.json" in file_list
+        assert "https://testazfs.dfs.core.windows.net/test_caontainer/root_folder/test1.json" in file_list
 
-        path = "https://testazfs.dfs.core.windows.net/test_caontainer/*/*.csv"
+        path = "https://testazfs.dfs.core.windows.net/test_caontainer/root_folder/*/*.csv"
         file_list = var_azc.glob(pattern_path=path)
         assert len(file_list) == 4
-        assert "https://testazfs.dfs.core.windows.net/test_caontainer/dir1/test1.csv" in file_list
-        assert "https://testazfs.dfs.core.windows.net/test_caontainer/dir1/test2.csv" in file_list
-        assert "https://testazfs.dfs.core.windows.net/test_caontainer/dir2/test1.csv" in file_list
-        assert "https://testazfs.dfs.core.windows.net/test_caontainer/dir2/test2.csv" in file_list
+        assert "https://testazfs.dfs.core.windows.net/test_caontainer/root_folder/dir1/test1.csv" in file_list
+        assert "https://testazfs.dfs.core.windows.net/test_caontainer/root_folder/dir1/test2.csv" in file_list
+        assert "https://testazfs.dfs.core.windows.net/test_caontainer/root_folder/dir2/test1.csv" in file_list
+        assert "https://testazfs.dfs.core.windows.net/test_caontainer/root_folder/dir2/test2.csv" in file_list
 
-        path = "https://testazfs.dfs.core.windows.net/test_caontainer/dir1/*.csv"
+        path = "https://testazfs.dfs.core.windows.net/test_caontainer/root_folder/dir1/*.csv"
         file_list = var_azc.glob(pattern_path=path)
         assert len(file_list) == 2
-        assert "https://testazfs.dfs.core.windows.net/test_caontainer/dir1/test1.csv" in file_list
-        assert "https://testazfs.dfs.core.windows.net/test_caontainer/dir1/test2.csv" in file_list
+        assert "https://testazfs.dfs.core.windows.net/test_caontainer/root_folder/dir1/test1.csv" in file_list
+        assert "https://testazfs.dfs.core.windows.net/test_caontainer/root_folder/dir1/test2.csv" in file_list
 
 
 class TestRm:

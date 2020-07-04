@@ -92,15 +92,15 @@ def _ls_for_glob(mocker):
     :return:
     """
     return_value = [
-        "test1.csv",
-        "test2.csv",
-        "test1.json",
-        "dir1/test1.csv",
-        "dir1/test2.csv",
-        "dir1/test1.json",
-        "dir2/test1.csv",
-        "dir2/test2.csv",
-        "dir2/test1.json",
+        "root_folder/test1.csv",
+        "root_folder/test2.csv",
+        "root_folder/test1.json",
+        "root_folder/dir1/test1.csv",
+        "root_folder/dir1/test2.csv",
+        "root_folder/dir1/test1.json",
+        "root_folder/dir2/test1.csv",
+        "root_folder/dir2/test2.csv",
+        "root_folder/dir2/test1.json",
     ]
     func_mock = mocker.MagicMock()
     func_mock.return_value = return_value

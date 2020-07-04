@@ -5,6 +5,12 @@ Release History
    :maxdepth: 4
 
 
+0.1.10 ()
+------------------
+
+* implement ``AzContextManager()``: to prepare adopting new authorization
+* code optimization ``glob()``: make execution faster, and add limitation (not allowed to glob() in root folder under a container)
+
 0.1.9 (2020-06-30)
 ------------------
 
