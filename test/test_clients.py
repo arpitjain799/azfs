@@ -85,6 +85,23 @@ class TestReadCsv:
         assert len(df.index) == 2
 
 
+class TestReadTable:
+
+    def test_blob_read_table(self, mocker, _get_table, var_azc):
+        mocker.patch.object(AzBlobClient, "_get", _get_table)
+
+        # the file below is not exists
+        path = "https://testazfs.blob.core.windows.net/test_caontainer/test.tsv"
+
+        # read data from not-exist path
+        with var_azc:
+            df = pd.read_table_az(path)
+        columns = df.columns
+        assert "name" in columns
+        assert "age" in columns
+        assert len(df.index) == 2
+
+
 class TestReadPickle:
 
     def test_blob_read_pickle(self, mocker, _get_pickle, var_azc):

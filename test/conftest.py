@@ -54,6 +54,21 @@ def _get_csv_gz(mocker):
 
 
 @pytest.fixture()
+def _get_table(mocker):
+    """
+    original data is
+    data = {"1": {"name": "alice", "age": "10"}, "2": {"name": "bob", "age": "10"}}
+    df = pd.DataFrame.from_dict(data, orient="index")
+    :param mocker:
+    :return:
+    """
+    return_value = b'\tname\tage\n1\talice\t10\n2\tbob\t10\n'
+    func_mock = mocker.MagicMock()
+    func_mock.return_value = return_value
+    yield func_mock
+
+
+@pytest.fixture()
 def _get_pickle(mocker):
     data = {"1": {"name": "alice", "age": "10"}, "2": {"name": "bob", "age": "10"}}
     df = pd.DataFrame.from_dict(data, orient="index")
