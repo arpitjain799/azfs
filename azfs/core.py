@@ -1,8 +1,11 @@
+import bz2
+import gzip
 import io
-import re
-from typing import Union, Optional
 import json
 import pickle
+import re
+from typing import Union, Optional
+import lzma
 import pandas as pd
 from azure.identity import DefaultAzureCredential
 from azure.core.exceptions import ResourceNotFoundError
@@ -540,9 +543,15 @@ class AzFileClient:
         return pd.read_table(file_to_read, **kwargs)
 
     @_az_context_manager.register(_as="read_pickle_az", _to=pd)
-    def read_pickle(self, path: str):
+    def read_pickle(self, path: str, compression="gzip"):
         file_to_read = self._get(path)
-        return pd.DataFrame(pickle.loads(file_to_read.read()))
+        if compression == "gzip":
+            file_to_read = gzip.decompress(file_to_read.read())
+        elif compression == "bz2":
+            file_to_read = bz2.decompress(file_to_read.read())
+        elif compression == "xz":
+            file_to_read = lzma.decompress(file_to_read.read())
+        return pd.DataFrame(pickle.loads(file_to_read))
 
     def _put(self, path: str, data) -> bool:
         """
@@ -600,8 +609,14 @@ class AzFileClient:
         return self._put(path=path, data=table_str)
 
     @_az_context_manager.register(_as="to_pickle_az", _to=pd.DataFrame)
-    def write_pickle(self, path: str, df: pd.DataFrame) -> bool:
+    def write_pickle(self, path: str, df: pd.DataFrame, compression="gzip") -> bool:
         serialized_data = pickle.dumps(df)
+        if compression == "gzip":
+            serialized_data = gzip.compress(serialized_data)
+        elif compression == "bz2":
+            serialized_data = bz2.compress(serialized_data)
+        elif compression == "xz":
+            serialized_data = lzma.compress(serialized_data)
         return self._put(path=path, data=serialized_data)
 
     def read_json(self, path: str, **kwargs) -> dict:
