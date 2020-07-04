@@ -452,9 +452,18 @@ class AzFileClient:
             raise AzfsInputError("no any `*` in the `pattern_path`")
         url, account_kind, container_name, file_path = BlobPathDecoder(pattern_path).get_with_url()
 
+        acceptable_folder_pattern = r"(?P<root_folder>[^\*.]+)/(?P<folders>.*)"
+        result = re.match(acceptable_folder_pattern, file_path)
+        if result:
+            result_dict = result.groupdict()
+            root_folder = result_dict['root_folder']
+        else:
+            raise AzfsInputError(
+                f"Cannot use `*` in root_folder under a container. Accepted format is {acceptable_folder_pattern}"
+            )
         # get container root path
         base_path = f"{url}/{container_name}/"
-        file_list = AzfsClient.get(account_kind, credential=self.credential).ls(path=base_path, file_path="")
+        file_list = AzfsClient.get(account_kind, credential=self.credential).ls(path=base_path, file_path=root_folder)
         if account_kind in ["dfs", "blob"]:
             # fix pattern_path, in order to avoid matching `/`
             pattern_path = rf"{pattern_path.replace('*', '([^/])*?')}$"
