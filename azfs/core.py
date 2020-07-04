@@ -539,11 +539,59 @@ class AzFileClient:
 
     @_az_context_manager.register(_as="read_table_az", _to=pd)
     def read_table(self, path: str, **kwargs) -> pd.DataFrame:
+        """
+        get tsv data as pd.DataFrame from Azure Blob Storage.
+        support ``tsv``.
+
+        Args:
+            path: Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_container/test1.tsv``
+            **kwargs: keywords to put df.read_csv(), such as ``header``, ``encoding``.
+
+        Returns:
+            pd.DataFrame
+
+        Examples:
+            >>> import azfs
+            >>> import pandas as pd
+            >>> azc = azfs.AzFileClient()
+            >>> path = "https://testazfs.blob.core.windows.net/test_container/test1.tsv"
+            you can read and write csv file in azure blob storage
+            >>> df = azc.read_table(path=path)
+            Using `with` statement, you can use `pandas`-like methods
+            >>> with azc:
+            >>>     df = pd.read_table_az(path)
+
+        """
         file_to_read = self._get(path)
         return pd.read_table(file_to_read, **kwargs)
 
     @_az_context_manager.register(_as="read_pickle_az", _to=pd)
     def read_pickle(self, path: str, compression="gzip") -> pd.DataFrame:
+        """
+        get pickled-pandas data as pd.DataFrame from Azure Blob Storage.
+
+        Args:
+            path: Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_container/test1.pkl``
+            compression: acceptable keywords are: gzip, bz2, xz. gzip is default value.
+
+        Returns:
+            pd.DataFrame
+
+        Examples:
+            >>> import azfs
+            >>> import pandas as pd
+            >>> azc = azfs.AzFileClient()
+            >>> path = "https://testazfs.blob.core.windows.net/test_container/test1.pkl"
+            you can read and write csv file in azure blob storage
+            >>> df = azc.read_pickle(path=path)
+            Using `with` statement, you can use `pandas`-like methods
+            >>> with azc:
+            >>>     df = pd.read_pickle_az(path)
+            you can use difference compression
+            >>> with azc:
+            >>>     df = pd.read_pickle_az(path, compression="bz2")
+
+        """
         file_to_read = self._get(path).read()
         if compression == "gzip":
             file_to_read = gzip.decompress(file_to_read)
@@ -605,11 +653,58 @@ class AzFileClient:
 
     @_az_context_manager.register(_as="to_table_az", _to=pd.DataFrame)
     def write_table(self, path: str, df: pd.DataFrame, **kwargs) -> bool:
+        """
+        output pandas dataframe to tsv file in Datalake storage.
+
+        Args:
+            path: Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_container/test1.tsv``.
+            df: pd.DataFrame to upload.
+            **kwargs: keywords to put df.to_csv(), such as ``encoding``, ``index``.
+
+        Returns:
+            True if correctly uploaded
+
+        Examples:
+            >>> import azfs
+            >>> azc = azfs.AzFileClient()
+            >>> path = "https://testazfs.blob.core.windows.net/test_container/test1.tsv"
+            you can read and write csv file in azure blob storage
+            >>> azc.write_table(path=path, df=df)
+            Using `with` statement, you can use `pandas`-like methods
+            >>> with azc:
+            >>>     df.to_table_az(path)
+        """
         table_str = df.to_csv(sep="\t", **kwargs).encode("utf-8")
         return self._put(path=path, data=table_str)
 
     @_az_context_manager.register(_as="to_pickle_az", _to=pd.DataFrame)
     def write_pickle(self, path: str, df: pd.DataFrame, compression="gzip") -> bool:
+        """
+        output pandas dataframe to tsv file in Datalake storage.
+
+        Args:
+            path: Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_container/test1.pkl``
+            df: pd.DataFrame to upload.
+            compression: acceptable keywords are: gzip, bz2, xz. gzip is default value.
+
+        Returns:
+            pd.DataFrame
+
+        Examples:
+            >>> import azfs
+            >>> import pandas as pd
+            >>> azc = azfs.AzFileClient()
+            >>> path = "https://testazfs.blob.core.windows.net/test_container/test1.pkl"
+            you can read and write csv file in azure blob storage
+            >>> azc.write_pickle(path=path, df=df)
+            Using `with` statement, you can use `pandas`-like methods
+            >>> with azc:
+            >>>     df.to_pickle_az(path)
+            you can use difference compression
+            >>> with azc:
+            >>>     df.to_pickle_az(path, compression="bz2")
+
+        """
         serialized_data = pickle.dumps(df)
         if compression == "gzip":
             serialized_data = gzip.compress(serialized_data)
