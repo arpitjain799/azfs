@@ -1,7 +1,11 @@
+import bz2
+import gzip
 import io
+import json
+import pickle
 import re
 from typing import Union, Optional
-import json
+import lzma
 import pandas as pd
 from azure.identity import DefaultAzureCredential
 from azure.core.exceptions import ResourceNotFoundError
@@ -36,6 +40,106 @@ class AzFileClient:
         >>> azc = azfs.AzFileClient(credential=credential)
     """
 
+    class AzContextManager:
+        """
+        AzContextManger provides easy way to set new function as attribute to another package like pandas.
+        """
+        def __init__(self):
+            self.register_list = []
+
+        def register(self, _as: str, _to: object):
+            """
+            register decorated function to self.register_list.
+
+
+            Args:
+                _as: new method name
+                _to: assign to class or object
+
+            Returns:
+                decorated function
+
+            """
+            def _register(function):
+                """
+                append ``wrapper`` function
+
+                Args:
+                    function:
+
+                Returns:
+
+                """
+                def wrapper(class_instance):
+                    """
+                    accept instance in kwargs as name of ``az_file_client_instance``
+
+                    Args:
+                        class_instance: always instance of AzFileClient
+
+                    Returns:
+
+                    """
+
+                    def new_function(*args, **kwargs):
+                        """
+                        actual wrapped function
+
+                        Args:
+                            *args:
+                            **kwargs:
+
+                        Returns:
+
+                        """
+                        target_function = getattr(class_instance, function.__name__)
+
+                        df = args[0] if isinstance(args[0], pd.DataFrame) else None
+                        if df is not None:
+                            kwargs['df'] = args[0]
+                            return target_function(*args[1:], **kwargs)
+                        return target_function(*args, **kwargs)
+
+                    return new_function
+
+                function_info = {
+                    "assign_as": _as,
+                    "assign_to": _to,
+                    "function": wrapper
+                }
+                self.register_list.append(function_info)
+
+                return function
+
+            return _register
+
+        def attach(self, client: object):
+            """
+            set new function as attribute based on self.register_list
+
+            Args:
+                client: set AzFileClient always
+
+            Returns:
+                None
+
+            """
+            for f in self.register_list:
+                setattr(f['assign_to'], f['assign_as'], f['function'](class_instance=client))
+
+        def detach(self):
+            """
+            set None based on self.register_list
+
+            Returns:
+                None
+
+            """
+            for f in self.register_list:
+                setattr(f['assign_to'], f['assign_as'], None)
+
+    _az_context_manager = AzContextManager()
+
     def __init__(
             self,
             credential: Optional[Union[str, DefaultAzureCredential]] = None):
@@ -49,17 +153,18 @@ class AzFileClient:
 
     def __enter__(self):
         """
-        add ``read_csv_az()`` and ``to_csv_az`` to pandas module
+        add some functions to pandas module based on AzContextManger()
+
         Returns:
+            instance of AzFileClient
 
         """
-        pd.__dict__['read_csv_az'] = self.read_csv
-        pd.DataFrame.to_csv_az = self.to_csv(self)
+        self._az_context_manager.attach(client=self)
         return self
 
     def __exit__(self, exec_type, exec_value, traceback):
         """
-        remove ``read_csv_az()`` and ``to_csv_az`` from pandas module
+        remove some functions from pandas module based on AzContextManager()
 
         Args:
             exec_type:
@@ -67,17 +172,9 @@ class AzFileClient:
             traceback:
 
         Returns:
-
+            None
         """
-        pd.__dict__.pop('read_csv_az')
-        pd.DataFrame.to_csv_az = None
-
-    @staticmethod
-    def to_csv(az_file_client):
-        def inner(self, path, **kwargs):
-            df = self if isinstance(self, pd.DataFrame) else None
-            return az_file_client.write_csv(path=path, df=df, **kwargs)
-        return inner
+        self._az_context_manager.detach()
 
     def exists(self, path: str) -> bool:
         """
@@ -320,7 +417,7 @@ class AzFileClient:
         Examples:
             >>> import azfs
             >>> azc = azfs.AzFileClient()
-            >>> path = "https://testazfs.blob.core.windows.net/test_container"
+            >>> path = "https://testazfs.blob.core.windows.net/test_container/some_folder"
             ls() lists all files in some folder like
             >>> azc.ls(path)
             [
@@ -333,35 +430,47 @@ class AzFileClient:
                 "directory_2"
             ]
             glob() lists specified files according to the wildcard, and lists with formatted-URL by default
-            >>> pattern_path = "https://testazfs.blob.core.windows.net/test_container/*.csv"
+            >>> pattern_path = "https://testazfs.blob.core.windows.net/test_container/some_folder/*.csv"
             >>> azc.glob(path=pattern_path)
             [
-                "https://testazfs.blob.core.windows.net/test_container/test1.csv",
-                "https://testazfs.blob.core.windows.net/test_container/test2.csv",
-                "https://testazfs.blob.core.windows.net/test_container/test3.csv"
+                "https://testazfs.blob.core.windows.net/test_container/some_folder/test1.csv",
+                "https://testazfs.blob.core.windows.net/test_container/some_folder/test2.csv",
+                "https://testazfs.blob.core.windows.net/test_container/some_folder/test3.csv"
             ]
             glob() can use any path
-            >>> pattern_path = "https://testazfs.blob.core.windows.net/test_container/test1.*"
+            >>> pattern_path = "https://testazfs.blob.core.windows.net/test_container/some_folder/test1.*"
             >>> azc.glob(path=pattern_path)
             [
-                "https://testazfs.blob.core.windows.net/test_container/test1.csv",
-                "https://testazfs.blob.core.windows.net/test_container/test1.json"
+                "https://testazfs.blob.core.windows.net/test_container/some_folder/test1.csv",
+                "https://testazfs.blob.core.windows.net/test_container/some_folder/test1.json"
             ]
             also deeper folders
-            >>> pattern_path = "https://testazfs.blob.core.windows.net/test_container/*/*.csv"
+            >>> pattern_path = "https://testazfs.blob.core.windows.net/test_container/some_folder/*/*.csv"
             >>> azc.glob(path=pattern_path)
             [
-                "https://testazfs.blob.core.windows.net/test_container/directory_1/deeper_test1.csv",
-                "https://testazfs.blob.core.windows.net/test_container/directory_2/deeper_test2.csv"
+                "https://testazfs.blob.core.windows.net/test_container/some_folder/directory_1/deeper_test1.csv",
+                "https://testazfs.blob.core.windows.net/test_container/some_folder/directory_2/deeper_test2.csv"
             ]
+
+        Raises:
+            AzfsInputError: when ``*`` is used in root_flder under a container.
         """
         if "*" not in pattern_path:
             raise AzfsInputError("no any `*` in the `pattern_path`")
         url, account_kind, container_name, file_path = BlobPathDecoder(pattern_path).get_with_url()
 
+        acceptable_folder_pattern = r"(?P<root_folder>[^\*.]+)/(?P<folders>.*)"
+        result = re.match(acceptable_folder_pattern, file_path)
+        if result:
+            result_dict = result.groupdict()
+            root_folder = result_dict['root_folder']
+        else:
+            raise AzfsInputError(
+                f"Cannot use `*` in root_folder under a container. Accepted format is {acceptable_folder_pattern}"
+            )
         # get container root path
         base_path = f"{url}/{container_name}/"
-        file_list = AzfsClient.get(account_kind, credential=self.credential).ls(path=base_path, file_path="")
+        file_list = AzfsClient.get(account_kind, credential=self.credential).ls(path=base_path, file_path=root_folder)
         if account_kind in ["dfs", "blob"]:
             # fix pattern_path, in order to avoid matching `/`
             pattern_path = rf"{pattern_path.replace('*', '([^/])*?')}$"
@@ -400,6 +509,7 @@ class AzFileClient:
         _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
         return AzfsClient.get(account_kind, credential=self.credential).get(path=path, **kwargs)
 
+    @_az_context_manager.register(_as="read_csv_az", _to=pd)
     def read_csv(self, path: str, **kwargs) -> pd.DataFrame:
         """
         get csv data as pd.DataFrame from Azure Blob Storage.
@@ -427,6 +537,70 @@ class AzFileClient:
         file_to_read = self._get(path)
         return pd.read_csv(file_to_read, **kwargs)
 
+    @_az_context_manager.register(_as="read_table_az", _to=pd)
+    def read_table(self, path: str, **kwargs) -> pd.DataFrame:
+        """
+        get tsv data as pd.DataFrame from Azure Blob Storage.
+        support ``tsv``.
+
+        Args:
+            path: Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_container/test1.tsv``
+            **kwargs: keywords to put df.read_csv(), such as ``header``, ``encoding``.
+
+        Returns:
+            pd.DataFrame
+
+        Examples:
+            >>> import azfs
+            >>> import pandas as pd
+            >>> azc = azfs.AzFileClient()
+            >>> path = "https://testazfs.blob.core.windows.net/test_container/test1.tsv"
+            you can read and write csv file in azure blob storage
+            >>> df = azc.read_table(path=path)
+            Using `with` statement, you can use `pandas`-like methods
+            >>> with azc:
+            >>>     df = pd.read_table_az(path)
+
+        """
+        file_to_read = self._get(path)
+        return pd.read_table(file_to_read, **kwargs)
+
+    @_az_context_manager.register(_as="read_pickle_az", _to=pd)
+    def read_pickle(self, path: str, compression="gzip") -> pd.DataFrame:
+        """
+        get pickled-pandas data as pd.DataFrame from Azure Blob Storage.
+
+        Args:
+            path: Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_container/test1.pkl``
+            compression: acceptable keywords are: gzip, bz2, xz. gzip is default value.
+
+        Returns:
+            pd.DataFrame
+
+        Examples:
+            >>> import azfs
+            >>> import pandas as pd
+            >>> azc = azfs.AzFileClient()
+            >>> path = "https://testazfs.blob.core.windows.net/test_container/test1.pkl"
+            you can read and write csv file in azure blob storage
+            >>> df = azc.read_pickle(path=path)
+            Using `with` statement, you can use `pandas`-like methods
+            >>> with azc:
+            >>>     df = pd.read_pickle_az(path)
+            you can use difference compression
+            >>> with azc:
+            >>>     df = pd.read_pickle_az(path, compression="bz2")
+
+        """
+        file_to_read = self._get(path).read()
+        if compression == "gzip":
+            file_to_read = gzip.decompress(file_to_read)
+        elif compression == "bz2":
+            file_to_read = bz2.decompress(file_to_read)
+        elif compression == "xz":
+            file_to_read = lzma.decompress(file_to_read)
+        return pd.DataFrame(pickle.loads(file_to_read))
+
     def _put(self, path: str, data) -> bool:
         """
         upload data to blob or data_lake storage.
@@ -451,6 +625,7 @@ class AzFileClient:
         _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
         return AzfsClient.get(account_kind, credential=self.credential).put(path=path, data=data)
 
+    @_az_context_manager.register(_as="to_csv_az", _to=pd.DataFrame)
     def write_csv(self, path: str, df: pd.DataFrame, **kwargs) -> bool:
         """
         output pandas dataframe to csv file in Datalake storage.
@@ -472,11 +647,72 @@ class AzFileClient:
             Using `with` statement, you can use `pandas`-like methods
             >>> with azc:
             >>>     df.to_csv_az(path)
-
-
         """
         csv_str = df.to_csv(**kwargs).encode("utf-8")
         return self._put(path=path, data=csv_str)
+
+    @_az_context_manager.register(_as="to_table_az", _to=pd.DataFrame)
+    def write_table(self, path: str, df: pd.DataFrame, **kwargs) -> bool:
+        """
+        output pandas dataframe to tsv file in Datalake storage.
+
+        Args:
+            path: Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_container/test1.tsv``.
+            df: pd.DataFrame to upload.
+            **kwargs: keywords to put df.to_csv(), such as ``encoding``, ``index``.
+
+        Returns:
+            True if correctly uploaded
+
+        Examples:
+            >>> import azfs
+            >>> azc = azfs.AzFileClient()
+            >>> path = "https://testazfs.blob.core.windows.net/test_container/test1.tsv"
+            you can read and write csv file in azure blob storage
+            >>> azc.write_table(path=path, df=df)
+            Using `with` statement, you can use `pandas`-like methods
+            >>> with azc:
+            >>>     df.to_table_az(path)
+        """
+        table_str = df.to_csv(sep="\t", **kwargs).encode("utf-8")
+        return self._put(path=path, data=table_str)
+
+    @_az_context_manager.register(_as="to_pickle_az", _to=pd.DataFrame)
+    def write_pickle(self, path: str, df: pd.DataFrame, compression="gzip") -> bool:
+        """
+        output pandas dataframe to tsv file in Datalake storage.
+
+        Args:
+            path: Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_container/test1.pkl``
+            df: pd.DataFrame to upload.
+            compression: acceptable keywords are: gzip, bz2, xz. gzip is default value.
+
+        Returns:
+            pd.DataFrame
+
+        Examples:
+            >>> import azfs
+            >>> import pandas as pd
+            >>> azc = azfs.AzFileClient()
+            >>> path = "https://testazfs.blob.core.windows.net/test_container/test1.pkl"
+            you can read and write csv file in azure blob storage
+            >>> azc.write_pickle(path=path, df=df)
+            Using `with` statement, you can use `pandas`-like methods
+            >>> with azc:
+            >>>     df.to_pickle_az(path)
+            you can use difference compression
+            >>> with azc:
+            >>>     df.to_pickle_az(path, compression="bz2")
+
+        """
+        serialized_data = pickle.dumps(df)
+        if compression == "gzip":
+            serialized_data = gzip.compress(serialized_data)
+        elif compression == "bz2":
+            serialized_data = bz2.compress(serialized_data)
+        elif compression == "xz":
+            serialized_data = lzma.compress(serialized_data)
+        return self._put(path=path, data=serialized_data)
 
     def read_json(self, path: str, **kwargs) -> dict:
         """

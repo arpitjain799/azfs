@@ -11,7 +11,7 @@ class BlobPathDecoder:
 
     Examples:
         >>> import azfs
-        >>> path = "https://testazfs.blob.core.windows.net/test_caontainer/test1.csv"
+        >>> path = "https://testazfs.blob.core.windows.net/test_container/test1.csv"
         >>> blob_path_decoder = azfs.BlobPathDecoder()
         >>> blob_path_decoder.decode(path=path).get()
         (testazfs, blob, test_container, test1.csv)

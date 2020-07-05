@@ -5,6 +5,13 @@ Release History
    :maxdepth: 4
 
 
+0.1.10 (2020-07-05)
+-------------------
+
+* implement new functions: read/write ``pickle`` and ``tsv`` format.
+* implement ``AzContextManager()``: set and get attributes to pandas easily
+* code optimization ``glob()``: make execution faster, and add limitation (not allowed to glob() in root folder under a container)
+
 0.1.9 (2020-06-30)
 ------------------
 

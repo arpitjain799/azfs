@@ -1,6 +1,6 @@
-import azfs
 from azfs.clients.datalake_client import AzDataLakeClient
 from azure.storage.filedatalake import FileSystemClient, DataLakeFileClient
+import azfs
 
 credential = ""
 azc = azfs.AzFileClient()
@@ -48,6 +48,17 @@ def test_blob_info(mocker):
     assert check_sum == "etag"
     result = azc.isfile(path=test_file_path)
     assert result
+    result = azc.isdir(path=test_file_path)
+    assert not result
+
+
+def test_blob_info_error(mocker):
+    func_mock = mocker.MagicMock()
+    func_mock.side_effect = IOError
+    mocker.patch.object(DataLakeFileClient, "get_file_properties", func_mock)
+
+    result = azc.isfile(path=test_file_path)
+    assert not result
     result = azc.isdir(path=test_file_path)
     assert not result
 
