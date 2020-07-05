@@ -17,6 +17,10 @@ get/download
 
 .. autofunction:: azfs.AzFileClient.read_csv
 
+.. autofunction:: azfs.AzFileClient.read_table
+
+.. autofunction:: azfs.AzFileClient.read_pickle
+
 .. autofunction:: azfs.AzFileClient.read_json
 
 
@@ -26,6 +30,10 @@ put/upload
 .. autofunction:: azfs.AzFileClient.put
 
 .. autofunction:: azfs.AzFileClient.write_csv
+
+.. autofunction:: azfs.AzFileClient.write_table
+
+.. autofunction:: azfs.AzFileClient.write_pickle
 
 .. autofunction:: azfs.AzFileClient.write_json
 

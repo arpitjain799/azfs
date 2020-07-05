@@ -26,7 +26,7 @@ package status
 .. image:: https://img.shields.io/badge/python-3.6|3.7|3.8-blue.svg
    :target: https://www.python.org/downloads/release/python-377/
 
-.. image:: https://img.shields.io/badge/pypi-0.1.9-blue.svg
+.. image:: https://img.shields.io/badge/pypi-0.1.10-blue.svg
     :target: https://pypi.org/project/azfs/
 
 .. image:: https://pepy.tech/badge/azfs
