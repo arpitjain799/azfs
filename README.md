@@ -1,4 +1,4 @@
-# azfs
+# AzFS
 
 [![CircleCI](https://circleci.com/gh/gsy0911/azfs.svg?style=svg&circle-token=ccd8e1ece489b247bcaac84861ae725b0f89a605)](https://circleci.com/gh/gsy0911/azfs)
 [![codecov](https://codecov.io/gh/gsy0911/azfs/branch/master/graph/badge.svg)](https://codecov.io/gh/gsy0911/azfs)
@@ -12,7 +12,7 @@
 
 AzFS is to provide convenient Python read/write functions for Azure Storage Account.
 
-azfs can
+`AzFS` can
 
 * list files in blob (also with wildcard `*`),
 * check if file exists,
@@ -28,11 +28,11 @@ $ pip install azfs
 
 ## usage
 
-### create the client
 
 ```python
 import azfs
 from azure.identity import DefaultAzureCredential
+import pandas as pd
 
 # credential is not required if your environment is on AAD
 azc = azfs.AzFileClient()
@@ -43,15 +43,33 @@ credential = "[your storage account credential]"
 credential = DefaultAzureCredential()
 azc = azfs.AzFileClient(credential=credential)
 
+# data paths
+csv_path = "https://testazfs.blob.core.windows.net/test_caontainer/test_file.csv"
+
+# read csv as pd.DataFrame
+df = azc.read_csv(csv_path, index_col=0)
+# or
+with azc:
+    df = pd.read_csv_az(csv_path, header=None)
+
+
+# write csv
+azc.write_csv(path=csv_path, df=df)
+# or
+with azc:
+    df.to_csv_az(path=csv_path, index=False)
+
 ```
 
-#### types of authorization
+check more details in  [![Documentation Status](https://readthedocs.org/projects/azfs/badge/?version=latest)](https://azfs.readthedocs.io/en/latest/?badge=latest)
+
+### types of authorization
 
 Currently, only support [Azure Active Directory (AAD) token credential](https://docs.microsoft.com/azure/storage/common/storage-auth-aad).
 
-#### types of storage account kind
+### types of storage account kind
 
-The table blow shows if `azfs` provides read/write functions for the storage. 
+The table blow shows if `AzFS` provides read/write functions for the storage. 
 
 
 | account kind | Blob | Data Lake | Queue | File | Table |
@@ -63,109 +81,6 @@ The table blow shows if `azfs` provides read/write functions for the storage.
 * O: provides basic functions
 * X: not provides
 * -: storage type unavailable
-
-### download data
-
-azfs can get csv or json data from blob storage.
-
-```python
-import azfs
-import pandas as pd
-
-azc = azfs.AzFileClient()
-csv_path = "https://[storage-account].../*.csv"
-json_path = "https://[storage-account].../*.json"
-data_path = "https://[storage-account].../*.another_format"
-
-# read csv as pd.DataFrame
-df = azc.read_csv(csv_path, index_col=0)
-# or
-with azc:
-    df = pd.read_csv_az(csv_path, header=None)
-
-# read json
-data = azc.read_json(json_path)
-
-# also get data directory
-data = azc.get(data_path)
-# or, (`download` is an alias for `get`) 
-data = azc.download(data_path)
-```
-
-### upload data
-
-```python
-import azfs
-import pandas as pd
-
-azc = azfs.AzFileClient()
-csv_path = "https://[storage-account].../*.csv"
-json_path = "https://[storage-account].../*.json"
-data_path = "https://[storage-account].../*.another_format"
-
-
-df = pd.DataFrame()
-data = {"example": "data"}
-
-# write csv
-azc.write_csv(path=csv_path, df=df)
-# or
-with azc:
-    df.to_csv_az(path=csv_path, index=False)
-
-# read json as dict
-azc.write_json(path=json_path, data=data, indent=4)
-
-# also put data directory
-import json
-azc.put(path=json_path, data=json.dumps(data, indent=4)) 
-# or, (`upload` is an alias for `put`)
-azc.upload(path=json_path, data=json.dumps(data, indent=4))
-```
-
-### enumerating(ls, glob) or checking if file exists
-
-```python
-import azfs
-
-azc = azfs.AzFileClient()
-
-# get file_name list of blob
-file_name_list = azc.ls("https://[storage-account].../{container_name}")
-# or if set `attach_prefix` True, get full_path list of blob
-file_full_path_list = azc.ls("https://[storage-account].../{container_name}", attach_prefix=True)
-
-# find specific file with `*`
-file_full_path_list = azc.glob("https://[storage-account].../{container_name}/*.csv")
-# also search deeper directory
-file_full_path_list = azc.glob("https://[storage-account].../{container_name}/*/*/*.csv")
-# or if the directory starts with `a`
-file_full_path_list = azc.glob("https://[storage-account].../{container_name}/a*/*.csv")
-
-# check if file exists
-is_exists = azc.exists("https://[storage-account].../*.csv")
-```
-
-### remove, copy files, etc...
-
-```python
-import azfs
-
-azc = azfs.AzFileClient()
-
-# copy file from `src_path` to `dst_path`
-src_path = "https://[storage-account].../from/*.csv"
-dst_path = "https://[storage-account].../to/*.csv"
-is_copied = azc.cp(src_path=src_path, dst_path=dst_path, overwrite=True)
-
-# remove the file
-is_removed = azc.rm(path=src_path)
-
-# get file meta info
-data = azc.info(path=src_path)
-
-```
-
 
 ## dependencies
 
