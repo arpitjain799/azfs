@@ -30,12 +30,12 @@ class AzfsClient(AbstractClient):
     Abstract Client for AzBlobClient, AzDataLakeClient and AzQueueClient.
 
     Examples:
-        >>> blob_client = AzfsClient.get("blob", "***")
+        >>> blob_client = AzfsClient(credential="...").get_client("blob")
         # or
-        >>> datalake_client = AzfsClient.get("dfs", "***")
+        >>> datalake_client = AzfsClient(credential="...").get_client("dfs")
         # AzfsClient provide easy way to access functions implemented in AzBlobClient and AzDataLakeClient, as below
         >>> data_path = "https://testazfs.blob.core.windows.net/test_container/test1.json"
-        >>> data = AzfsClient.get(account_kind="blob", credential="...").get(path=data_path)
+        >>> data = AzfsClient(credential="...").get_client("blob").get(path=data_path)
 
     """
     CLIENTS = {}
@@ -44,22 +44,19 @@ class AzfsClient(AbstractClient):
         self._credential = credential
         self._connection_string = connection_string
 
-    def get_client(self, account_kind: str):
-        return self.CLIENTS[account_kind](credential=self._credential, connection_string=self._connection_string)
-
-    @classmethod
-    def get(cls, account_kind: str, credential) -> Union[AzBlobClient, AzDataLakeClient]:
+    def get_client(self, account_kind: str) -> Union[AzBlobClient, AzDataLakeClient, AzQueueClient]:
         """
         get AzBlobClient, AzDataLakeClient or AzQueueClient depending on account_kind
 
         Args:
             account_kind: blob, dfs or queue
-            credential: AzureDefaultCredential or string
 
         Returns:
             Union[AzBlobClient, AzDataLakeClient, AzQueueClient]
 
         Examples:
-            >>> AzBlobClient = AzfsClient(account_kind="blob", credential="...")
+            >>> azfs_client = AzfsClient(credential="...")
+            >>> AzBlobClient = azfs_client.get_client("blob")
         """
-        return cls.CLIENTS[account_kind](credential=credential)
+        return self.CLIENTS[account_kind](credential=self._credential, connection_string=self._connection_string)
+
