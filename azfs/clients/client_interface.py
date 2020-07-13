@@ -36,7 +36,7 @@ class ClientInterface:
 
     def __init__(
             self,
-            credential: Union[str, DefaultAzureCredential],
+            credential: Optional[Union[str, DefaultAzureCredential]],
             connection_string: Optional[str] = None):
         self.credential = credential
         self.connection_string = connection_string

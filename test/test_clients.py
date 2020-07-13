@@ -39,6 +39,11 @@ class TestClientInterface:
         with pytest.raises(NotImplementedError):
             client_interface.get_service_client_from_url(account_url=account_url)
 
+        # connection_stringから作成する場合
+        client_interface = ClientInterface(credential=None, connection_string="")
+        with pytest.raises(NotImplementedError):
+            client_interface.get_service_client_from_url(account_url=account_url)
+
 
 class TestReadCsv:
 
