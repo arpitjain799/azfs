@@ -1,3 +1,4 @@
+import math
 from typing import Union
 from azure.identity import DefaultAzureCredential
 from azure.storage.filedatalake import DataLakeFileClient, FileSystemClient, DataLakeServiceClient
@@ -85,8 +86,15 @@ class AzDataLakeClient(ClientInterface):
     def _put(self, path: str, data):
         file_client = self.get_file_client_from_path(path=path)
         _ = file_client.create_file()
-        _ = file_client.append_data(data=data, offset=0, length=len(data))
-        _ = file_client.flush_data(len(data))
+        # uploadするデータの量
+        data_length = len(data)
+        # 2 ** 23 = 8_388_608 = ~= 10_000_000
+        upload_unit = 2 ** 23
+        upload_loop = math.ceil(data_length / upload_unit)
+        for idx in range(upload_loop):
+            length = min(upload_unit, data_length - idx * upload_unit)
+            _ = file_client.append_data(data=data, offset=idx * upload_unit, length=length)
+            _ = file_client.flush_data(min((idx + 1) * upload_unit, data_length))
         return True
 
     def _info(self, path: str):
