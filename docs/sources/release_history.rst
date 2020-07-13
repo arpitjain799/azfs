@@ -5,6 +5,11 @@ Release History
    :maxdepth: 4
 
 
+0.2.0 (2020-07-xx)
+------------------
+
+* support ``connection_string``: in ``azfs.AzFileClient()``
+
 0.1.10 (2020-07-05)
 -------------------
 

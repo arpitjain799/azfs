@@ -6,7 +6,7 @@ from .client_interface import ClientInterface
 
 class AzBlobClient(ClientInterface):
 
-    def _get_service_client(
+    def _get_service_client_from_credential(
             self,
             account_url: str,
             credential: Union[DefaultAzureCredential, str]) -> BlobServiceClient:
@@ -21,6 +21,11 @@ class AzBlobClient(ClientInterface):
             BlobServiceClient
         """
         return BlobServiceClient(account_url=account_url, credential=credential)
+
+    def _get_service_client_from_connection_string(
+            self,
+            connection_string: str):
+        return BlobServiceClient.from_connection_string(conn_str=connection_string)
 
     def _get_file_client(
             self,
