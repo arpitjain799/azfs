@@ -38,6 +38,9 @@ class AzFileClient:
         # or
         >>> credential = DefaultAzureCredential()
         >>> azc = azfs.AzFileClient(credential=credential)
+        connection_string will be also acceptted
+        >>> connection_string = "[your connection_string]"
+        >>> azc = azfs.AzFileClient(connection_string=connection_string)
     """
 
     class AzContextManager:
@@ -142,14 +145,20 @@ class AzFileClient:
 
     def __init__(
             self,
-            credential: Optional[Union[str, DefaultAzureCredential]] = None):
+            credential: Optional[Union[str, DefaultAzureCredential]] = None,
+            connection_string: Optional[str] = None):
+        """
+        if every argument is None, set credential as DefaultAzureCredential().
+
+        Args:
+            credential: if string, Blob Storage -> Access Keys -> Key
+            connection_string: connection_string
         """
 
-        :param credential: if string, Blob Storage -> Access Keys -> Key
-        """
-        if credential is None:
+        if credential is None and connection_string is None:
             credential = DefaultAzureCredential()
         self.credential = credential
+        self.connection_string = connection_string
 
     def __enter__(self):
         """
