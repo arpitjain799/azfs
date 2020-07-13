@@ -1,7 +1,7 @@
 from abc import abstractmethod
 import io
 import gzip
-from typing import Union
+from typing import Union, Optional
 from azure.identity import DefaultAzureCredential
 from azure.storage.blob import BlobClient, ContainerClient
 from azure.storage.filedatalake import DataLakeFileClient, FileSystemClient
@@ -36,11 +36,13 @@ class ClientInterface:
 
     def __init__(
             self,
-            credential: Union[str, DefaultAzureCredential]):
+            credential: Union[str, DefaultAzureCredential],
+            connection_string: Optional[str] = None):
         self.credential = credential
+        self.connection_string = connection_string
 
     @abstractmethod
-    def _get_service_client(
+    def _get_service_client_from_credential(
             self,
             account_url: str,
             credential: Union[DefaultAzureCredential, str]):
@@ -56,8 +58,14 @@ class ClientInterface:
         """
         raise NotImplementedError
 
+    @abstractmethod
+    def _get_service_client_from_connection_string(
+            self,
+            connection_string: str):
+        raise NotImplementedError
+
     def _get_service_client_from_url(self, account_url):
-        return self._get_service_client(account_url=account_url, credential=self.credential)
+        return self._get_service_client_from_credential(account_url=account_url, credential=self.credential)
 
     def get_service_client_from_url(self, account_url):
         return self._get_service_client_from_url(account_url=account_url)
