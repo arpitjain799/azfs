@@ -65,7 +65,10 @@ class ClientInterface:
         raise NotImplementedError
 
     def _get_service_client_from_url(self, account_url):
-        return self._get_service_client_from_credential(account_url=account_url, credential=self.credential)
+        if self.credential is not None:
+            return self._get_service_client_from_credential(account_url=account_url, credential=self.credential)
+        elif self.connection_string is not None:
+            return self._get_service_client_from_connection_string(connection_string=self.connection_string)
 
     def get_service_client_from_url(self, account_url):
         return self._get_service_client_from_url(account_url=account_url)

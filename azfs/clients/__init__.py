@@ -40,6 +40,13 @@ class AzfsClient(AbstractClient):
     """
     CLIENTS = {}
 
+    def __init__(self, credential, connection_string):
+        self._credential = credential
+        self._connection_string = connection_string
+
+    def get_client(self, account_kind: str):
+        return self.CLIENTS[account_kind](credential=self._credential, connection_string=self._connection_string)
+
     @classmethod
     def get(cls, account_kind: str, credential) -> Union[AzBlobClient, AzDataLakeClient]:
         """
