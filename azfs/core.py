@@ -38,6 +38,9 @@ class AzFileClient:
         # or
         >>> credential = DefaultAzureCredential()
         >>> azc = azfs.AzFileClient(credential=credential)
+        connection_string will be also acceptted
+        >>> connection_string = "[your connection_string]"
+        >>> azc = azfs.AzFileClient(connection_string=connection_string)
     """
 
     class AzContextManager:
@@ -142,14 +145,21 @@ class AzFileClient:
 
     def __init__(
             self,
-            credential: Optional[Union[str, DefaultAzureCredential]] = None):
+            credential: Optional[Union[str, DefaultAzureCredential]] = None,
+            connection_string: Optional[str] = None):
+        """
+        if every argument is None, set credential as DefaultAzureCredential().
+
+        Args:
+            credential: if string, Blob Storage -> Access Keys -> Key
+            connection_string: connection_string
         """
 
-        :param credential: if string, Blob Storage -> Access Keys -> Key
-        """
-        if credential is None:
+        if credential is None and connection_string is None:
             credential = DefaultAzureCredential()
         self.credential = credential
+        self.connection_string = connection_string
+        self._client = AzfsClient(credential=credential, connection_string=connection_string)
 
     def __enter__(self):
         """
@@ -238,7 +248,8 @@ class AzFileClient:
 
         """
         _, account_kind, _, file_path = BlobPathDecoder(path).get_with_url()
-        file_list = AzfsClient.get(account_kind, credential=self.credential).ls(path=path, file_path=file_path)
+        # file_list = AzfsClient.get(account_kind, credential=self.credential).ls(path=path, file_path=file_path)
+        file_list = self._client.get_client(account_kind=account_kind).ls(path=path, file_path=file_path)
         if account_kind in ["dfs", "blob"]:
             file_name_list = ls_filter(file_path_list=file_list, file_path=file_path)
             if attach_prefix:
@@ -290,7 +301,7 @@ class AzFileClient:
 
         """
         _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
-        return AzfsClient.get(account_kind, credential=self.credential).rm(path=path)
+        return self._client.get_client(account_kind=account_kind).rm(path=path)
 
     def info(self, path: str) -> dict:
         """
@@ -321,7 +332,7 @@ class AzFileClient:
         """
         _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
         # get info from blob or data-lake storage
-        data = AzfsClient.get(account_kind, credential=self.credential).info(path=path)
+        data = self._client.get_client(account_kind=account_kind).info(path=path)
 
         # extract below to determine file or directory
         content_settings = data.get("content_settings", {})
@@ -470,7 +481,7 @@ class AzFileClient:
             )
         # get container root path
         base_path = f"{url}/{container_name}/"
-        file_list = AzfsClient.get(account_kind, credential=self.credential).ls(path=base_path, file_path=root_folder)
+        file_list = self._client.get_client(account_kind=account_kind).ls(path=base_path, file_path=root_folder)
         if account_kind in ["dfs", "blob"]:
             # fix pattern_path, in order to avoid matching `/`
             pattern_path = rf"{pattern_path.replace('*', '([^/])*?')}$"
@@ -507,7 +518,7 @@ class AzFileClient:
 
         """
         _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
-        return AzfsClient.get(account_kind, credential=self.credential).get(path=path, **kwargs)
+        return self._client.get_client(account_kind=account_kind).get(path=path, **kwargs)
 
     @_az_context_manager.register(_as="read_csv_az", _to=pd)
     def read_csv(self, path: str, **kwargs) -> pd.DataFrame:
@@ -623,7 +634,7 @@ class AzFileClient:
 
         """
         _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
-        return AzfsClient.get(account_kind, credential=self.credential).put(path=path, data=data)
+        return self._client.get_client(account_kind=account_kind).put(path=path, data=data)
 
     @_az_context_manager.register(_as="to_csv_az", _to=pd.DataFrame)
     def write_csv(self, path: str, df: pd.DataFrame, **kwargs) -> bool:

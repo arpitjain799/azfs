@@ -1,10 +1,13 @@
+import pytest
 from azfs.clients.blob_client import AzBlobClient
 from azure.storage.blob import BlobClient, ContainerClient
 import azfs
 
 credential = ""
+connection_string = "DefaultEndpointsProtocol=https;AccountName=xxxx;AccountKey=xxxx;EndpointSuffix=core.windows.net"
 azc = azfs.AzFileClient()
-blob_client = AzBlobClient(credential=credential)
+blob_client_credential = AzBlobClient(credential=credential)
+blob_client_connection_string = AzBlobClient(credential=None, connection_string=connection_string)
 test_file_path = "https://test.blob.core.windows.net/test/test.csv"
 test_file_ls_path = "https://test.blob.core.windows.net/test/"
 
@@ -15,7 +18,12 @@ class BlobMock:
         self.name = name
 
 
-def test_blob_info(mocker):
+@pytest.mark.parametrize("blob_client", [
+    # blob client
+    blob_client_credential,
+    blob_client_connection_string,
+])
+def test_blob_info(mocker, blob_client):
     # ===================== #
     # test for AzBlobClient #
     # ===================== #
@@ -50,7 +58,12 @@ def test_blob_info(mocker):
     assert result
 
 
-def test_blob_info_error(mocker):
+@pytest.mark.parametrize("blob_client", [
+    # blob client
+    blob_client_credential,
+    blob_client_connection_string,
+])
+def test_blob_info_error(mocker, blob_client):
     func_mock = mocker.MagicMock()
     func_mock.side_effect = IOError
     mocker.patch.object(BlobClient, "get_blob_properties", func_mock)
@@ -61,7 +74,12 @@ def test_blob_info_error(mocker):
     assert not result
 
 
-def test_blob_upload(mocker):
+@pytest.mark.parametrize("blob_client", [
+    # blob client
+    blob_client_credential,
+    blob_client_connection_string,
+])
+def test_blob_upload(mocker, blob_client):
     # ===================== #
     # test for AzBlobClient #
     # ===================== #
@@ -75,7 +93,12 @@ def test_blob_upload(mocker):
     assert result
 
 
-def test_blob_rm(mocker):
+@pytest.mark.parametrize("blob_client", [
+    # blob client
+    blob_client_credential,
+    blob_client_connection_string,
+])
+def test_blob_rm(mocker, blob_client):
     # ===================== #
     # test for AzBlobClient #
     # ===================== #
@@ -89,7 +112,12 @@ def test_blob_rm(mocker):
     assert result
 
 
-def test_blob_ls(mocker):
+@pytest.mark.parametrize("blob_client", [
+    # blob client
+    blob_client_credential,
+    blob_client_connection_string,
+])
+def test_blob_ls(mocker, blob_client):
     # ===================== #
     # test for AzBlobClient #
     # ===================== #

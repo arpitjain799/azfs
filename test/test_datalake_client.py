@@ -1,10 +1,14 @@
+import json
+import pytest
 from azfs.clients.datalake_client import AzDataLakeClient
 from azure.storage.filedatalake import FileSystemClient, DataLakeFileClient
 import azfs
 
 credential = ""
+connection_string = "DefaultEndpointsProtocol=https;AccountName=xxxx;AccountKey=xxxx;EndpointSuffix=core.windows.net"
 azc = azfs.AzFileClient()
-datalake_client = AzDataLakeClient(credential=credential)
+datalake_client_credential = AzDataLakeClient(credential=credential)
+datalake_client_connection_string = AzDataLakeClient(credential=None, connection_string=connection_string)
 test_file_path = "https://test.dfs.core.windows.net/test/test.csv"
 test_file_ls_path = "https://test.dfs.core.windows.net/test/"
 
@@ -15,7 +19,12 @@ class BlobMock:
         self.name = name
 
 
-def test_blob_info(mocker):
+@pytest.mark.parametrize("datalake_client", [
+    # blob client
+    datalake_client_credential,
+    datalake_client_connection_string,
+])
+def test_blob_info(mocker, datalake_client):
     # ======================== #
     # test for datalake_client #
     # ======================== #
@@ -63,7 +72,12 @@ def test_blob_info_error(mocker):
     assert not result
 
 
-def test_blob_info_directory(mocker):
+@pytest.mark.parametrize("datalake_client", [
+    # blob client
+    datalake_client_credential,
+    datalake_client_connection_string,
+])
+def test_blob_info_directory(mocker, datalake_client):
     # ======================== #
     # test for datalake_client #
     # ======================== #
@@ -100,7 +114,12 @@ def test_blob_info_directory(mocker):
     assert result
 
 
-def test_blob_upload(mocker):
+@pytest.mark.parametrize("datalake_client", [
+    # blob client
+    datalake_client_credential,
+    datalake_client_connection_string,
+])
+def test_blob_upload(mocker, datalake_client):
     # ======================== #
     # test for datalake_client #
     # ======================== #
@@ -116,14 +135,20 @@ def test_blob_upload(mocker):
     mocker.patch.object(DataLakeFileClient, "create_file", create_file_mock)
     mocker.patch.object(DataLakeFileClient, "append_data", append_data_mock)
     mocker.patch.object(DataLakeFileClient, "flush_data", flush_data_mock)
-    result = datalake_client.put(path=test_file_path, data={})
+    data = json.dumps({"example": "data"})
+    result = datalake_client.put(path=test_file_path, data=data)
 
     assert result
-    append_data_mock.assert_called_with(data={}, offset=0, length=len({}))
-    flush_data_mock.assert_called_with(len({}))
+    append_data_mock.assert_called_with(data=data, offset=0, length=len(data))
+    flush_data_mock.assert_called_with(len(data))
 
 
-def test_blob_rm(mocker):
+@pytest.mark.parametrize("datalake_client", [
+    # blob client
+    datalake_client_credential,
+    datalake_client_connection_string,
+])
+def test_blob_rm(mocker, datalake_client):
     # ======================== #
     # test for datalake_client #
     # ======================== #
@@ -137,7 +162,12 @@ def test_blob_rm(mocker):
     assert result
 
 
-def test_blob_ls(mocker):
+@pytest.mark.parametrize("datalake_client", [
+    # blob client
+    datalake_client_credential,
+    datalake_client_connection_string,
+])
+def test_blob_ls(mocker, datalake_client):
     # ======================== #
     # test for datalake_client #
     # ======================== #

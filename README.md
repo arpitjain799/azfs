@@ -7,7 +7,7 @@
 
 
 [![PythonVersion](https://img.shields.io/badge/python-3.6|3.7|3.8-blue.svg)](https://www.python.org/downloads/release/python-377/)
-[![PiPY](https://img.shields.io/badge/pypi-0.1.10-blue.svg)](https://pypi.org/project/azfs/)
+[![PiPY](https://img.shields.io/badge/pypi-0.2.0-blue.svg)](https://pypi.org/project/azfs/)
 [![Downloads](https://pepy.tech/badge/azfs)](https://pepy.tech/project/azfs) 
 
 AzFS is to provide convenient Python read/write functions for Azure Storage Account.
@@ -34,7 +34,7 @@ import azfs
 from azure.identity import DefaultAzureCredential
 import pandas as pd
 
-# credential is not required if your environment is on AAD
+# credential is not required if your environment is on AAD(Azure Active Directory)
 azc = azfs.AzFileClient()
 
 # credential is required if your environment is not on AAD
@@ -42,6 +42,10 @@ credential = "[your storage account credential]"
 # or
 credential = DefaultAzureCredential()
 azc = azfs.AzFileClient(credential=credential)
+
+# connection_string is also supported
+connection_string = "DefaultEndpointsProtocol=https;AccountName=xxxx;AccountKey=xxxx;EndpointSuffix=core.windows.net"
+azc = azfs.AzFileClient(connection_string=connection_string)
 
 # data paths
 csv_path = "https://testazfs.blob.core.windows.net/test_caontainer/test_file.csv"
@@ -65,7 +69,9 @@ check more details in  [![Documentation Status](https://readthedocs.org/projects
 
 ### types of authorization
 
-Currently, only support [Azure Active Directory (AAD) token credential](https://docs.microsoft.com/azure/storage/common/storage-auth-aad).
+Supported authentication types are
+* [Azure Active Directory (AAD) token credential](https://docs.microsoft.com/azure/storage/common/storage-auth-aad).
+* connection_string, like `DefaultEndpointsProtocol=https;AccountName=xxxx;AccountKey=xxxx;EndpointSuffix=core.windows.net` 
 
 ### types of storage account kind
 
