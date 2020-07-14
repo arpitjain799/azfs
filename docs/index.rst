@@ -57,10 +57,9 @@ Limitation
 authorization
 -------------
 
-Currently, only support `Azure Active Directory (AAD) token credential <https://docs.microsoft.com/azure/storage/common/storage-auth-aad>`_.
-
-Not support Connection String, or SAS, etc...
-(Soon it will be supported.)
+Supported authentication types are
+* `Azure Active Directory (AAD) token credential <https://docs.microsoft.com/azure/storage/common/storage-auth-aad>`_
+* connection_string, like `DefaultEndpointsProtocol=https;AccountName=xxxx;AccountKey=xxxx;EndpointSuffix=core.windows.net`
 
 types of storage
 ----------------
@@ -104,6 +103,9 @@ Credential is not required if ``AzFileClient()`` is created on AAD (Azure Active
    credential = DefaultAzureCredential()
    azc = azfs.AzFileClient(credential=credential)
 
+   # connection_string is also supported
+   connection_string = "DefaultEndpointsProtocol=https;AccountName=xxxx;AccountKey=xxxx;EndpointSuffix=core.windows.net"
+   azc = azfs.AzFileClient(connection_string=connection_string)
 
 
 download data
@@ -118,9 +120,14 @@ API reference is `get/download <./sources/api.html#get-download>`_.
    import pandas as pd
 
    azc = azfs.AzFileClient()
-   csv_path = "https://[storage-account].../*.csv"
-   json_path = "https://[storage-account].../*.json"
-   data_path = "https://[storage-account].../*.another_format"
+   # if your data in BlobStorage
+   csv_path = "https://{storage_account}.blob.core.windows.net/{container}/***.csv"
+   json_path = "https://{storage_account}.blob.core.windows.net/{container}/***.json"
+   data_path = "https://{storage_account}.blob.core.windows.net/{container}/***..another_format"
+   # if your data in DataLakeStorage
+   csv_path = "https://{storage_account}.dfs.core.windows.net/{container}/***.csv"
+   json_path = "https://{storage_account}.dfs.core.windows.net/{container}/***.json"
+   data_path = "https://{storage_account}.dfs.core.windows.net/{container}/***..another_format"
 
    # read csv as pd.DataFrame
    df = azc.read_csv(csv_path, index_col=0)
@@ -150,9 +157,10 @@ API reference is `put/upload <./sources/api.html#put-upload>`_.
    import pandas as pd
 
    azc = azfs.AzFileClient()
-   csv_path = "https://[storage-account].../*.csv"
-   json_path = "https://[storage-account].../*.json"
-   data_path = "https://[storage-account].../*.another_format"
+   # if your data in BlobStorage
+   csv_path = "https://{storage_account}.blob.core.windows.net/{container}/***.csv"
+   json_path = "https://{storage_account}.blob.core.windows.net/{container}/***.json"
+   data_path = "https://{storage_account}.blob.core.windows.net/{container}/***..another_format"
 
 
    df = pd.DataFrame()

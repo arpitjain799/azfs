@@ -8,6 +8,7 @@ Release History
 0.2.0 (2020-07-xx)
 ------------------
 
+* can upload over 100MB data to DataLakeStorage.
 * support ``connection_string``: in ``azfs.AzFileClient()``
 
 0.1.10 (2020-07-05)
