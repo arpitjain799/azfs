@@ -69,7 +69,7 @@ check more details in  [![Documentation Status](https://readthedocs.org/projects
 
 ### types of authorization
 
-Support authentication type is
+Supported authentication types are
 * [Azure Active Directory (AAD) token credential](https://docs.microsoft.com/azure/storage/common/storage-auth-aad).
 * connection_string, like `DefaultEndpointsProtocol=https;AccountName=xxxx;AccountKey=xxxx;EndpointSuffix=core.windows.net` 
 

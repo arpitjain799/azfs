@@ -1,3 +1,4 @@
+import json
 import pytest
 from azfs.clients.datalake_client import AzDataLakeClient
 from azure.storage.filedatalake import FileSystemClient, DataLakeFileClient
@@ -134,11 +135,12 @@ def test_blob_upload(mocker, datalake_client):
     mocker.patch.object(DataLakeFileClient, "create_file", create_file_mock)
     mocker.patch.object(DataLakeFileClient, "append_data", append_data_mock)
     mocker.patch.object(DataLakeFileClient, "flush_data", flush_data_mock)
-    result = datalake_client.put(path=test_file_path, data={})
+    data = json.dumps({"example": "data"})
+    result = datalake_client.put(path=test_file_path, data=data)
 
     assert result
-    append_data_mock.assert_called_with(data={}, offset=0, length=len({}))
-    flush_data_mock.assert_called_with(len({}))
+    append_data_mock.assert_called_with(data=data, offset=0, length=len(data))
+    flush_data_mock.assert_called_with(len(data))
 
 
 @pytest.mark.parametrize("datalake_client", [

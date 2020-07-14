@@ -1,3 +1,4 @@
+import math
 from typing import Union
 from azure.identity import DefaultAzureCredential
 from azure.storage.filedatalake import DataLakeFileClient, FileSystemClient, DataLakeServiceClient
@@ -83,10 +84,35 @@ class AzDataLakeClient(ClientInterface):
         return file_bytes
 
     def _put(self, path: str, data):
+        """
+        In DataLake Storage Account, uploading the file over 100MB may raise Exception like
+        `(RequestBodyTooLarge) The request body is too large and exceeds the maximum permissible limit`.
+
+        So in order to avoid the exception above, data are uploaded by appending.
+
+        Args:
+            path:
+            data:
+
+        Returns:
+
+        """
         file_client = self.get_file_client_from_path(path=path)
         _ = file_client.create_file()
-        _ = file_client.append_data(data=data, offset=0, length=len(data))
-        _ = file_client.flush_data(len(data))
+        # upload data
+        data_length = len(data)
+        # 2 ** 23 = 8_388_608 ~= 10_000_000
+        upload_unit = 2 ** 23
+        append_times = math.ceil(data_length / upload_unit)
+        # to avoid uploading limitation in one time
+        for idx in range(append_times):
+            start = idx * upload_unit
+            end = min((idx + 1) * upload_unit, data_length)
+            split_data = data[start:end]
+            # upload data
+            _ = file_client.append_data(data=split_data, offset=start, length=len(split_data))
+        # write date
+        _ = file_client.flush_data(data_length)
         return True
 
     def _info(self, path: str):
