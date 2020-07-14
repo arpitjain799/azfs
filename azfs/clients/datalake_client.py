@@ -84,17 +84,35 @@ class AzDataLakeClient(ClientInterface):
         return file_bytes
 
     def _put(self, path: str, data):
+        """
+        In DataLake Storage Account, uploading the file over 100MB may raise Exception like
+        `(RequestBodyTooLarge) The request body is too large and exceeds the maximum permissible limit`.
+
+        So in order to avoid the exception above, data are uploaded by appending.
+
+        Args:
+            path:
+            data:
+
+        Returns:
+
+        """
         file_client = self.get_file_client_from_path(path=path)
         _ = file_client.create_file()
-        # uploadするデータの量
+        # upload data
         data_length = len(data)
-        # 2 ** 23 = 8_388_608 = ~= 10_000_000
+        # 2 ** 23 = 8_388_608 ~= 10_000_000
         upload_unit = 2 ** 23
-        upload_loop = math.ceil(data_length / upload_unit)
-        for idx in range(upload_loop):
-            length = min(upload_unit, data_length - idx * upload_unit)
-            _ = file_client.append_data(data=data, offset=idx * upload_unit, length=length)
-            _ = file_client.flush_data(min((idx + 1) * upload_unit, data_length))
+        append_times = math.ceil(data_length / upload_unit)
+        # to avoid uploading limitation in one time
+        for idx in range(append_times):
+            start = idx * upload_unit
+            end = min((idx + 1) * upload_unit, data_length)
+            split_data = data[start:end]
+            # upload data
+            _ = file_client.append_data(data=split_data, offset=start, length=len(split_data))
+        # write date
+        _ = file_client.flush_data(data_length)
         return True
 
     def _info(self, path: str):
