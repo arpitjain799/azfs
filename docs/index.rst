@@ -58,6 +58,7 @@ authorization
 -------------
 
 Supported authentication types are
+
 * `Azure Active Directory (AAD) token credential <https://docs.microsoft.com/azure/storage/common/storage-auth-aad>`_
 * connection_string, like `DefaultEndpointsProtocol=https;AccountName=xxxx;AccountKey=xxxx;EndpointSuffix=core.windows.net`
 
@@ -123,11 +124,11 @@ API reference is `get/download <./sources/api.html#get-download>`_.
    # if your data in BlobStorage
    csv_path = "https://{storage_account}.blob.core.windows.net/{container}/***.csv"
    json_path = "https://{storage_account}.blob.core.windows.net/{container}/***.json"
-   data_path = "https://{storage_account}.blob.core.windows.net/{container}/***..another_format"
+   data_path = "https://{storage_account}.blob.core.windows.net/{container}/***.another_format"
    # if your data in DataLakeStorage
    csv_path = "https://{storage_account}.dfs.core.windows.net/{container}/***.csv"
    json_path = "https://{storage_account}.dfs.core.windows.net/{container}/***.json"
-   data_path = "https://{storage_account}.dfs.core.windows.net/{container}/***..another_format"
+   data_path = "https://{storage_account}.dfs.core.windows.net/{container}/***.another_format"
 
    # read csv as pd.DataFrame
    df = azc.read_csv(csv_path, index_col=0)
@@ -196,19 +197,19 @@ API reference is `enumerating <./sources/api.html#file-enumerating>`_.
    azc = azfs.AzFileClient()
 
    # get file_name list of blob
-   file_name_list = azc.ls("https://[storage-account].../{container_name}")
+   file_name_list = azc.ls("https://{storage_account}.blob.core.windows.net/{container}")
    # or if set `attach_prefix` True, get full_path list of blob
-   file_full_path_list = azc.ls("https://[storage-account].../{container_name}", attach_prefix=True)
+   file_full_path_list = azc.ls("https://{storage_account}.blob.core.windows.net/{container}", attach_prefix=True)
 
    # find specific file with `*`
-   file_full_path_list = azc.glob("https://[storage-account].../{container_name}/*.csv")
+   file_full_path_list = azc.glob("https://{storage_account}.blob.core.windows.net/{container}/some_folder/*.csv")
    # also search deeper directory
-   file_full_path_list = azc.glob("https://[storage-account].../{container_name}/*/*/*.csv")
+   file_full_path_list = azc.glob("https://{storage_account}.blob.core.windows.net/{container}/some_folder/*/*.csv")
    # or if the directory starts with `a`
-   file_full_path_list = azc.glob("https://[storage-account].../{container_name}/a*/*.csv")
+   file_full_path_list = azc.glob("https://{storage_account}.blob.core.windows.net/{container}/some_folder/a*/*.csv")
 
    # check if file exists
-   is_exists = azc.exists("https://[storage-account].../*.csv")
+   is_exists = azc.exists("https://{storage_account}.blob.core.windows.net/{container}/some_folder/test.csv")
 
 
 remove, copy files, etc...
@@ -224,8 +225,8 @@ API reference is `manipulating <./sources/api.html#file-manipulating>`_.
    azc = azfs.AzFileClient()
 
    # copy file from `src_path` to `dst_path`
-   src_path = "https://[storage-account].../from/*.csv"
-   dst_path = "https://[storage-account].../to/*.csv"
+   src_path = "https://{storage_account}.blob.core.windows.net/{container}/src_folder/*.csv"
+   dst_path = "https://{storage_account}.blob.core.windows.net/{container}/dst_folder/*.csv"
    is_copied = azc.cp(src_path=src_path, dst_path=dst_path, overwrite=True)
 
    # remove the file
