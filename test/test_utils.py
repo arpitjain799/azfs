@@ -69,6 +69,17 @@ class TestBlobPathDecoder:
         assert container_name_v == container_name
         assert blob_file_v == blob_file
 
+    def test_add_pattern_error(self):
+        # shortage of %
+        path_pattern = "%A=%T=%C"
+        with pytest.raises(AzfsInputError):
+            BlobPathDecoder.add_pattern(pattern=path_pattern)
+
+        # unknown %
+        path_pattern = "%A=%T=%C%Z"
+        with pytest.raises(AzfsInputError):
+            BlobPathDecoder.add_pattern(pattern=path_pattern)
+
 
 class TestLsFilter:
     def test_ls_filter(self):
