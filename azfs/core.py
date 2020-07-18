@@ -157,8 +157,6 @@ class AzFileClient:
 
         if credential is None and connection_string is None:
             credential = DefaultAzureCredential()
-        self.credential = credential
-        self.connection_string = connection_string
         self._client = AzfsClient(credential=credential, connection_string=connection_string)
 
     def __enter__(self):
@@ -248,7 +246,6 @@ class AzFileClient:
 
         """
         _, account_kind, _, file_path = BlobPathDecoder(path).get_with_url()
-        # file_list = AzfsClient.get(account_kind, credential=self.credential).ls(path=path, file_path=file_path)
         file_list = self._client.get_client(account_kind=account_kind).ls(path=path, file_path=file_path)
         if account_kind in ["dfs", "blob"]:
             file_name_list = ls_filter(file_path_list=file_list, file_path=file_path)
