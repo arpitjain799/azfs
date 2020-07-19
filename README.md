@@ -7,7 +7,7 @@
 
 
 [![PythonVersion](https://img.shields.io/badge/python-3.6|3.7|3.8-blue.svg)](https://www.python.org/downloads/release/python-377/)
-[![PiPY](https://img.shields.io/badge/pypi-0.2.0-blue.svg)](https://pypi.org/project/azfs/)
+[![PiPY](https://img.shields.io/badge/pypi-0.2.1-blue.svg)](https://pypi.org/project/azfs/)
 [![Downloads](https://pepy.tech/badge/azfs)](https://pepy.tech/project/azfs) 
 
 AzFS is to provide convenient Python read/write functions for Azure Storage Account.
