@@ -77,8 +77,8 @@ class AzBlobClient(ClientInterface):
             [f.name for f in self.get_container_client_from_path(path=path).list_blobs(name_starts_with=file_path)]
         return blob_list
 
-    def _get(self, path: str, **kwargs):
-        file_bytes = self.get_file_client_from_path(path=path).download_blob().readall()
+    def _get(self, path: str, offset: int = None, length: int = None, **kwargs):
+        file_bytes = self.get_file_client_from_path(path=path).download_blob(offset=offset, length=length).readall()
         return file_bytes
 
     def _put(self, path: str, data):
