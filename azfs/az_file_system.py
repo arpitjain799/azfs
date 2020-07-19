@@ -12,6 +12,7 @@ from .clients import AzfsClient
 
 
 class AzFileSystem(AbstractFileSystem):
+    default_block_size = 5 * 2 ** 20
 
     def __init__(
             self,
@@ -38,6 +39,9 @@ class AzFileSystem(AbstractFileSystem):
         Return raw bytes-mode file-like from the file-system
 
         """
+        if block_size is None:
+            block_size = self.default_block_size
+
         return AzFile(
             self,
             path,
@@ -180,7 +184,7 @@ class AzFile(AbstractBufferedFile):
             fs: AzFileSystem,
             path: str,
             mode="rb",
-            block_size="default",
+            block_size=5 * 2 ** 20,
             autocommit=True,
             cache_type="readahead",
             cache_options=None,
@@ -188,7 +192,6 @@ class AzFile(AbstractBufferedFile):
         super().__init__(fs, path, mode, block_size, autocommit, cache_type, cache_options, **kwargs)
         self.fs = fs
         self.path = path
-
         # check block_size from AbstractBufferedFile
         if self.writable():
             if block_size < 5 * 2 ** 20:
