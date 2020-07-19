@@ -4,7 +4,6 @@ from fsspec import AbstractFileSystem
 from fsspec.spec import AbstractBufferedFile
 from azure.identity import DefaultAzureCredential
 
-from .core import AzFileClient
 from .utils import (
     BlobPathDecoder,
     ls_filter
@@ -23,7 +22,7 @@ class AzFileSystem(AbstractFileSystem):
         super().__init__(*args, **storage_options)
         if credential is None and connection_string is None:
             credential = DefaultAzureCredential()
-        self._client = AzfsClient(credential=credential, connection_string=connection_string)
+        self.az_client = AzfsClient(credential=credential, connection_string=connection_string)
 
     def _open(
         self,
@@ -47,7 +46,7 @@ class AzFileSystem(AbstractFileSystem):
 
     def ls(self, path, detail=True, attach_prefix=False, **kwargs):
         _, account_kind, _, file_path = BlobPathDecoder(path).get_with_url()
-        file_list = self._client.get_client(account_kind=account_kind).ls(path=path, file_path=file_path)
+        file_list = self.az_client.get_client(account_kind=account_kind).ls(path=path, file_path=file_path)
         if account_kind in ["dfs", "blob"]:
             file_name_list = ls_filter(file_path_list=file_list, file_path=file_path)
             if attach_prefix:
@@ -71,11 +70,22 @@ class AzFileSystem(AbstractFileSystem):
 
 
 class AzFile(AbstractBufferedFile):
+    """
+
+    Args:
+        fs: AzFileSystem
+        path: path to read file
+        mode: value candidates are same as build-in function `open()`
+        block_size:
+        autocommit:
+        cache_type:
+        cache_option:
+    """
 
     def __init__(
             self,
-            fs,
-            path,
+            fs: AzFileSystem,
+            path: str,
             mode="rb",
             block_size="default",
             autocommit=True,
@@ -83,6 +93,15 @@ class AzFile(AbstractBufferedFile):
             cache_options=None,
             **kwargs):
         super().__init__(fs, path, mode, block_size, autocommit, cache_type, cache_options, **kwargs)
+        self.fs = fs
+        self.path = path
+
+        # check block_size from AbstractBufferedFile
+        if self.writable():
+            if block_size < 5 * 2 ** 20:
+                raise ValueError('Block size must be >=5MB')
 
     def _fetch_range(self, start, end):
-        pass
+        _, account_kind, _, file_path = BlobPathDecoder(self.path).get_with_url()
+        return self.fs.az_client.get_client(
+            account_kind=account_kind).get(path=self.path, offset=start, length=end-start)
