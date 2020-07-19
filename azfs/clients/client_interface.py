@@ -1,6 +1,4 @@
 from abc import abstractmethod
-import io
-import gzip
 from typing import Union, Optional
 from azure.identity import DefaultAzureCredential
 from azure.storage.blob import BlobClient, ContainerClient
