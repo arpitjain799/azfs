@@ -33,7 +33,11 @@ class AzFileSystem(AbstractFileSystem):
         cache_options=None,
         **kwargs
     ):
-        """Return raw bytes-mode file-like from the file-system"""
+        """
+        (Override method)
+        Return raw bytes-mode file-like from the file-system
+
+        """
         return AzFile(
             self,
             path,
@@ -44,7 +48,56 @@ class AzFileSystem(AbstractFileSystem):
             **kwargs
         )
 
+    def info(self, path, **kwargs):
+        """
+        (Override method)
+
+        Args:
+            path:
+            **kwargs:
+
+        Returns:
+
+        """
+        _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
+        # get info from blob or data-lake storage
+        data = self.az_client.get_client(account_kind=account_kind).info(path=path)
+
+        # extract below to determine file or directory
+        content_settings = data.get("content_settings", {})
+        metadata = data.get("metadata", {})
+
+        data_type = ""
+        if "hdi_isfolder" in metadata:
+            # only data-lake storage has `hdi_isfolder`
+            data_type = "directory"
+        elif content_settings.get("content_type") is not None:
+            # blob and data-lake storage have `content_settings`,
+            # and its value of the `content_type` must not be None
+            data_type = "file"
+        return {
+            "name": data.get("name", ""),
+            "size": data.get("size", ""),
+            "creation_time": data.get("creation_time", ""),
+            "last_modified": data.get("last_modified", ""),
+            "etag": data.get("etag", ""),
+            "content_type": content_settings.get("content_type", ""),
+            "type": data_type
+        }
+
     def ls(self, path, detail=True, attach_prefix=False, **kwargs):
+        """
+        (Inherited method)
+
+        Args:
+            path:
+            detail:
+            attach_prefix:
+            **kwargs:
+
+        Returns:
+
+        """
         _, account_kind, _, file_path = BlobPathDecoder(path).get_with_url()
         file_list = self.az_client.get_client(account_kind=account_kind).ls(path=path, file_path=file_path)
         if account_kind in ["dfs", "blob"]:
@@ -57,15 +110,55 @@ class AzFileSystem(AbstractFileSystem):
                 return file_name_list
 
     def copy(self, path1, path2, **kwargs):
+        """
+        (Inherited method)
+
+
+        Args:
+            path1:
+            path2:
+            **kwargs:
+
+        Returns:
+
+        """
         pass
 
     def _rm(self, path):
+        """
+        (Inherited method)
+
+        Args:
+            path:
+
+        Returns:
+
+        """
         pass
 
     def created(self, path):
+        """
+        (Inherited method)
+
+
+        Args:
+            path:
+
+        Returns:
+
+        """
         pass
 
     def modified(self, path):
+        """
+        (Inherited method)
+
+        Args:
+            path:
+
+        Returns:
+
+        """
         pass
 
 
