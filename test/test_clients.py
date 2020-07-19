@@ -226,6 +226,40 @@ class TestReadLineIter:
         assert line_counter == 3
 
 
+class TestReadCsvChunk:
+    def test_blob_read_csv_chunk(self, mocker, _get_csv, var_azc):
+        mocker.patch.object(AzBlobClient, "_get", _get_csv)
+        return_value = {"size": len(b'name,age\nalice,10\nbob,10\n')}
+        func_mock = mocker.MagicMock()
+        func_mock.return_value = return_value
+        mocker.patch.object(AzBlobClient, "_info", func_mock)
+
+        # the file below is not exists
+        path = "https://testazfs.blob.core.windows.net/test_caontainer/test.csv"
+        chunk_size = 2
+        chunk_counter = 0
+        with pytest.warns(FutureWarning):
+            for _ in var_azc.read_csv_chunk(path, chunk_size):
+                chunk_counter += 1
+            assert chunk_counter == 2
+
+    def test_dfs_read_csv_chunk(self, mocker, _get_csv, var_azc):
+        mocker.patch.object(AzDataLakeClient, "_get", _get_csv)
+        return_value = {"size": len(b'name,age\nalice,10\nbob,10\n')}
+        func_mock = mocker.MagicMock()
+        func_mock.return_value = return_value
+        mocker.patch.object(AzDataLakeClient, "_info", func_mock)
+
+        # the file below is not exists
+        path = "https://testazfs.dfs.core.windows.net/test_caontainer/test.csv"
+        chunk_size = 2
+        chunk_counter = 0
+        with pytest.warns(FutureWarning):
+            for _ in var_azc.read_csv_chunk(path, chunk_size):
+                chunk_counter += 1
+            assert chunk_counter == 2
+
+
 class TestToCsv:
     def test_blob_to_csv(self, mocker, _put, var_azc, var_df):
         mocker.patch.object(AzBlobClient, "_put", _put)
