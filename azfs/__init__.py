@@ -2,6 +2,8 @@ from azfs.core import (
     AzFileClient
 )
 
+from azfs.az_file_system import AzFileSystem
+
 from azfs.utils import BlobPathDecoder
 
 # comparable tuple
