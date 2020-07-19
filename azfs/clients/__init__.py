@@ -62,6 +62,10 @@ class AzfsClient(AbstractClient):
 
 
 class TextReader:
+    """
+    The class is to provide line-based reading iterator.
+    Reading file should be ends-with "\n", otherwise last line will be ignored.
+    """
     def __init__(self, client, path: str, offset: int = 0, length: int = 2 ** 14, size: int = None):
         self._client = client
         self._size = client.info(path).get("size", size)
@@ -71,13 +75,18 @@ class TextReader:
         self._read_length = length
         self._iter = 0
         self._path = path
-        #
         self._byte_text = None
         self._current_chunk_lines = None
         self._current_chunk_lines_length = None
         self._line_counter = 0
 
-    def get_chunk(self):
+    def get_chunk(self) -> bytes:
+        """
+        get bytes-data from AzureStorage
+
+        Returns:
+            AzureStorageFile-byte [start: end]
+        """
         if self._read_length < 0:
             raise StopIteration()
         rtn = self._rest_part + self._client.get(path=self._path, offset=self._offset, length=self._length)
@@ -86,7 +95,7 @@ class TextReader:
         self._read_length = min(self._length, self._size - self._offset)
         return rtn
 
-    def next_line(self):
+    def next_line(self) -> bytes:
         if self._byte_text is None or self._line_counter >= self._current_chunk_lines_length:
             self._byte_text = self.get_chunk()
             chunk_lines = self._byte_text.split("\n".encode('utf-8'))
@@ -101,7 +110,7 @@ class TextReader:
     def __iter__(self):
         return self
 
-    def __next__(self):
+    def __next__(self) -> bytes:
         try:
             return self.next_line()
         except StopIteration:

@@ -553,7 +553,7 @@ class AzFileClient:
         _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
         return TextReader(client=self._client.get_client(account_kind=account_kind), path=path)
 
-    def read_csv_chunk(self, path: str, chunk_size: int):
+    def read_csv_chunk(self, path: str, chunk_size: int) -> pd.DataFrame:
         """
         !WARNING! the method may differ from current version in the future update.
         Currently, only support for csv.
@@ -574,7 +574,10 @@ class AzFileClient:
             >>> for df in azc.read_csv_chunk(path=path, chunk_size=chunk_size):
             ...   print(df)
         """
-        warning_message = "The method is under developing. The name or the arguments may differ from current version."
+        warning_message = """
+            The method is under developing. 
+            The name or the arguments may differ from current version in the future update.
+        """
         warnings.warn(warning_message, FutureWarning)
         initial_line = ""
         byte_list = []
