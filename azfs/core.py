@@ -2,10 +2,11 @@ import bz2
 import gzip
 import io
 import json
+import lzma
 import pickle
 import re
 from typing import Union, Optional
-import lzma
+import warnings
 import pandas as pd
 from azure.identity import DefaultAzureCredential
 from azure.core.exceptions import ResourceNotFoundError
@@ -532,8 +533,70 @@ class AzFileClient:
         return file_to_read
 
     def read_line_iter(self, path: str):
+        """
+
+        Args:
+            path: Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_container/test1.csv``
+
+        Returns:
+            get data of the path as iterator
+
+        Examples:
+            >>> import azfs
+            >>> azc = azfs.AzFileClient()
+            >>> path = "https://testazfs.blob.core.windows.net/test_container/test1.csv"
+            >>> for l in azc.read_line_iter(path=path)
+            ...     print(l)
+
+        """
         _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
         return TextReader(client=self._client.get_client(account_kind=account_kind), path=path)
+
+    def read_csv_chunk(self, path: str, chunk_size: int):
+        """
+        !WARNING! the method may differ from current version.
+        Currently, only support for csv.
+
+        Args:
+            path: Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_container/test1.csv``
+            chunk_size: pandas-DataFrame index length to read.
+
+        Returns:
+            first time: len(df.index) is `chunk_size - 1`
+            second time or later: len(df.index) is `chunk_size`
+
+        Examples:
+            >>> import azfs
+            >>> azc = azfs.AzFileClient()
+            >>> path = "https://testazfs.blob.core.windows.net/test_container/test1.csv"
+            >>> chunk_size = 100
+            >>> for df in azc.read_csv_chunk(path=path, chunk_size=chunk_size):
+            ...   print(df)
+        """
+        warning_message = "The method is under developing. The name or the arguments may differ from current version."
+        warnings.warn(warning_message, FutureWarning)
+        initial_line = ""
+        byte_list = []
+
+        for idx, l in enumerate(self.read_line_iter(path=path)):
+            div_idx = idx % chunk_size
+            if idx == 0:
+                initial_line = l
+                byte_list.append(initial_line)
+            else:
+                byte_list.append(l)
+            if div_idx + 1 == chunk_size:
+                file_to_read = (b"\n".join(byte_list))
+                file_to_io_read = io.BytesIO(file_to_read)
+                df = pd.read_csv(file_to_io_read)
+                yield df
+
+                byte_list = [initial_line]
+        # make remainder DataFrame after the for-loop
+        file_to_read = (b"\n".join(byte_list))
+        file_to_io_read = io.BytesIO(file_to_read)
+        df = pd.read_csv(file_to_io_read)
+        yield df
 
     @_az_context_manager.register(_as="read_csv_az", _to=pd)
     def read_csv(self, path: str, **kwargs) -> pd.DataFrame:
