@@ -517,7 +517,19 @@ class AzFileClient:
 
         """
         _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
-        return self._client.get_client(account_kind=account_kind).get(path=path, offset=offset, length=length, **kwargs)
+
+        file_bytes = self._client.get_client(
+            account_kind=account_kind).get(path=path, offset=offset, length=length, **kwargs)
+        # gzip圧縮ファイルは一旦ここで展開
+        if path.endswith(".gz"):
+            file_bytes = gzip.decompress(file_bytes)
+
+        if type(file_bytes) is bytes:
+            file_to_read = io.BytesIO(file_bytes)
+        else:
+            file_to_read = file_bytes
+
+        return file_to_read
 
     @_az_context_manager.register(_as="read_csv_az", _to=pd)
     def read_csv(self, path: str, **kwargs) -> pd.DataFrame:

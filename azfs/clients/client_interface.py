@@ -159,17 +159,7 @@ class ClientInterface:
         Returns:
 
         """
-        file_bytes = self._get(path=path, offset=offset, length=length, **kwargs)
-
-        # gzip圧縮ファイルは一旦ここで展開
-        if path.endswith(".gz"):
-            file_bytes = gzip.decompress(file_bytes)
-
-        if type(file_bytes) is bytes:
-            file_to_read = io.BytesIO(file_bytes)
-        else:
-            file_to_read = file_bytes
-        return file_to_read
+        return self._get(path=path, offset=offset, length=length, **kwargs)
 
     @abstractmethod
     def _get(self, path: str, offset: int = None, length: int = None, **kwargs):
