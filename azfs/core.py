@@ -9,7 +9,7 @@ import lzma
 import pandas as pd
 from azure.identity import DefaultAzureCredential
 from azure.core.exceptions import ResourceNotFoundError
-from azfs.clients import AzfsClient
+from azfs.clients import AzfsClient, TextReader
 from azfs.error import AzfsInputError
 from azfs.utils import (
     BlobPathDecoder,
@@ -530,6 +530,10 @@ class AzFileClient:
             file_to_read = file_bytes
 
         return file_to_read
+
+    def read_line_iter(self, path: str):
+        _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
+        return TextReader(client=self._client.get_client(account_kind=account_kind), path=path)
 
     @_az_context_manager.register(_as="read_csv_az", _to=pd)
     def read_csv(self, path: str, **kwargs) -> pd.DataFrame:

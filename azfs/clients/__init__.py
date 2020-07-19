@@ -60,3 +60,49 @@ class AzfsClient(AbstractClient):
         """
         return self.CLIENTS[account_kind](credential=self._credential, connection_string=self._connection_string)
 
+
+class TextReader:
+    def __init__(self, client, path: str, offset: int = 0, length: int = 2 ** 14, size: int = None):
+        self._client = client
+        self._size = client.info(path).get("size", size)
+        self._rest_part = b""
+        self._offset = offset
+        self._length = length
+        self._read_length = length
+        self._iter = 0
+        self._path = path
+        #
+        self._byte_text = None
+        self._current_chunk_lines = None
+        self._current_chunk_lines_length = None
+        self._line_counter = 0
+
+    def get_chunk(self):
+        if self._read_length < 0:
+            raise StopIteration()
+        rtn = self._rest_part + self._client.get(path=self._path, offset=self._offset, length=self._length)
+        self._iter += 1
+        self._offset = self._iter * self._length
+        self._read_length = min(self._length, self._size - self._offset)
+        return rtn
+
+    def next_line(self):
+        if self._byte_text is None or self._line_counter >= self._current_chunk_lines_length:
+            self._byte_text = self.get_chunk()
+            chunk_lines = self._byte_text.split("\n".encode('utf-8'))
+            self._current_chunk_lines = chunk_lines[:-1]
+            self._current_chunk_lines_length = len(self._current_chunk_lines)
+            self._line_counter = 0
+            self._rest_part = chunk_lines[-1]
+        current_line = self._current_chunk_lines[self._line_counter]
+        self._line_counter += 1
+        return current_line
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        try:
+            return self.next_line()
+        except StopIteration:
+            raise
