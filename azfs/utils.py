@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Tuple
 import re
 from azfs.error import (
     AzfsInputError
@@ -24,9 +24,18 @@ class BlobPathDecoder:
     _STORAGE_TYPE = "(?P<storage_type>dfs|blob|queue)"
     _CONTAINER = "(?P<container>[^/.]*)"
     _BLOB = "(?P<blob>.+)"
+    # replace_dict
+    _replace_dict = {
+        "%A": _STORAGE_ACCOUNT,
+        "%T": _STORAGE_TYPE,
+        "%C": _CONTAINER,
+        "%B": _BLOB
+    }
     # pattern
-    _BLOB_URL_PATTERN = rf"https://{_STORAGE_ACCOUNT}.{_STORAGE_TYPE}.core.windows.net/{_CONTAINER}?/?{_BLOB}?$"
-    _SIMPLE_PATTERN = rf"/?{_STORAGE_TYPE}/{_STORAGE_ACCOUNT}/{_CONTAINER}/{_BLOB}"
+    _decode_path_pattern_list = [
+        rf"https://{_STORAGE_ACCOUNT}.{_STORAGE_TYPE}.core.windows.net/{_CONTAINER}?/?{_BLOB}?$",
+        rf"/?{_STORAGE_TYPE}/{_STORAGE_ACCOUNT}/{_CONTAINER}/{_BLOB}"
+    ]
 
     def __init__(self, path: Union[None, str] = None):
         self.storage_account_name = None
@@ -37,44 +46,26 @@ class BlobPathDecoder:
 
         # ここでpathが入った場合はすぐに取得
         if path is not None:
-            self.storage_account_name, self.account_type, self.container_name, self.blob_name = self._decode_path(
-                path=path)
+            self.storage_account_name, self.account_type, self.container_name, self.blob_name = self._decode(path=path)
+
+    @classmethod
+    def add_pattern(cls, pattern: str):
+        if pattern.count("%") != 4:
+            raise AzfsInputError("`%` should be 4")
+        for target, objective in cls._replace_dict.items():
+            pattern = pattern.replace(target, objective)
+        if pattern.count("%") > 0:
+            raise AzfsInputError("`%` should be 0")
+
+        cls._decode_path_pattern_list.append(pattern)
+        return pattern
 
     @staticmethod
-    def _decode_path_blob_name(path: str) -> (str, str, str, str):
-        """
-        ex: https://test.dfs.core.windows.net/test/dir/test_file.csv
-        Args:
-            path: decode target path
-
-        Returns:
-            tuple of str
-
-        Raises:
-            AzfsInputError: when pattern not matched
-        """
-        result = re.match(BlobPathDecoder._BLOB_URL_PATTERN, path)
+    def _decode_path(pattern_path, input_path) -> (str, str, str, str):
+        result = re.match(pattern_path, input_path)
         if result:
             return BlobPathDecoder._decode_pattern_block_dict(result.groupdict())
-        raise AzfsInputError(f"not matched with {BlobPathDecoder._BLOB_URL_PATTERN}")
-
-    @staticmethod
-    def _decode_path_without_url(path: str) -> (str, str, str, str):
-        """
-        ex: /dfs/test/test/test_file.csv
-        Args:
-            path: decode target path
-
-        Returns:
-            tuple of str
-
-        Raises:
-            AzfsInputError: when pattern not matched
-        """
-        result = re.match(BlobPathDecoder._SIMPLE_PATTERN, path)
-        if result:
-            return BlobPathDecoder._decode_pattern_block_dict(result.groupdict())
-        raise AzfsInputError(f"not matched with {BlobPathDecoder._SIMPLE_PATTERN}")
+        raise AzfsInputError(f"not matched with {pattern_path}")
 
     @staticmethod
     def _decode_pattern_block_dict(pattern_block_dict: dict) -> (str, str, str, str):
@@ -107,8 +98,8 @@ class BlobPathDecoder:
         blob_name = result_dict["blob"]
         return storage_account_name, account_type, container_name, blob_name
 
-    @staticmethod
-    def _decode_path(path: str) -> (str, str, str, str):
+    @classmethod
+    def _decode(cls, path) -> Tuple[str, str, str, str]:
         """
         decode input [path] such as
         * https://([a-z0-9]*).(dfs|blob|queue).core.windows.net/(.*?)/(.*),
@@ -124,21 +115,15 @@ class BlobPathDecoder:
         Raises:
             AzfsInputError: when pattern not matched
         """
-        function_list = [
-            BlobPathDecoder._decode_path_blob_name,
-            BlobPathDecoder._decode_path_without_url
-        ]
-        for func in function_list:
+        for pattern_path in cls._decode_path_pattern_list:
             try:
-                storage_account_name, account_type, container_name, blob_name = func(path=path)
+                return cls._decode_path(pattern_path, path)
             except AzfsInputError:
                 continue
-            else:
-                return storage_account_name, account_type, container_name, blob_name
         raise AzfsInputError("合致するパターンがありません")
 
     def decode(self, path: str):
-        self.storage_account_name, self.account_type, self.container_name, self.blob_name = self._decode_path(path=path)
+        self.storage_account_name, self.account_type, self.container_name, self.blob_name = self._decode(path=path)
         return self
 
     def get(self) -> (str, str, str, str):

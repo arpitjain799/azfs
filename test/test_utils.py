@@ -52,6 +52,34 @@ class TestBlobPathDecoder:
         with pytest.raises(AzfsInputError):
             BlobPathDecoder(path)
 
+    @pytest.mark.parametrize("path_pattern,path,storage_account_name,account_type,container_name,blob_file", [
+        # blob storage
+        ("%A=%T=%C/%B", "test=blob=test/test_file.csv", "test", "blob", "test", "test_file.csv"),
+        ("%A=%T=%C/%B", "test=blob=test/dir/test_file.csv", "test", "blob", "test", "dir/test_file.csv"),
+        # datalake storage
+        ("%A=%T=%C/%B", "test=dfs=test/test_file.csv", "test", "dfs", "test", "test_file.csv"),
+        ("%A=%T=%C/%B", "test=dfs=test/dir/test_file.csv", "test", "dfs", "test", "dir/test_file.csv"),
+    ])
+    def test_add_pattern(self, path_pattern, path, storage_account_name, account_type, container_name, blob_file):
+        # add new pattern
+        BlobPathDecoder.add_pattern(pattern=path_pattern)
+        storage_account_name_v, account_type_v, container_name_v, blob_file_v = BlobPathDecoder(path).get()
+        assert storage_account_name_v == storage_account_name
+        assert account_type_v == account_type
+        assert container_name_v == container_name
+        assert blob_file_v == blob_file
+
+    def test_add_pattern_error(self):
+        # shortage of %
+        path_pattern = "%A=%T=%C"
+        with pytest.raises(AzfsInputError):
+            BlobPathDecoder.add_pattern(pattern=path_pattern)
+
+        # unknown %
+        path_pattern = "%A=%T=%C%Z"
+        with pytest.raises(AzfsInputError):
+            BlobPathDecoder.add_pattern(pattern=path_pattern)
+
 
 class TestLsFilter:
     def test_ls_filter(self):
