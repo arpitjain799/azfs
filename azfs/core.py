@@ -493,12 +493,14 @@ class AzFileClient:
     def du(self, path):
         pass
 
-    def _get(self, path: str, **kwargs) -> Union[bytes, str, io.BytesIO]:
+    def _get(self, path: str, offset: int = None, length: int = None, **kwargs) -> Union[bytes, str, io.BytesIO]:
         """
         get data from Azure Blob Storage.
 
         Args:
             path: Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_container/test1.csv``
+            offset:
+            length:
             **kwargs:
 
         Returns:
@@ -515,7 +517,7 @@ class AzFileClient:
 
         """
         _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
-        return self._client.get_client(account_kind=account_kind).get(path=path, **kwargs)
+        return self._client.get_client(account_kind=account_kind).get(path=path, offset=offset, length=length, **kwargs)
 
     @_az_context_manager.register(_as="read_csv_az", _to=pd)
     def read_csv(self, path: str, **kwargs) -> pd.DataFrame:
