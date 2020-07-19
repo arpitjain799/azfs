@@ -532,8 +532,9 @@ class AzFileClient:
 
         return file_to_read
 
-    def read_line_iter(self, path: str):
+    def read_line_iter(self, path: str) -> iter:
         """
+        To read text file in each line with iterator.
 
         Args:
             path: Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_container/test1.csv``
@@ -546,7 +547,7 @@ class AzFileClient:
             >>> azc = azfs.AzFileClient()
             >>> path = "https://testazfs.blob.core.windows.net/test_container/test1.csv"
             >>> for l in azc.read_line_iter(path=path)
-            ...     print(l)
+            ...     print(l.decode("utf-8"))
 
         """
         _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
@@ -554,7 +555,7 @@ class AzFileClient:
 
     def read_csv_chunk(self, path: str, chunk_size: int):
         """
-        !WARNING! the method may differ from current version.
+        !WARNING! the method may differ from current version in the future update.
         Currently, only support for csv.
 
         Args:

@@ -15,6 +15,8 @@ get/download
 
 .. autofunction:: azfs.AzFileClient.get
 
+.. autofunction:: azfs.AzFileClient.read_line_iter
+
 .. autofunction:: azfs.AzFileClient.read_csv
 
 .. autofunction:: azfs.AzFileClient.read_table
