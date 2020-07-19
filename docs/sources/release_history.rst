@@ -5,6 +5,13 @@ Release History
    :maxdepth: 4
 
 
+0.2.1 (2020-07-19)
+------------------
+
+* partially adopt chunk-reading for csv file.
+* implement ``AzfsFileClient::read_line_iter()``: to read text file in each line with iterator.
+* implement ``BlobPathDecoder.add_pattern()``: to decode user-defined path
+
 0.2.0 (2020-07-14)
 ------------------
 

@@ -71,11 +71,13 @@ class AzQueueClient(ClientInterface):
     def _ls(self, path: str, file_path: str):
         return self.get_file_client_from_path(path).peek_messages(16)
 
-    def _get(self, path: str, **kwargs):
+    def _get(self, path: str, offset: int = None, length: int = None, **kwargs):
         """
 
         Args:
             path:
+            offset:
+            length:
             **kwargs: ``delete`` or ``delete_after_receive`` are acceptable, and it means after you get message
                 from queue, the message you receive will be deleted. By default, the message will not deleted.
 
