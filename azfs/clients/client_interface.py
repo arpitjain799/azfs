@@ -187,6 +187,20 @@ class ClientInterface:
         """
         raise NotImplementedError
 
+    def create(self, path: str):
+        return self._create(path=path)
+
+    @abstractmethod
+    def _create(self, path: str):
+        raise NotImplementedError
+
+    def append(self, path: str, data):
+        return self._append(path=path, data=data)
+
+    @abstractmethod
+    def _append(self, path: str, data):
+        raise NotImplementedError
+
     def info(self, path: str):
         return self._info(path=path)
 

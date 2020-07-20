@@ -89,6 +89,12 @@ class AzBlobClient(ClientInterface):
         )
         return True
 
+    def _create(self, path: str):
+        raise NotImplementedError
+
+    def _append(self, path: str, data):
+        raise NotImplementedError
+
     def _info(self, path: str):
         return self.get_file_client_from_path(path=path).get_blob_properties()
 

@@ -127,6 +127,12 @@ class AzQueueClient(ClientInterface):
         put_data['content'] = base64.b64decode(put_data['content'].encode('utf-8')).decode('utf-8')
         return put_data
 
+    def _create(self, path: str):
+        raise NotImplementedError
+
+    def _append(self, path: str, data):
+        raise NotImplementedError
+
     def _info(self, path: str):
         """
         no correspond method to _info() in QueueClient
