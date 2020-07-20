@@ -196,8 +196,55 @@ class AzFile(AbstractBufferedFile):
         if self.writable():
             if block_size < 5 * 2 ** 20:
                 raise ValueError('Block size must be >=5MB')
+        # when not using autocommit we want to have transactional state to manage
+        self.append_block = False
+
+        # reference by s3fs
+        if 'a' in mode and fs.exists(path):
+            loc = fs.info(path)['size']
+            if loc < 5 * 2 ** 20:
+                # existing file too small for multi-upload: download
+                self.write(self.fs.cat(self.path))
+            else:
+                self.append_block = True
+            self.loc = loc
+
+    def _upload_chunk(self, final=False):
+        """
+        (Override method)
+        Write one part of a multi-block file upload
+
+        Parameters
+        ==========
+        final: bool
+            This is the last block, so should complete file, if
+            self.autocommit is True.
+        """
+        # may not yet have been initialized, may neet to call _initialize_upload
+
+    def _initiate_upload(self):
+        """
+        (Override method)
+        Create remote file/upload
+
+        Returns:
+
+        """
+        if self.autocommit and not self.append_block and self.tell() < self.blocksize:
+            # only happens when closing small file, use on-shot PUT
+            return
 
     def _fetch_range(self, start, end):
+        """
+        (Inherited method)
+
+        Args:
+            start:
+            end:
+
+        Returns:
+
+        """
         _, account_kind, _, file_path = BlobPathDecoder(self.path).get_with_url()
         return self.fs.az_client.get_client(
             account_kind=account_kind).get(path=self.path, offset=start, length=end-start)
