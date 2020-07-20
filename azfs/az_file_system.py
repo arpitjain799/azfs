@@ -172,8 +172,8 @@ class AzFile(AbstractBufferedFile):
     Args:
         fs: AzFileSystem
         path: path to read file
-        mode: value candidates are same as build-in function `open()`
-        block_size:
+        mode: value candidates are ["ab", "rb", "wb"], same as build-in function `open()`
+        block_size: Buffer size for reading or writing, 'default' for class default
         autocommit:
         cache_type:
         cache_option:
@@ -184,14 +184,15 @@ class AzFile(AbstractBufferedFile):
             fs: AzFileSystem,
             path: str,
             mode="rb",
-            block_size=5 * 2 ** 20,
+            block_size="default",
             autocommit=True,
             cache_type="readahead",
             cache_options=None,
             **kwargs):
+        # path, mode, start, end, block_size, and etc, are initialized
+        # if mode is "rb", prepare to read data in azure
+        # otherwise ("ab" or "wb"), to write data to azure
         super().__init__(fs, path, mode, block_size, autocommit, cache_type, cache_options, **kwargs)
-        self.fs = fs
-        self.path = path
         # check block_size from AbstractBufferedFile
         if self.writable():
             if block_size < 5 * 2 ** 20:
