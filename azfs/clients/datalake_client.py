@@ -115,8 +115,10 @@ class AzDataLakeClient(ClientInterface):
         _ = file_client.flush_data(data_length)
         return True
 
-    def _create(self, path: str):
-        raise NotImplementedError
+    def _create(self, path: str) -> dict:
+        file_client = self.get_file_client_from_path(path=path)
+        response = file_client.create_file()
+        return response
 
     def _append(self, path: str, data):
         raise NotImplementedError

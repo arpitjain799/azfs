@@ -215,13 +215,13 @@ class AzFile(AbstractBufferedFile):
         (Override method)
         Write one part of a multi-block file upload
 
-        Parameters
-        ==========
-        final: bool
-            This is the last block, so should complete file, if
-            self.autocommit is True.
+        Args:
+            final: This is the last block, so should complete file, if self.autocommit is True.
+
+        Returns:
+
         """
-        # may not yet have been initialized, may neet to call _initialize_upload
+        # may not yet have been initialized, may need to call _initialize_upload
 
     def _initiate_upload(self):
         """
@@ -234,6 +234,8 @@ class AzFile(AbstractBufferedFile):
         if self.autocommit and not self.append_block and self.tell() < self.blocksize:
             # only happens when closing small file, use on-shot PUT
             return
+        _, account_kind, _, file_path = BlobPathDecoder(self.path).get_with_url()
+        self.fs.az_client.get_client(account_kind=account_kind).create(path=self.path)
 
     def _fetch_range(self, start, end):
         """
