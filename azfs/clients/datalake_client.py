@@ -110,7 +110,8 @@ class AzDataLakeClient(ClientInterface):
             end = min((idx + 1) * upload_unit, data_length)
             split_data = data[start:end]
             # upload data
-            _ = file_client.append_data(data=split_data, offset=start, length=len(split_data))
+            self.append(path=path, data=split_data, offset=start)
+            # _ = file_client.append_data(data=split_data, offset=start, length=len(split_data))
         # write date
         _ = file_client.flush_data(data_length)
         return True
@@ -120,8 +121,10 @@ class AzDataLakeClient(ClientInterface):
         response = file_client.create_file()
         return response
 
-    def _append(self, path: str, data):
-        raise NotImplementedError
+    def _append(self, path: str, data, offset: int) -> dict:
+        file_client = self.get_file_client_from_path(path=path)
+        response = file_client.append_data(data=data, offset=offset, length=len(data))
+        return response
 
     def _info(self, path: str):
         return self.get_file_client_from_path(path=path).get_file_properties()

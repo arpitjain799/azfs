@@ -92,7 +92,7 @@ class AzBlobClient(ClientInterface):
     def _create(self, path: str):
         raise NotImplementedError
 
-    def _append(self, path: str, data):
+    def _append(self, path: str, data, offset: int):
         raise NotImplementedError
 
     def _info(self, path: str):
