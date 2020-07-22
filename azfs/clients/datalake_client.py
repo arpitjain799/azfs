@@ -111,9 +111,6 @@ class AzDataLakeClient(ClientInterface):
             split_data = data[start:end]
             # upload data
             self.append(path=path, data=split_data, offset=start)
-            # _ = file_client.append_data(data=split_data, offset=start, length=len(split_data))
-        # write date
-        _ = file_client.flush_data(data_length)
         return True
 
     def _create(self, path: str) -> dict:
@@ -123,7 +120,10 @@ class AzDataLakeClient(ClientInterface):
 
     def _append(self, path: str, data, offset: int) -> dict:
         file_client = self.get_file_client_from_path(path=path)
-        response = file_client.append_data(data=data, offset=offset, length=len(data))
+        data_length = len(data)
+        response = file_client.append_data(data=data, offset=offset, length=data_length)
+        # write data
+        _ = file_client.flush_data(offset + data_length)
         return response
 
     def _info(self, path: str):
