@@ -1,3 +1,4 @@
+import logging
 from typing import Union, Optional
 
 from fsspec import AbstractFileSystem
@@ -9,6 +10,9 @@ from .utils import (
     ls_filter
 )
 from .clients import AzfsClient
+
+
+logger = logging.getLogger('azfs')
 
 
 class AzFileSystem(AbstractFileSystem):
@@ -179,6 +183,8 @@ class AzFile(AbstractBufferedFile):
         cache_option:
     """
 
+    part_max = 5 * 2 ** 30
+
     def __init__(
             self,
             fs: AzFileSystem,
@@ -221,7 +227,61 @@ class AzFile(AbstractBufferedFile):
         Returns:
 
         """
+        logger.debug("upload chunk")
+        # decode azure path
+        _, account_kind, _, file_path = BlobPathDecoder(self.path).get_with_url()
+
         # may not yet have been initialized, may need to call _initialize_upload
+        if self.autocommit and not self.append_block and final and self.tell() < self.blocksize:
+            # only happens when closing small file, use on-shot PUT
+            data1 = False
+        else:
+            self.buffer.seek(0)
+            (data0, data1) = (None, self.buffer.read(self.blocksize))
+
+        offset = 0
+        while data1:
+            (data0, data1) = (data1, self.buffer.read(self.blocksize))
+            data1_size = len(data1)
+
+            logger.debug(f"data0_size: {len(data0)}")
+            logger.debug(f"data1_size: {data1_size}")
+
+            if 0 < data1_size < self.blocksize:
+                remainder = data0 + data1
+                remainder_size = self.blocksize + data1_size
+
+                if remainder_size <= self.part_max:
+                    (data0, data1) = (remainder, None)
+                else:
+                    partition = remainder_size // 2
+                    (data0, data1) = (remainder[:partition], remainder[partition:])
+
+            # part = len(self.parts) + 1
+            logger.debug(f"offset: {offset}")
+
+            try:
+                _ = self.fs.az_client.get_client(account_kind=account_kind) \
+                        .append(path=self.path, data=data0, offset=offset)
+                offset = self.buffer.tell()
+            except Exception as e:
+                raise IOError from e
+            else:
+                raise IOError
+
+        if self.autocommit and final:
+            self.commit()
+        return not final
+
+    def commit(self):
+        logger.debug("commit")
+        # decode azure path
+        _, account_kind, _, file_path = BlobPathDecoder(self.path).get_with_url()
+
+        # read data
+        self.buffer.seek(0)
+        data = self.buffer.read(self.blocksize)
+        _ = self.fs.az_client.get_client(account_kind=account_kind).put(path=self.path, data=data)
 
     def _initiate_upload(self):
         """
@@ -231,6 +291,7 @@ class AzFile(AbstractBufferedFile):
         Returns:
 
         """
+        logger.debug("initiate upload")
         if self.autocommit and not self.append_block and self.tell() < self.blocksize:
             # only happens when closing small file, use on-shot PUT
             return
