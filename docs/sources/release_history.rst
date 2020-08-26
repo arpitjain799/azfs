@@ -5,6 +5,11 @@ Release History
    :maxdepth: 4
 
 
+0.2.2 (2020-mm-dd)
+------------------
+
+* partially implement ``AzFileSystem``
+
 0.2.1 (2020-07-19)
 ------------------
 
