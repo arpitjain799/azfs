@@ -696,6 +696,27 @@ class AzFileClient:
 
     @_az_context_manager.register(_as="read_parquet_az", _to=pd)
     def read_parquet(self, path: str) -> pd.DataFrame:
+        """
+
+        Args:
+            path: Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_container/test.parquet``
+
+        Returns:
+            pd.DataFrame
+
+        Examples:
+            >>> import azfs
+            >>> import pandas as pd
+            >>> azc = azfs.AzFileClient()
+            >>> path = "https://testazfs.blob.core.windows.net/test_container/test1.parquet"
+            you can read and write csv file in azure blob storage
+            >>> df = azc.read_parquet(path=path)
+            Using `with` statement, you can use `pandas`-like methods
+            >>> with azc:
+            >>>     df = pd.read_parquet_az(path)
+
+
+        """
         import pyarrow.parquet as pq
         data = self._get(path=path)
         return pq.read_table(data).to_pandas()
@@ -812,6 +833,29 @@ class AzFileClient:
         elif compression == "xz":
             serialized_data = lzma.compress(serialized_data)
         return self._put(path=path, data=serialized_data)
+
+    @_az_context_manager.register(_as="to_parquet_az", _to=pd.DataFrame)
+    def write_parquet(self, path: str, table) -> bool:
+        """
+        When implementation of AzFileSystem is done, the function will be implemented.
+
+
+        Args:
+            path: Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_container/test.parquet``
+            table: parquet table
+
+        Returns:
+            True: if successfully uploaded
+
+        Examples:
+            >>> from azfs import AzFileSystem
+            >>> import pyarrow.parquet as pq
+            >>> fs = AzFileSystem()
+            >>> with fs.open("azure_path", "wb") as f:
+            ...     pq.write_table(table, f)
+
+        """
+        raise NotImplementedError
 
     def read_json(self, path: str, **kwargs) -> dict:
         """
