@@ -8,7 +8,8 @@ commands:
     description: setup an environment with only pip
     steps:
     - run: sudo pip install twine wheel pytest pytest-cov pytest-mock
-    - run: sudo pip install pandas azure-identity azure-storage-file-datalake azure-storage-blob azure-storage-queue
+    - run: sudo pip install pandas fsspec
+    - run: sudo pip install azure-identity azure-storage-file-datalake azure-storage-blob azure-storage-queue
   create_pypi_file:
     description: create .pypi file in ~/
     steps:
