@@ -40,7 +40,8 @@ setuptools.setup(
         "azure-identity>=1.3.1",
         "azure-storage-blob>=12.3.0",
         "azure-storage-file-datalake>=12.0.0",
-        "azure-storage-queue>=12.1.1"
+        "azure-storage-queue>=12.1.1",
+        "fsspec"
     ],
     license="MIT",
     classifiers=[
