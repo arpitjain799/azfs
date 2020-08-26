@@ -8,7 +8,9 @@ Release History
 0.2.2 (2020-mm-dd)
 ------------------
 
-* partially implement ``AzFileSystem``
+* partially implement ``AzFileSystem``: at least it works.
+* add type hinting
+* add ``read_parquet()``: to read parquet file in Azure.
 
 0.2.1 (2020-07-19)
 ------------------
