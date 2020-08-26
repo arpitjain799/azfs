@@ -694,6 +694,12 @@ class AzFileClient:
             file_to_read = lzma.decompress(file_to_read)
         return pd.DataFrame(pickle.loads(file_to_read))
 
+    @_az_context_manager.register(_as="read_parquet_az", _to=pd)
+    def read_parquet(self, path: str) -> pd.DataFrame:
+        import pyarrow.parquet as pq
+        data = self._get(path=path)
+        return pq.read_table(data).to_pandas()
+
     def _put(self, path: str, data) -> bool:
         """
         upload data to blob or data_lake storage.
