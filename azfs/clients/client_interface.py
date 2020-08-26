@@ -224,3 +224,9 @@ class ClientInterface:
         :return:
         """
         raise NotImplementedError
+
+    def mkdir(self, path: str):
+        return self._mkdir(path=path)
+
+    def _mkdir(self, path: str):
+        raise NotImplementedError

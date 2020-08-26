@@ -101,3 +101,11 @@ class AzBlobClient(ClientInterface):
     def _rm(self, path: str):
         self.get_file_client_from_path(path=path).delete_blob()
         return True
+
+    def _mkdir(self, path: str):
+        """
+        copy from
+        https://github.com/Azure/azure-sdk-for-python/blob/master/sdk/storage/azure-storage-blob/samples/blob_samples_directory_interface.py
+        Upload a directory to a path inside the container
+        """
+        self._put(path=path, data={})
