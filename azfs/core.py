@@ -5,7 +5,7 @@ import json
 import lzma
 import pickle
 import re
-from typing import Union, Optional
+from typing import Union, Optional, List
 import warnings
 import pandas as pd
 from azure.identity import DefaultAzureCredential
@@ -213,7 +213,7 @@ class AzFileClient:
         else:
             return True
 
-    def ls(self, path: str, attach_prefix: bool = False):
+    def ls(self, path: str, attach_prefix: bool = False) -> list:
         """
         list blob file from blob or dfs.
 
@@ -262,7 +262,7 @@ class AzFileClient:
     def walk(self, path: str, max_depth=2):
         pass
 
-    def cp(self, src_path: str, dst_path: str, overwrite=False):
+    def cp(self, src_path: str, dst_path: str, overwrite=False) -> bool:
         """
         copy the data from `src_path` to `dst_path`
 
@@ -354,7 +354,7 @@ class AzFileClient:
             "type": data_type
         }
 
-    def checksum(self, path: str):
+    def checksum(self, path: str) -> str:
         """
         Blob and DataLake storage have etag.
 
@@ -370,7 +370,7 @@ class AzFileClient:
         """
         return self.info(path=path)["etag"]
 
-    def size(self, path):
+    def size(self, path) -> Optional[Union[int, str]]:
         """
         Size in bytes of file
 
@@ -380,9 +380,9 @@ class AzFileClient:
         Returns:
 
         """
-        return self.info(path).get("size", None)
+        return self.info(path).get("size")
 
-    def isdir(self, path):
+    def isdir(self, path) -> bool:
         """
         Is this entry directory-like?
 
@@ -397,7 +397,7 @@ class AzFileClient:
         except IOError:
             return False
 
-    def isfile(self, path):
+    def isfile(self, path) -> bool:
         """
         Is this entry file-like?
 
@@ -412,7 +412,7 @@ class AzFileClient:
         except IOError:
             return False
 
-    def glob(self, pattern_path: str):
+    def glob(self, pattern_path: str) -> List[str]:
         """
         Currently only support ``* (wildcard)`` .
         By default, ``glob()`` lists specified files with formatted-URL.
@@ -494,7 +494,7 @@ class AzFileClient:
     def du(self, path):
         pass
 
-    def _get(self, path: str, offset: int = None, length: int = None, **kwargs) -> Union[bytes, str, io.BytesIO]:
+    def _get(self, path: str, offset: int = None, length: int = None, **kwargs) -> Union[bytes, str, io.BytesIO, dict]:
         """
         get data from Azure Blob Storage.
 
