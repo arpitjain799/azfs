@@ -1,7 +1,8 @@
 from typing import Union, Tuple
 import re
 from azfs.error import (
-    AzfsInputError
+    AzfsInputError,
+    AzfsInvalidPathError
 )
 
 
@@ -120,7 +121,7 @@ class BlobPathDecoder:
                 return cls._decode_path(pattern_path, path)
             except AzfsInputError:
                 continue
-        raise AzfsInputError("合致するパターンがありません")
+        raise AzfsInvalidPathError(f"Your input path {path} is not matched.")
 
     def decode(self, path: str):
         self.storage_account_name, self.account_type, self.container_name, self.blob_name = self._decode(path=path)
