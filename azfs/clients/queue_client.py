@@ -156,6 +156,3 @@ class AzQueueClient(ClientInterface):
 
         """
         raise NotImplementedError
-
-    def _mkdir(self, path: str):
-        raise NotImplementedError
