@@ -4,3 +4,7 @@ class AzfsBaseError(Exception):
 
 class AzfsInputError(AzfsBaseError):
     pass
+
+
+class AzfsInvalidPathError(AzfsBaseError):
+    pass

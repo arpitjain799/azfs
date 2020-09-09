@@ -1,7 +1,8 @@
 from typing import Union, Tuple
 import re
 from azfs.error import (
-    AzfsInputError
+    AzfsInputError,
+    AzfsInvalidPathError
 )
 
 
@@ -120,7 +121,7 @@ class BlobPathDecoder:
                 return cls._decode_path(pattern_path, path)
             except AzfsInputError:
                 continue
-        raise AzfsInputError("合致するパターンがありません")
+        raise AzfsInvalidPathError(f"Your input path {path} is not matched.")
 
     def decode(self, path: str):
         self.storage_account_name, self.account_type, self.container_name, self.blob_name = self._decode(path=path)
@@ -153,8 +154,8 @@ def _ls_file_and_folder_filter(file_path_list: list, parent_path: str):
     """
 
     Args:
-        file_path_list: ファイル名とフォルダ名を取得する対象のリスト
-        parent_path: 特定のフォルダの以下かどうかを判断する
+        file_path_list: file_name list including parent_path
+        parent_path: filter only specified parent_path
 
     Returns:
         file list
@@ -204,17 +205,17 @@ def _ls_file_and_folder_filter(file_path_list: list, parent_path: str):
         if result:
             if parent_path == "":
                 if result['parent_path'] is None and result['folder'] is None:
-                    # 対象フォルダの直下なのでファイル名を取得する
+                    # append file, if the file is in under the specified parent_path
                     ls_result_list.append(result['blob'])
                 elif result['folder'] is not None:
-                    # フォルダの名前を取得
+                    # append folder name
                     ls_result_list.append(result['folder'])
             else:
                 if result['parent_path'] is not None and result['folder'] is None:
-                    # 対象フォルダの直下なのでファイル名を取得する
+                    # append file, if the file is in under the specified parent_path
                     ls_result_list.append(result['blob'])
                 elif result['parent_path'] is not None and result['folder'] is not None:
-                    # フォルダの名前を取得
+                    # append folder name
                     ls_result_list.append(result['folder'])
     ls_result_list = list(set(ls_result_list))
     ls_result_list.sort()
