@@ -4,7 +4,8 @@ from azfs.utils import (
     ls_filter
 )
 from azfs.error import (
-    AzfsInputError
+    AzfsInputError,
+    AzfsInvalidPathError
 )
 
 
@@ -46,10 +47,10 @@ class TestBlobPathDecoder:
         path = "https://aaa/bbb/ccc"
 
         bpd = BlobPathDecoder()
-        with pytest.raises(AzfsInputError):
+        with pytest.raises(AzfsInvalidPathError):
             bpd.decode(path)
 
-        with pytest.raises(AzfsInputError):
+        with pytest.raises(AzfsInvalidPathError):
             BlobPathDecoder(path)
 
     @pytest.mark.parametrize("path_pattern,path,storage_account_name,account_type,container_name,blob_file", [

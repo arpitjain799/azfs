@@ -5,6 +5,11 @@ Release History
    :maxdepth: 4
 
 
+0.2.3 (2020-09-09)
+------------------
+
+* Modify ``AzfsInputError`` message from Japanese to English.
+
 0.2.2 (2020-08-26)
 ------------------
 
