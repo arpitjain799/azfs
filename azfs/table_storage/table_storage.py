@@ -1,7 +1,7 @@
 from azure.cosmosdb.table.tableservice import TableService
 
 
-class StorageTable:
+class TableStorage:
     """
     A class for manipulating TableStorage in Storage Account
     The class provides simple methods below.
