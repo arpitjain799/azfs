@@ -1,3 +1,4 @@
+from typing import List
 from azure.cosmosdb.table.tableservice import TableService
 
 
@@ -57,3 +58,34 @@ class TableStorage:
         updated_data.update(data)
         self.table_service.update_entity(self.database_name, updated_data)
         return updated_data
+
+
+class TableStorageWrapper:
+    def __init__(
+            self,
+            account_name,
+            account_key,
+            database_name,
+            partition_key: str,
+            row_key_name: str = "id_"):
+        self.st = TableStorage(account_name=account_name, account_key=account_key, database_name=database_name)
+        self.partition_key = partition_key
+        self.row_key_name = row_key_name
+
+    def get(self, **kwargs) -> List[dict]:
+        if self.row_key_name in kwargs:
+            kwargs['RowKey'] = kwargs.pop(self.row_key_name)
+        return self.st.get(partition_key_value=self.partition_key, filter_key_values=kwargs)
+
+    def put(self, **kwargs):
+        data = self.pack_data_to_put(**kwargs)
+        return self.st.put(partition_key_value=self.partition_key, data=data)
+
+    def pack_data_to_put(self, **kwargs):
+        if self.row_key_name in kwargs:
+            kwargs['RowKey'] = kwargs.pop(self.row_key_name)
+        return kwargs
+
+    def update(self, **kwargs):
+        row_key = kwargs.pop(self.row_key_name)
+        return self.st.update(partition_key_value=self.partition_key, row_key=row_key, data=kwargs)
