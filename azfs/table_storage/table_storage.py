@@ -1,4 +1,8 @@
+from inspect import signature
 from typing import List
+
+from azfs.error import AzfsInputError
+
 from azure.cosmosdb.table.tableservice import TableService
 
 
@@ -71,6 +75,24 @@ class TableStorageWrapper:
         self.st = TableStorage(account_name=account_name, account_key=account_key, database_name=database_name)
         self.partition_key = partition_key
         self.row_key_name = row_key_name
+
+    @staticmethod
+    def _check_argument(function: callable, arg_name: str) -> None:
+        """
+        Check whether the `arg_name` in the parameter of the `function`.
+
+        Args:
+            function: function to check
+            arg_name: argument name
+
+        Raises:
+            ArgumentNameInvalidError: When `arg_name` is not found in the parameter of the `function`
+
+        """
+        # check arguments
+        sig = signature(function)
+        if arg_name not in sig.parameters:
+            raise AzfsInputError(f"{arg_name} not in {function.__name__}")
 
     def get(self, **kwargs) -> List[dict]:
         if self.row_key_name in kwargs:
