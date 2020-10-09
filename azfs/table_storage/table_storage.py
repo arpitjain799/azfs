@@ -119,8 +119,23 @@ class TableStorageWrapper:
 
             return function
         return _wrapper
+
+    @staticmethod
+    def pack_data_to_update(**kwargs):
         return kwargs
 
     def update(self, **kwargs):
-        row_key = kwargs.pop(self.row_key_name)
-        return self.st.update(partition_key_value=self.partition_key, row_key=row_key, data=kwargs)
+        _data = self.pack_data_to_update(**kwargs)
+        row_key = _data.pop(self.row_key_name)
+        return self.st.update(partition_key_value=self.partition_key, row_key=row_key, data=_data)
+
+    def overwrite_pack_data_to_update(self):
+        def _wrapper(function: callable):
+            # check if `row_key` argument exists
+            self._check_argument(function=function, arg_name=self.row_key_name)
+
+            # overwrite the attribute
+            self.pack_data_to_update = function
+
+            return function
+        return _wrapper
