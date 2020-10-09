@@ -99,13 +99,26 @@ class TableStorageWrapper:
             kwargs['RowKey'] = kwargs.pop(self.row_key_name)
         return self.st.get(partition_key_value=self.partition_key, filter_key_values=kwargs)
 
-    def put(self, **kwargs):
-        data = self.pack_data_to_put(**kwargs)
-        return self.st.put(partition_key_value=self.partition_key, data=data)
+    @staticmethod
+    def pack_data_to_put(**kwargs):
+        return kwargs
 
-    def pack_data_to_put(self, **kwargs):
-        if self.row_key_name in kwargs:
-            kwargs['RowKey'] = kwargs.pop(self.row_key_name)
+    def put(self, **kwargs):
+        _data = self.pack_data_to_put(**kwargs)
+        if self.row_key_name in _data:
+            _data['RowKey'] = _data.pop(self.row_key_name)
+        return self.st.put(partition_key_value=self.partition_key, data=_data)
+
+    def overwrite_pack_data_to_put(self):
+        def _wrapper(function: callable):
+            # check if `row_key` argument exists
+            self._check_argument(function=function, arg_name=self.row_key_name)
+
+            # overwrite the attribute
+            self.pack_data_to_put = function
+
+            return function
+        return _wrapper
         return kwargs
 
     def update(self, **kwargs):
