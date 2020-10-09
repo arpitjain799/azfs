@@ -1,9 +1,10 @@
 Release History
 ===============
 
-.. toctree::
-   :maxdepth: 4
+0.2.4 (2020-xx-xx)
+------------------
 
+* add ``TableStorage`` class to manipulate TableStorage.
 
 0.2.3 (2020-09-09)
 ------------------
