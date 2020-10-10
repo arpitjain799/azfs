@@ -69,7 +69,7 @@ class TableStorage:
         """
         insert_data = {'PartitionKey': partition_key_value}
         insert_data.update(data)
-        self.table_service.insert_entity(self.database_name, insert_data)
+        self.table_service.insert_entity(table_name=self.database_name, entity=insert_data)
         return insert_data
 
     def update(self, partition_key_value: str, row_key: str, data: dict):
