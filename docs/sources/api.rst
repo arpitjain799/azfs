@@ -58,6 +58,15 @@ file manipulating
 
 
 
+TableStorage
+------------
+
+
+.. autoclass:: azfs.TableStorage
+
+.. autoclass:: azfs.TableStorageWrapper
+
+
 BlobPathDecoder
 ---------------
 

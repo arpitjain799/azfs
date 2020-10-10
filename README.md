@@ -28,6 +28,8 @@ $ pip install azfs
 
 ## usage
 
+For `Blob` and `Queue` Storage.
+
 
 ```python
 import azfs
@@ -65,6 +67,27 @@ with azc:
 
 ```
 
+For `Table` Storage
+
+```python
+
+import azfs
+cons = {
+    "account_name": "{storage_account_name}",
+    "account_key": "{credential}",
+    "database_name": "{database_name}"
+}
+
+table_client = azfs.TableStorageWrapper(**cons)
+
+# put data, according to the keyword you put
+table_client.put(id_="1", message="hello_world")
+
+# get data
+table_client.get(id_="1")
+
+```
+
 check more details in  [![Documentation Status](https://readthedocs.org/projects/azfs/badge/?version=latest)](https://azfs.readthedocs.io/en/latest/?badge=latest)
 
 ### types of authorization
@@ -80,8 +103,8 @@ The table blow shows if `AzFS` provides read/write functions for the storage.
 
 | account kind | Blob | Data Lake | Queue | File | Table |
 |:--|:--:|:--:|:--:|:--:|:--:|
-| StorageV2 | O | O | O | X | X |
-| StorageV1 | O | O | O | X | X |
+| StorageV2 | O | O | O | X | O |
+| StorageV1 | O | O | O | X | O |
 | BlobStorage | O | - | - | - | - |
 
 * O: provides basic functions
@@ -96,6 +119,7 @@ azure-identity >= "1.3.1"
 azure-storage-blob >= "12.3.0"
 azure-storage-file-datalake >= "12.0.0"
 azure-storage-queue >= "12.1.1"
+azure-cosmosdb-table
 ```
 
 

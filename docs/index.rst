@@ -70,9 +70,9 @@ The table below shows the compatibility read/access of ``AzFS``.
 +--------------+------+-----------+-------+------+-------+
 | account kind | Blob | Data Lake | Queue | File | Table |
 +==============+======+===========+=======+======+=======+
-| StorageV2    | O    | O         | O     | X    | X     |
+| StorageV2    | O    | O         | O     | X    | O     |
 +--------------+------+-----------+-------+------+-------+
-| StorageV1    | O    | O         | O     | X    | X     |
+| StorageV1    | O    | O         | O     | X    | O     |
 +--------------+------+-----------+-------+------+-------+
 | BlobStorage  | O    |           |       |      |       |
 +--------------+------+-----------+-------+------+-------+
@@ -235,6 +235,30 @@ API reference is `manipulating <./sources/api.html#file-manipulating>`_.
    # get file meta info
    data = azc.info(path=src_path)
 
+
+manipulate TableStorage
+-----------------------
+
+``AzFS`` can now manipulate TableStorage.
+
+API reference is `table storage <./sources/api.html#tablestorage>`_.
+
+.. code-block:: python
+
+   import azfs
+   cons = {
+       "account_name": "{storage_account_name}",
+       "account_key": "{credential}",
+       "database_name": "{database_name}"
+   }
+
+   table_client = azfs.TableStorageWrapper(**cons)
+
+   # put data, according to the keyword you put
+   table_client.put(id_="1", message="hello_world")
+
+   # get data
+   table_client.get(id_="1")
 
 
 For Users
