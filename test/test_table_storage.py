@@ -1,4 +1,5 @@
 from azure.cosmosdb.table.tableservice import TableService
+import pytest
 
 from azfs import TableStorage, TableStorageWrapper
 from azfs.error import AzfsInputError
@@ -79,6 +80,29 @@ def test_table_storage_wrapper_put(mocker):
     }
     func_mock.assert_called_with(table_name=TABLE_NAME, entity=put_data)
 
+    with pytest.raises(AzfsInputError):
+        @table_storage_wrapper.overwrite_pack_data_to_put()
+        def _pack_data(error_id: str):
+            return {"id_": error_id}
+
+    @table_storage_wrapper.overwrite_pack_data_to_put(allowed={"id_": [ROW_KEY]})
+    def _pack_data(id_: str, message: str):
+        return {"id_": id_, "message": message, "hash": f"{id_}-{message}"}
+
+    _ = table_storage_wrapper.put(id_=ROW_KEY, message=EXAMPLE_MESSAGE)
+
+    # validate
+    put_data = {
+        "PartitionKey": PARTITION_KEY,
+        "RowKey": ROW_KEY,
+        "message": EXAMPLE_MESSAGE,
+        "hash": f"{ROW_KEY}-{EXAMPLE_MESSAGE}"
+    }
+    func_mock.assert_called_with(table_name=TABLE_NAME, entity=put_data)
+
+    with pytest.raises(AzfsInputError):
+        _ = table_storage_wrapper.put(id_="unexpected_row_key", message=EXAMPLE_MESSAGE)
+
 
 def test_table_storage_wrapper_get(mocker):
     # mock
@@ -109,4 +133,3 @@ def test_table_storage_wrapper_update(mocker):
         "message": EXAMPLE_MESSAGE
     }
     func_mock.assert_called_with(table_name=TABLE_NAME, entity=updated_data)
-
