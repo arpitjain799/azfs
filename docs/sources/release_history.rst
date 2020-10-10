@@ -1,10 +1,10 @@
 Release History
 ===============
 
-0.2.4 (2020-xx-xx)
+0.2.4 (2020-10-10)
 ------------------
 
-* add ``TableStorage`` class to manipulate TableStorage.
+* add ``TableStorage``, and ``TableStorageWrapper`` class to manipulate TableStorage.
 
 0.2.3 (2020-09-09)
 ------------------
