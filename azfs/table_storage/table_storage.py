@@ -53,8 +53,7 @@ class TableStorage:
             [f"{k} eq '{v}'" for k, v in filter_key_values.items()]
         )
 
-        tasks = self.table_service.query_entities(
-            self.database_name, filter=" and ".join(filter_value_list))
+        tasks = self.table_service.query_entities(table_name=self.database_name, filter=" and ".join(filter_value_list))
         return [task for task in tasks]
 
     def put(self, partition_key_value: str, data: dict):
@@ -87,7 +86,7 @@ class TableStorage:
         """
         updated_data = {'PartitionKey': partition_key_value, 'RowKey': row_key}
         updated_data.update(data)
-        self.table_service.update_entity(self.database_name, updated_data)
+        self.table_service.update_entity(table_name=self.database_name, entity=updated_data)
         return updated_data
 
 
