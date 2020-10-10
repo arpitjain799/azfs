@@ -1,3 +1,4 @@
+import functools
 from inspect import signature
 from typing import List, Dict
 
@@ -103,11 +104,47 @@ class TableStorageWrapper:
         if arg_name not in sig.parameters:
             raise AzfsInputError(f"{arg_name} not in {function.__name__}")
 
+    def _overwrite_pack_data(self, _to: str, allowed: Dict[str, List[str]] = None):
+        """
+
+        Args:
+            _to:
+            allowed:
+
+        Returns:
+
+        """
+        def _wrapper(function: callable):
+            # check if `row_key` argument exists
+            self._check_argument(function=function, arg_name=self.row_key_name)
+
+            def _actual_function(*args, **kwargs):
+                # check if the value exists on the kwargs
+                if allowed:
+                    for k, v in allowed.items():
+                        if kwargs[k] not in v:
+                            raise AzfsInputError(f"keyword argument {kwargs[k]} is not allowed in {k}. {v} are allowed")
+                return function(*args, **kwargs)
+
+            # overwrite the attribute
+            setattr(self, _to, _actual_function)
+
+            return function
+        return _wrapper
+
     # =======
     # get
     # =======
 
     def get(self, **kwargs) -> List[dict]:
+        """
+
+        Args:
+            **kwargs:
+
+        Returns:
+
+        """
         if self.row_key_name in kwargs:
             kwargs['RowKey'] = kwargs.pop(self.row_key_name)
         return self.st.get(partition_key_value=self.partition_key, filter_key_values=kwargs)
@@ -118,6 +155,14 @@ class TableStorageWrapper:
 
     @staticmethod
     def pack_data_to_put(**kwargs):
+        """
+
+        Args:
+            **kwargs:
+
+        Returns:
+
+        """
         return kwargs
 
     def put(self, **kwargs):
@@ -126,24 +171,7 @@ class TableStorageWrapper:
             _data['RowKey'] = _data.pop(self.row_key_name)
         return self.st.put(partition_key_value=self.partition_key, data=_data)
 
-    def overwrite_pack_data_to_put(self, allowed: Dict[str, List[str]] = None):
-        def _wrapper(function: callable):
-            # check if `row_key` argument exists
-            self._check_argument(function=function, arg_name=self.row_key_name)
-
-            # check if the value exists on the kwargs
-            def _actual_function(**kwargs):
-                if allowed:
-                    for k, v in allowed.items():
-                        if kwargs[k] not in v:
-                            raise AzfsInputError(f"keyword argument {kwargs[k]} is not allowed in {k}. {v} are allowed")
-                return function(**kwargs)
-
-            # overwrite the attribute
-            self.pack_data_to_put = _actual_function
-
-            return function
-        return _wrapper
+    overwrite_pack_data_to_put = functools.partialmethod(_overwrite_pack_data, _to="pack_data_to_put")
 
     # =======
     # update
@@ -158,21 +186,4 @@ class TableStorageWrapper:
         row_key = _data.pop(self.row_key_name)
         return self.st.update(partition_key_value=self.partition_key, row_key=row_key, data=_data)
 
-    def overwrite_pack_data_to_update(self, allowed: Dict[str, List[str]] = None):
-        def _wrapper(function: callable):
-            # check if `row_key` argument exists
-            self._check_argument(function=function, arg_name=self.row_key_name)
-
-            # check if the value exists on the kwargs
-            def _actual_function(**kwargs):
-                if allowed:
-                    for k, v in allowed.items():
-                        if kwargs[k] not in v:
-                            raise AzfsInputError(f"keyword argument {kwargs[k]} is not allowed in {k}. {v} are allowed")
-                return function(**kwargs)
-
-            # overwrite the attribute
-            self.pack_data_to_update = _actual_function
-
-            return function
-        return _wrapper
+    overwrite_pack_data_to_update = functools.partialmethod(_overwrite_pack_data, _to="pack_data_to_update")
