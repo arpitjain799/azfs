@@ -53,12 +53,33 @@ class TableStorage:
         return [task for task in tasks]
 
     def put(self, partition_key_value: str, data: dict):
+        """
+        put data.
+
+        Args:
+            partition_key_value:
+            data:
+
+        Returns:
+
+        """
         insert_data = {'PartitionKey': partition_key_value}
         insert_data.update(data)
         self.table_service.insert_entity(self.database_name, insert_data)
         return insert_data
 
     def update(self, partition_key_value: str, row_key: str, data: dict):
+        """
+        update data.
+
+        Args:
+            partition_key_value:
+            row_key:
+            data:
+
+        Returns:
+
+        """
         updated_data = {'PartitionKey': partition_key_value, 'RowKey': row_key}
         updated_data.update(data)
         self.table_service.update_entity(self.database_name, updated_data)
@@ -66,6 +87,10 @@ class TableStorage:
 
 
 class TableStorageWrapper:
+    """
+    Wrapper for the TableStorage class.
+
+    """
     def __init__(
             self,
             account_name,
@@ -81,6 +106,51 @@ class TableStorageWrapper:
             database_name: name of the StorageTable database
             partition_key:
             row_key_name:
+
+        Examples:
+            >>> import json
+            >>> from datetime import datetime
+            >>> from pytz import timezone
+            >>> tokyo = timezone('Asia/Tokyo')
+            >>> cons = {
+            ...     "account_name": "{storage_account_name}",
+            ...     "account_key": "{credential}",
+            ...     "database_name": "{database_name}"
+            ... }
+            # you can manipulate data through `simple_table_client`
+            >>> simple_table_client = TableStorageWrapper(partition_key="simple_table", **cons)
+            # store data according to the keyword-arguemnt you put
+            # by default, `id_` is converted to `RowKey`, then `id_` is not stored
+            >>> simple_table_client.put(id_="1", message="hello_world")
+            ... {'PartitionKey': 'simple_table', 'message': 'hello_world', 'RowKey': '1'}
+            # can get all data, simply call
+            >>> simple_table_client.get()
+            ... ...
+            # or filter with specific value, like
+            # `id_` is configured as `RowKey` by default
+            >>> simple_table_client.get(id_="1")
+            ... [
+            ...     {
+            ...         'PartitionKey': 'simple_table',
+            ...         'RowKey': '1',
+            ...         'Timestamp': datetime.datetime(2020, 10, 10, 3, 15, 57, 874427, tzinfo=tzutc()),
+            ...         'message': 'hello_world',
+            ...         'etag': 'W/"datetime\'2020-10-10T03%3A15%3A57.8744271Z\'"'
+            ...     }
+            ... ]
+            # In addition, you can store data in different way
+            >>> complex_client = TableStorageWrapper(partition_key="complex_table", **cons)
+            >>> @complex_client.overwrite_pack_data_to_put()
+            ... def modify_put_data(id_: str, message: str):
+            ...     alt_message = json.dumps({datetime.now(tz=tokyo).isoformat(): message}, ensure_ascii=False)
+            ...     return {"id_": id_, "message": alt_message}
+            # you can store data in a different way
+            >>> complex_client.put(id_="2", message="hello_world")
+            ... {
+            ...     'PartitionKey': 'complex_table',
+            ...     'token': '{"2020-10-10T12:26:57.442718+09:00": "hello_world"}',
+            ...     'RowKey': '2'
+            ... }
         """
         self.st = TableStorage(account_name=account_name, account_key=account_key, database_name=database_name)
         self.partition_key = partition_key
@@ -138,6 +208,7 @@ class TableStorageWrapper:
 
     def get(self, **kwargs) -> List[dict]:
         """
+        get data.
 
         Args:
             **kwargs:
@@ -166,6 +237,14 @@ class TableStorageWrapper:
         return kwargs
 
     def put(self, **kwargs):
+        """
+        
+        Args:
+            **kwargs:
+
+        Returns:
+
+        """
         _data = self.pack_data_to_put(**kwargs)
         if self.row_key_name in _data:
             _data['RowKey'] = _data.pop(self.row_key_name)
@@ -179,9 +258,25 @@ class TableStorageWrapper:
 
     @staticmethod
     def pack_data_to_update(**kwargs):
+        """
+
+        Args:
+            **kwargs:
+
+        Returns:
+
+        """
         return kwargs
 
     def update(self, **kwargs):
+        """
+
+        Args:
+            **kwargs:
+
+        Returns:
+
+        """
         _data = self.pack_data_to_update(**kwargs)
         row_key = _data.pop(self.row_key_name)
         return self.st.update(partition_key_value=self.partition_key, row_key=row_key, data=_data)
