@@ -4,9 +4,6 @@ API Reference (for Developer)
 AzfsClient
 ----------
 
-.. toctree::
-   :maxdepth: 4
-
 .. autoclass:: azfs.clients.AzfsClient
 
 

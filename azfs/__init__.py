@@ -6,6 +6,11 @@ from azfs.az_file_system import AzFileSystem
 
 from azfs.utils import BlobPathDecoder
 
+from .table_storage import (
+    TableStorage,
+    TableStorageWrapper
+)
+
 # comparable tuple
 VERSION = (0, 2, 3)
 # generate __version__ via VERSION tuple

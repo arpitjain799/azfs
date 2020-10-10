@@ -4,9 +4,6 @@ API Reference
 AzFileClient
 ------------
 
-.. toctree::
-   :maxdepth: 4
-
 .. autoclass:: azfs.AzFileClient
 
 
@@ -59,6 +56,15 @@ file manipulating
 
 .. autofunction:: azfs.AzFileClient.cp
 
+
+
+TableStorage
+------------
+
+
+.. autoclass:: azfs.TableStorage
+
+.. autoclass:: azfs.TableStorageWrapper
 
 
 BlobPathDecoder
