@@ -1,4 +1,4 @@
-from azfs.core import (
+from azfs.az_file_client import (
     AzFileClient
 )
 
