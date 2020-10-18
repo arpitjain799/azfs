@@ -259,9 +259,6 @@ class AzFileClient:
         elif account_kind in ["queue"]:
             return file_list
 
-    def walk(self, path: str, max_depth=2):
-        pass
-
     def cp(self, src_path: str, dst_path: str, overwrite=False) -> bool:
         """
         copy the data from `src_path` to `dst_path`
@@ -490,9 +487,6 @@ class AzFileClient:
             return matched_full_path_list
         elif account_kind in ["queue"]:
             raise NotImplementedError
-
-    def du(self, path):
-        pass
 
     def _get(self, path: str, offset: int = None, length: int = None, **kwargs) -> Union[bytes, str, io.BytesIO, dict]:
         """
