@@ -13,6 +13,7 @@ from .clients import AzfsClient
 
 
 logger = logging.getLogger('azfs')
+__all__ = ["AzFileSystem", "AzFile"]
 
 
 class AzFileSystem(AbstractFileSystem):

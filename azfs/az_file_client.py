@@ -17,6 +17,8 @@ from azfs.utils import (
     ls_filter
 )
 
+__all__ = ["AzFileClient"]
+
 
 class AzFileClient:
     """
