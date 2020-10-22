@@ -178,6 +178,7 @@ class AzFileClient:
             for f in self.register_list:
                 setattr(f['assign_to'], f['assign_as'], None)
 
+    # instance for context manager
     _az_context_manager = AzContextManager()
 
     def __init__(
@@ -195,6 +196,7 @@ class AzFileClient:
         if credential is None and connection_string is None:
             credential = DefaultAzureCredential()
         self._client = AzfsClient(credential=credential, connection_string=connection_string)
+        self.read = DataFrameReader(azc_=self)
 
     def __enter__(self):
         """
