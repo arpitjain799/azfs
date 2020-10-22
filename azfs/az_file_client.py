@@ -20,6 +20,40 @@ from azfs.utils import (
 __all__ = ["AzFileClient"]
 
 
+class DataFrameReader:
+    def __init__(self, azc_):
+        self.azc_: AzFileClient = azc_
+
+    def mp(self, cpu_count=1):
+        """
+
+        Args:
+            cpu_count:
+
+        Returns:
+
+        """
+        return self
+
+    def csv(self, path: Optional[str, List[str]], **kwargs):
+        """
+
+        Args:
+            path:
+            **kwargs:
+
+        Returns:
+
+        """
+        return self.azc_.read_csv(path=path, **kwargs)
+
+    def parquet(self, path: Optional[str, List[str]]):
+        return self.azc_.read_parquet(path=path)
+
+    def pickle(self, path: Optional[str, List[str]], compression: str = "gzip"):
+        return self.azc_.read_pickle(path=path, compression=compression)
+
+
 class AzFileClient:
     """
 
