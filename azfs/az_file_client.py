@@ -21,21 +21,27 @@ __all__ = ["AzFileClient"]
 
 
 class DataFrameReader:
-    def __init__(self, azc_):
-        self.azc_: AzFileClient = azc_
+    def __init__(self, _azc, path: Union[str, List[str]] = None, mp=False, file_format: Optional[str] = None):
+        self._azc: AzFileClient = _azc
+        self.path: Optional[List[str]] = self._decode_path(path=path)
+        self.file_format = file_format
+        self.use_mp = mp
 
-    def mp(self, cpu_count=1):
-        """
+    def _decode_path(self, path: Optional[Union[str, List[str]]]) -> Optional[List[str]]:
+        if path is None:
+            return None
+        elif type(path) is str:
+            if "*" in path:
+                decoded_path = self._azc.glob(pattern_path=path)
+            else:
+                decoded_path = [path]
+        elif type(path) is list:
+            decoded_path = path
+        else:
+            raise AzfsInputError("path must be `str` or `list`")
+        return decoded_path
 
-        Args:
-            cpu_count:
-
-        Returns:
-
-        """
-        return self
-
-    def csv(self, path: Optional[str, List[str]], **kwargs):
+    def csv(self, path: Union[str, List[str]] = None, **kwargs):
         """
 
         Args:
@@ -45,13 +51,21 @@ class DataFrameReader:
         Returns:
 
         """
-        return self.azc_.read_csv(path=path, **kwargs)
+        self.file_format = "csv"
+        if path:
+            self.path = self._decode_path(path=path)
+        return self.load(**kwargs)
 
-    def parquet(self, path: Optional[str, List[str]]):
-        return self.azc_.read_parquet(path=path)
+    def parquet(self, path: Union[str, List[str]]):
+        return self._azc.read_parquet(path=path)
 
-    def pickle(self, path: Optional[str, List[str]], compression: str = "gzip"):
-        return self.azc_.read_pickle(path=path, compression=compression)
+    def pickle(self, path: Union[str, List[str]], compression: str = "gzip"):
+        return self._azc.read_pickle(path=path, compression=compression)
+
+    def load(self, **kwargs):
+        if self.file_format == "csv":
+            df_list = [self._azc.read_csv(f, **kwargs) for f in self.path]
+            return pd.concat(df_list)
 
 
 class AzFileClient:
