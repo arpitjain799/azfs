@@ -196,7 +196,6 @@ class AzFileClient:
         if credential is None and connection_string is None:
             credential = DefaultAzureCredential()
         self._client = AzfsClient(credential=credential, connection_string=connection_string)
-        self.read = DataFrameReader(azc_=self)
 
     def __enter__(self):
         """
@@ -525,6 +524,9 @@ class AzFileClient:
             return matched_full_path_list
         elif account_kind in ["queue"]:
             raise NotImplementedError
+
+    def read(self, *, path: Union[str, List[str]] = None, mp: bool = False):
+        return DataFrameReader(_azc=self, path=path, mp=mp)
 
     def _get(self, path: str, offset: int = None, length: int = None, **kwargs) -> Union[bytes, str, io.BytesIO, dict]:
         """
