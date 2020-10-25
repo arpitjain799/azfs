@@ -56,16 +56,27 @@ class DataFrameReader:
             self.path = self._decode_path(path=path)
         return self.load(**kwargs)
 
-    def parquet(self, path: Union[str, List[str]]):
-        return self._azc.read_parquet(path=path)
+    def parquet(self, path: Union[str, List[str]] = None):
+        self.file_format = "parquet"
+        if path:
+            self.path = self._decode_path(path=path)
+        return self.load()
 
-    def pickle(self, path: Union[str, List[str]], compression: str = "gzip"):
-        return self._azc.read_pickle(path=path, compression=compression)
+    def pickle(self, path: Union[str, List[str]] = None, compression: str = "gzip"):
+        self.file_format = "pickle"
+        if path:
+            self.path = self._decode_path(path=path)
+        return self.load(compression=compression)
 
     def load(self, **kwargs):
+        df_list = None
         if self.file_format == "csv":
             df_list = [self._azc.read_csv(f, **kwargs) for f in self.path]
-            return pd.concat(df_list)
+        elif self.file_format == "parquet":
+            df_list = [self._azc.read_parquet(f, **kwargs) for f in self.path]
+        elif self.file_format == "pickle":
+            df_list = [self._azc.read_pickle(f, **kwargs) for f in self.path]
+        return pd.concat(df_list)
 
 
 class AzFileClient:
