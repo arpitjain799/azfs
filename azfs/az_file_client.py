@@ -70,6 +70,8 @@ class DataFrameReader:
 
     def load(self, **kwargs):
         df_list = None
+        if self.path is None:
+            raise AzfsInputError("input azure blob path")
         if self.file_format == "csv":
             df_list = [self._azc.read_csv(f, **kwargs) for f in self.path]
         elif self.file_format == "parquet":
