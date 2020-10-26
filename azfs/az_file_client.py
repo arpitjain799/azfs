@@ -69,15 +69,19 @@ class DataFrameReader:
         return self.load(compression=compression)
 
     def load(self, **kwargs):
-        df_list = None
         if self.path is None:
             raise AzfsInputError("input azure blob path")
+
         if self.file_format == "csv":
-            df_list = [self._azc.read_csv(f, **kwargs) for f in self.path]
+            load_function = self._azc.read_csv
         elif self.file_format == "parquet":
-            df_list = [self._azc.read_parquet(f, **kwargs) for f in self.path]
+            load_function = self._azc.read_parquet
         elif self.file_format == "pickle":
-            df_list = [self._azc.read_pickle(f, **kwargs) for f in self.path]
+            load_function = self._azc.read_pickle
+        else:
+            raise AzfsInputError("file_format is incorrect")
+
+        df_list = [load_function(f, **kwargs) for f in self.path]
         return pd.concat(df_list)
 
 
