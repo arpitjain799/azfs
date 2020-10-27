@@ -42,14 +42,32 @@ class DataFrameReader:
             raise AzfsInputError("path must be `str` or `list`")
         return decoded_path
 
-    def csv(self, path: Union[str, List[str]] = None, **kwargs):
+    def csv(self, path: Union[str, List[str]] = None, **kwargs) -> pd.DataFrame:
         """
+        read csv files in Azure Blob, like PySpark-method.
 
         Args:
-            path:
-            **kwargs:
+            path: azure blob path
+            **kwargs: as same as pandas.read_csv
 
         Returns:
+            pd.DataFrame
+
+        Examples:
+            >>> import azfs
+            >>> azc = azfs.AzFileClient()
+            >>> blob_path = "https://testazfs.blob.core.windows.net/test_container/test1.csv"
+            >>> df = azc.read().csv(blob_path)
+            # result is as same as azc.read_csv(blob_path)
+            >>> blob_path_list = [
+            ...     "https://testazfs.blob.core.windows.net/test_container/test1.csv",
+            ...     "https://testazfs.blob.core.windows.net/test_container/test2.csv"
+            ... ]
+            >>> df = azc.read().csv(blob_path_list)
+            # result is as same as pd.concat([each data-frame])
+            # in addition, you can use `*`
+            >>> blob_path_pattern = "https://testazfs.blob.core.windows.net/test_container/test*.csv"
+            >>> df = azc.read().csv(blob_path_pattern)
 
         """
         self.file_format = "csv"
@@ -57,13 +75,34 @@ class DataFrameReader:
             self.path = self._decode_path(path=path)
         return self._load(**kwargs)
 
-    def parquet(self, path: Union[str, List[str]] = None):
+    def parquet(self, path: Union[str, List[str]] = None) -> pd.DataFrame:
+        """
+        read parquet files in Azure Blob, like PySpark-method.
+
+        Args:
+            path: azure blob path
+
+        Returns:
+            pd.DataFrame
+
+        """
         self.file_format = "parquet"
         if path:
             self.path = self._decode_path(path=path)
         return self._load()
 
-    def pickle(self, path: Union[str, List[str]] = None, compression: str = "gzip"):
+    def pickle(self, path: Union[str, List[str]] = None, compression: str = "gzip") -> pd.DataFrame:
+        """
+        read pickle files in Azure Blob, like PySpark-method.
+
+        Args:
+            path: azure blob path
+            compression: acceptable keywords are: gzip, bz2, xz. gzip is default value.
+
+        Returns:
+            pd.DataFrame
+
+        """
         self.file_format = "pickle"
         if path:
             self.path = self._decode_path(path=path)
@@ -570,7 +609,8 @@ class AzFileClient:
         elif account_kind in ["queue"]:
             raise NotImplementedError
 
-    def read(self, *, path: Union[str, List[str]] = None, mp: bool = False, file_format: str = "csv"):
+    def read(
+            self, *, path: Union[str, List[str]] = None, mp: bool = False, file_format: str = "csv") -> DataFrameReader:
         return DataFrameReader(_azc=self, path=path, mp=mp, file_format=file_format)
 
     def _get(self, path: str, offset: int = None, length: int = None, **kwargs) -> Union[bytes, str, io.BytesIO, dict]:
