@@ -556,8 +556,8 @@ class AzFileClient:
         elif account_kind in ["queue"]:
             raise NotImplementedError
 
-    def read(self, *, path: Union[str, List[str]] = None, mp: bool = False):
-        return DataFrameReader(_azc=self, path=path, mp=mp)
+    def read(self, *, path: Union[str, List[str]] = None, mp: bool = False, file_format: str = "csv"):
+        return DataFrameReader(_azc=self, path=path, mp=mp, file_format=file_format)
 
     def _get(self, path: str, offset: int = None, length: int = None, **kwargs) -> Union[bytes, str, io.BytesIO, dict]:
         """
