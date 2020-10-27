@@ -7,6 +7,7 @@ import pickle
 import re
 from typing import Union, Optional, List
 import warnings
+
 import pandas as pd
 from azure.identity import DefaultAzureCredential
 from azure.core.exceptions import ResourceNotFoundError
@@ -68,10 +69,7 @@ class DataFrameReader:
             self.path = self._decode_path(path=path)
         return self.load(compression=compression)
 
-    def load(self, **kwargs):
-        if self.path is None:
-            raise AzfsInputError("input azure blob path")
-
+    def _load_function(self):
         if self.file_format == "csv":
             load_function = self._azc.read_csv
         elif self.file_format == "parquet":
@@ -80,8 +78,25 @@ class DataFrameReader:
             load_function = self._azc.read_pickle
         else:
             raise AzfsInputError("file_format is incorrect")
+        return load_function
 
-        df_list = [load_function(f, **kwargs) for f in self.path]
+    def load_wrapper(self, inputs: dict):
+        load_function = self._load_function()
+        return load_function(**inputs)
+
+    def load(self, **kwargs):
+        if self.path is None:
+            raise AzfsInputError("input azure blob path")
+
+        load_function = self._load_function()
+
+        if self.use_mp:
+            raise AzfsInputError("multiprocessing is not implemented yet")
+            # params_list = [{"path": f} for f in self.path]
+            # with mp.Pool(mp.cpu_count()) as pool:
+            #     df_list = pool.map(self.load_wrapper, params_list)
+        else:
+            df_list = [load_function(f, **kwargs) for f in self.path]
         return pd.concat(df_list)
 
 
