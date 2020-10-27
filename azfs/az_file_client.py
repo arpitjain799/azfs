@@ -55,21 +55,21 @@ class DataFrameReader:
         self.file_format = "csv"
         if path:
             self.path = self._decode_path(path=path)
-        return self.load(**kwargs)
+        return self._load(**kwargs)
 
     def parquet(self, path: Union[str, List[str]] = None):
         self.file_format = "parquet"
         if path:
             self.path = self._decode_path(path=path)
-        return self.load()
+        return self._load()
 
     def pickle(self, path: Union[str, List[str]] = None, compression: str = "gzip"):
         self.file_format = "pickle"
         if path:
             self.path = self._decode_path(path=path)
-        return self.load(compression=compression)
+        return self._load(compression=compression)
 
-    def _load_function(self):
+    def _load_function(self) -> callable:
         if self.file_format == "csv":
             load_function = self._azc.read_csv
         elif self.file_format == "parquet":
@@ -80,18 +80,17 @@ class DataFrameReader:
             raise AzfsInputError("file_format is incorrect")
         return load_function
 
-    def load_wrapper(self, inputs: dict):
-        load_function = self._load_function()
-        return load_function(**inputs)
-
-    def load(self, **kwargs):
+    def _load(self, **kwargs):
         if self.path is None:
             raise AzfsInputError("input azure blob path")
 
         load_function = self._load_function()
 
         if self.use_mp:
+
             raise AzfsInputError("multiprocessing is not implemented yet")
+            # def _load_wrapper(inputs: dict):
+            #     return self._load_function()(**inputs)
             # params_list = [{"path": f} for f in self.path]
             # with mp.Pool(mp.cpu_count()) as pool:
             #     df_list = pool.map(self.load_wrapper, params_list)
