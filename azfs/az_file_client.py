@@ -71,7 +71,7 @@ class DataFrameReader:
 
         """
         self.file_format = "csv"
-        if path:
+        if path is not None:
             self.path = self._decode_path(path=path)
         return self._load(**kwargs)
 
@@ -87,7 +87,7 @@ class DataFrameReader:
 
         """
         self.file_format = "parquet"
-        if path:
+        if path is not None:
             self.path = self._decode_path(path=path)
         return self._load()
 
@@ -104,7 +104,7 @@ class DataFrameReader:
 
         """
         self.file_format = "pickle"
-        if path:
+        if path is not None:
             self.path = self._decode_path(path=path)
         return self._load(compression=compression)
 
