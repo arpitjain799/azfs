@@ -29,6 +29,15 @@ class DataFrameReader:
         self.use_mp = mp
 
     def _decode_path(self, path: Optional[Union[str, List[str]]]) -> Optional[List[str]]:
+        """
+        decode path to be read by azc
+
+        Args:
+            path: azure blob path
+
+        Returns:
+
+        """
         if path is None:
             return None
         elif type(path) is str:
@@ -109,6 +118,12 @@ class DataFrameReader:
         return self._load(compression=compression)
 
     def _load_function(self) -> callable:
+        """
+        get read_* function according to the file_format
+
+        Returns:
+
+        """
         if self.file_format == "csv":
             load_function = self._azc.read_csv
         elif self.file_format == "parquet":
@@ -127,7 +142,7 @@ class DataFrameReader:
 
         if self.use_mp:
 
-            raise AzfsInputError("multiprocessing is not implemented yet")
+            raise NotImplementedError("multiprocessing is not implemented yet")
             # def _load_wrapper(inputs: dict):
             #     return self._load_function()(**inputs)
             # params_list = [{"path": f} for f in self.path]
