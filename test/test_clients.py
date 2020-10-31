@@ -61,6 +61,12 @@ class TestReadCsv:
         assert "age" in columns
         assert len(df.index) == 2
 
+        df = var_azc.read().csv(path=path)
+        columns = df.columns
+        assert "name" in columns
+        assert "age" in columns
+        assert len(df.index) == 2
+
     def test_blob_read_csv_gz(self, mocker, _get_csv_gz, var_azc):
         mocker.patch.object(AzBlobClient, "_get", _get_csv_gz)
 
@@ -75,6 +81,12 @@ class TestReadCsv:
         assert "age" in columns
         assert len(df.index) == 2
 
+        df = var_azc.read().csv(path=path)
+        columns = df.columns
+        assert "name" in columns
+        assert "age" in columns
+        assert len(df.index) == 2
+
     def test_dfs_read_csv(self, mocker, _get_csv, var_azc):
         mocker.patch.object(AzDataLakeClient, "_get", _get_csv)
 
@@ -84,6 +96,12 @@ class TestReadCsv:
         # read data from not-exist path
         with var_azc:
             df = pd.read_csv_az(path)
+        columns = df.columns
+        assert "name" in columns
+        assert "age" in columns
+        assert len(df.index) == 2
+
+        df = var_azc.read().csv(path=path)
         columns = df.columns
         assert "name" in columns
         assert "age" in columns
@@ -123,6 +141,19 @@ class TestReadPickle:
         assert "age" in columns
         assert len(df.index) == 2
 
+    def test_blob_read_pickle_pyspark_like(self, mocker, _get_pickle, var_azc):
+        mocker.patch.object(AzBlobClient, "_get", _get_pickle)
+
+        # the file below is not exists
+        path = "https://testazfs.blob.core.windows.net/test_caontainer/test.pkl"
+
+        # read data from not-exist path
+        df = var_azc.read().pickle(path=path, compression=None)
+        columns = df.columns
+        assert "name" in columns
+        assert "age" in columns
+        assert len(df.index) == 2
+
     def test_blob_read_pickle_gzip(self, mocker, _get_pickle_gzip, var_azc):
         mocker.patch.object(AzBlobClient, "_get", _get_pickle_gzip)
 
@@ -132,6 +163,19 @@ class TestReadPickle:
         # read data from not-exist path
         with var_azc:
             df = pd.read_pickle_az(path, compression="gzip")
+        columns = df.columns
+        assert "name" in columns
+        assert "age" in columns
+        assert len(df.index) == 2
+
+    def test_blob_read_pickle_gzip_pyspark_like(self, mocker, _get_pickle_gzip, var_azc):
+        mocker.patch.object(AzBlobClient, "_get", _get_pickle_gzip)
+
+        # the file below is not exists
+        path = "https://testazfs.blob.core.windows.net/test_caontainer/test.pkl"
+
+        # read data from not-exist path
+        df = var_azc.read().pickle(path=path, compression="gzip")
         columns = df.columns
         assert "name" in columns
         assert "age" in columns
@@ -151,6 +195,19 @@ class TestReadPickle:
         assert "age" in columns
         assert len(df.index) == 2
 
+    def test_blob_read_pickle_bz2_pyspark_like(self, mocker, _get_pickle_bz2, var_azc):
+        mocker.patch.object(AzBlobClient, "_get", _get_pickle_bz2)
+
+        # the file below is not exists
+        path = "https://testazfs.blob.core.windows.net/test_caontainer/test.pkl"
+
+        # read data from not-exist path
+        df = var_azc.read().pickle(path=path, compression="bz2")
+        columns = df.columns
+        assert "name" in columns
+        assert "age" in columns
+        assert len(df.index) == 2
+
     def test_blob_read_pickle_xz(self, mocker, _get_pickle_xz, var_azc):
         mocker.patch.object(AzBlobClient, "_get", _get_pickle_xz)
 
@@ -160,6 +217,20 @@ class TestReadPickle:
         # read data from not-exist path
         with var_azc:
             df = pd.read_pickle_az(path, compression="xz")
+        columns = df.columns
+        assert "name" in columns
+        assert "age" in columns
+        assert len(df.index) == 2
+
+    def test_blob_read_pickle_xz_pyspark_like(self, mocker, _get_pickle_xz, var_azc):
+        mocker.patch.object(AzBlobClient, "_get", _get_pickle_xz)
+
+        # the file below is not exists
+        path = "https://testazfs.blob.core.windows.net/test_caontainer/test.pkl"
+
+        # read data from not-exist path
+
+        df = var_azc.read().pickle(path=path, compression="xz")
         columns = df.columns
         assert "name" in columns
         assert "age" in columns
