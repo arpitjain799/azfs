@@ -343,7 +343,7 @@ class AzFileClient:
 
         """
         try:
-            _ = self._get(path=path)
+            _ = self.info(path=path)
         except ResourceNotFoundError:
             return False
         else:
