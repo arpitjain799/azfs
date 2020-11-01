@@ -8,7 +8,7 @@ import pandas as pd
 
 
 class TestClientInterface:
-    def test_not_implemented_error(self):
+    def test_not_implemented_error(self, var_azc):
         client_interface = ClientInterface(credential="")
         # the file below is not exists
         account_url = "https://testazfs.blob.core.windows.net/"
@@ -43,6 +43,17 @@ class TestClientInterface:
         client_interface = ClientInterface(credential=None, connection_string="")
         with pytest.raises(NotImplementedError):
             client_interface.get_service_client_from_url(account_url=account_url)
+
+        with pytest.raises(NotImplementedError):
+            # use with multiprocessing
+            var_azc.read(mp=True).csv(path=path)
+
+    def test_azfs_input_error(self, var_azc):
+        with pytest.raises(AzfsInputError):
+            var_azc.read().csv(path=0)
+
+        with pytest.raises(AzfsInputError):
+            var_azc.read().csv(path=None)
 
 
 class TestReadCsv:
