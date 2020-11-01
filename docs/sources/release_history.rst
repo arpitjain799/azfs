@@ -1,6 +1,12 @@
 Release History
 ===============
 
+0.2.5 (2020-mm-dd)
+------------------
+
+* add pyspark-like read method, such as ``azc.read().csv()``, ``azc.read().parquet()``.
+* add ``__all__``, and organize the directory.
+
 0.2.4 (2020-10-10)
 ------------------
 
