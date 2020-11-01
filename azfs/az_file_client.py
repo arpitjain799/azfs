@@ -7,6 +7,7 @@ import pickle
 import re
 from typing import Union, Optional, List
 import warnings
+
 import pandas as pd
 from azure.identity import DefaultAzureCredential
 from azure.core.exceptions import ResourceNotFoundError
@@ -16,6 +17,140 @@ from azfs.utils import (
     BlobPathDecoder,
     ls_filter
 )
+
+__all__ = ["AzFileClient"]
+
+
+class DataFrameReader:
+    def __init__(self, _azc, path: Union[str, List[str]] = None, mp=False, file_format: Optional[str] = None):
+        self._azc: AzFileClient = _azc
+        self.path: Optional[List[str]] = self._decode_path(path=path)
+        self.file_format = file_format
+        self.use_mp = mp
+
+    def _decode_path(self, path: Optional[Union[str, List[str]]]) -> Optional[List[str]]:
+        """
+        decode path to be read by azc
+
+        Args:
+            path: azure blob path
+
+        Returns:
+
+        """
+        if path is None:
+            return None
+        elif type(path) is str:
+            if "*" in path:
+                decoded_path = self._azc.glob(pattern_path=path)
+            else:
+                decoded_path = [path]
+        elif type(path) is list:
+            decoded_path = path
+        else:
+            raise AzfsInputError("path must be `str` or `list`")
+        return decoded_path
+
+    def csv(self, path: Union[str, List[str]] = None, **kwargs) -> pd.DataFrame:
+        """
+        read csv files in Azure Blob, like PySpark-method.
+
+        Args:
+            path: azure blob path
+            **kwargs: as same as pandas.read_csv
+
+        Returns:
+            pd.DataFrame
+
+        Examples:
+            >>> import azfs
+            >>> azc = azfs.AzFileClient()
+            >>> blob_path = "https://testazfs.blob.core.windows.net/test_container/test1.csv"
+            >>> df = azc.read().csv(blob_path)
+            # result is as same as azc.read_csv(blob_path)
+            >>> blob_path_list = [
+            ...     "https://testazfs.blob.core.windows.net/test_container/test1.csv",
+            ...     "https://testazfs.blob.core.windows.net/test_container/test2.csv"
+            ... ]
+            >>> df = azc.read().csv(blob_path_list)
+            # result is as same as pd.concat([each data-frame])
+            # in addition, you can use `*`
+            >>> blob_path_pattern = "https://testazfs.blob.core.windows.net/test_container/test*.csv"
+            >>> df = azc.read().csv(blob_path_pattern)
+
+        """
+        self.file_format = "csv"
+        if path is not None:
+            self.path = self._decode_path(path=path)
+        return self._load(**kwargs)
+
+    def parquet(self, path: Union[str, List[str]] = None) -> pd.DataFrame:
+        """
+        read parquet files in Azure Blob, like PySpark-method.
+
+        Args:
+            path: azure blob path
+
+        Returns:
+            pd.DataFrame
+
+        """
+        self.file_format = "parquet"
+        if path is not None:
+            self.path = self._decode_path(path=path)
+        return self._load()
+
+    def pickle(self, path: Union[str, List[str]] = None, compression: str = "gzip") -> pd.DataFrame:
+        """
+        read pickle files in Azure Blob, like PySpark-method.
+
+        Args:
+            path: azure blob path
+            compression: acceptable keywords are: gzip, bz2, xz. gzip is default value.
+
+        Returns:
+            pd.DataFrame
+
+        """
+        self.file_format = "pickle"
+        if path is not None:
+            self.path = self._decode_path(path=path)
+        return self._load(compression=compression)
+
+    def _load_function(self) -> callable:
+        """
+        get read_* function according to the file_format
+
+        Returns:
+
+        """
+        if self.file_format == "csv":
+            load_function = self._azc.read_csv
+        elif self.file_format == "parquet":
+            load_function = self._azc.read_parquet
+        elif self.file_format == "pickle":
+            load_function = self._azc.read_pickle
+        else:
+            raise AzfsInputError("file_format is incorrect")
+        return load_function
+
+    def _load(self, **kwargs):
+        if self.path is None:
+            raise AzfsInputError("input azure blob path")
+
+        load_function = self._load_function()
+
+        if self.use_mp:
+
+            raise NotImplementedError("multiprocessing is not implemented yet")
+            # def _load_wrapper(inputs: dict):
+            #     return self._load_function()(**inputs)
+            # params_list = [{"path": f} for f in self.path]
+            # with mp.Pool(mp.cpu_count()) as pool:
+            #     df_list = pool.map(self.load_wrapper, params_list)
+        else:
+            df_list = [load_function(f, **kwargs) for f in self.path]
+        return pd.concat(df_list)
 
 
 class AzFileClient:
@@ -142,6 +277,7 @@ class AzFileClient:
             for f in self.register_list:
                 setattr(f['assign_to'], f['assign_as'], None)
 
+    # instance for context manager
     _az_context_manager = AzContextManager()
 
     def __init__(
@@ -207,7 +343,7 @@ class AzFileClient:
 
         """
         try:
-            _ = self._get(path=path)
+            _ = self.info(path=path)
         except ResourceNotFoundError:
             return False
         else:
@@ -258,9 +394,6 @@ class AzFileClient:
                 return file_name_list
         elif account_kind in ["queue"]:
             return file_list
-
-    def walk(self, path: str, max_depth=2):
-        pass
 
     def cp(self, src_path: str, dst_path: str, overwrite=False) -> bool:
         """
@@ -491,8 +624,9 @@ class AzFileClient:
         elif account_kind in ["queue"]:
             raise NotImplementedError
 
-    def du(self, path):
-        pass
+    def read(
+            self, *, path: Union[str, List[str]] = None, mp: bool = False, file_format: str = "csv") -> DataFrameReader:
+        return DataFrameReader(_azc=self, path=path, mp=mp, file_format=file_format)
 
     def _get(self, path: str, offset: int = None, length: int = None, **kwargs) -> Union[bytes, str, io.BytesIO, dict]:
         """

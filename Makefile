@@ -1,35 +1,24 @@
-
-help:
-# 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
-	@echo " == execute python test on some python .venv == "
-	@echo "type 'make test-python' to execute python test with pytest"
-	@echo ""
-	@echo " == test-pypi upload == "
-	@echo "type 'make clean build test-deploy' to upload test-pypi"
-	@echo ""
-	@echo " == pypi upload == "
-	@echo "type 'make clean build deploy' to upload pypi"
-	@echo ""
-	@echo " == command references == "
-	@echo "clean: clean build directory"
-	@echo "build: build python project"
-	@echo "deploy: upload to pypi"
-	@echo "test-deploy: upload to pypi"
-
-
 .PHONY: help
+help:
+	@printf "\033[36m%-30s\033[0m %-50s %s\n" "[Sub command]" "[Description]" "[Example]"
+	@grep -E '^[/a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | perl -pe 's%^([/a-zA-Z_-]+):.*?(##)%$$1 $$2%' | awk -F " *?## *?" '{printf "\033[36m%-30s\033[0m %-50s %s\n", $$1, $$2, $$3}'
 
-test-python:
-	pytest ./test -vv --cov=./azfs --cov-report=html
-
-deploy:
+.PHONY: deploy
+deploy: ## upload to pypi ## make deploy
 	twine upload dist/*
 
-test-deploy:
+.PHONY: test-deploy
+test-deploy: ## upload to test-pypi ## make test-deploy
 	twine upload -r testpypi dist/*
 
-build:
+.PHONY: build
+build: clean ## create wheel ## make build
 	python setup.py sdist bdist_wheel
 
-clean:
+.PHONY: clean
+clean: ## clean the wheel directory ## make clean
 	rm -f -r azfs.egg-info/* dist/* -y
+
+.PHONY: test-python
+test-python: ## execute test with pytest ## make test-python
+	pytest ./test -vv --cov=./azfs --cov-report=html

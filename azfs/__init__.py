@@ -1,4 +1,4 @@
-from azfs.core import (
+from azfs.az_file_client import (
     AzFileClient
 )
 
@@ -12,6 +12,8 @@ from .table_storage import (
 )
 
 # comparable tuple
-VERSION = (0, 2, 4)
+VERSION = (0, 2, 5)
 # generate __version__ via VERSION tuple
 __version__ = ".".join(map(str, VERSION))
+
+__all__ = ["AzFileClient", "AzFileSystem", "BlobPathDecoder", "TableStorage", "TableStorageWrapper"]
