@@ -636,8 +636,11 @@ class TestRm:
 
 
 class TestExists:
-    def test_blob_exists(self, mocker, _get_csv, var_azc):
-        mocker.patch.object(AzBlobClient, "_get", _get_csv)
+    def test_blob_exists(self, mocker, var_azc):
+        return_value = {"size": len(b'name,age\nalice,10\nbob,10\n')}
+        func_mock = mocker.MagicMock()
+        func_mock.return_value = return_value
+        mocker.patch.object(AzBlobClient, "_info", func_mock)
 
         # the file below is not exists
         path = "https://testazfs.blob.core.windows.net/test_caontainer/test1.csv"
@@ -646,15 +649,18 @@ class TestExists:
         assert result
 
         # set to raise exception
-        _get_csv.side_effect = ResourceNotFoundError
-        mocker.patch.object(AzBlobClient, "_get", _get_csv)
+        func_mock.side_effect = ResourceNotFoundError
+        mocker.patch.object(AzBlobClient, "_info", func_mock)
         # the file below is not exists
         path = "https://testazfs.blob.core.windows.net/test_caontainer/test3.csv"
         result = var_azc.exists(path=path)
         assert not result
 
     def test_dfs_exists(self, mocker, _get_csv, var_azc):
-        mocker.patch.object(AzDataLakeClient, "_get", _get_csv)
+        return_value = {"size": len(b'name,age\nalice,10\nbob,10\n')}
+        func_mock = mocker.MagicMock()
+        func_mock.return_value = return_value
+        mocker.patch.object(AzDataLakeClient, "_info", func_mock)
 
         # the file below is not exists
         path = "https://testazfs.dfs.core.windows.net/test_caontainer/test1.csv"
@@ -663,8 +669,8 @@ class TestExists:
         assert result
 
         # set to raise exception
-        _get_csv.side_effect = ResourceNotFoundError
-        mocker.patch.object(AzDataLakeClient, "_get", _get_csv)
+        func_mock.side_effect = ResourceNotFoundError
+        mocker.patch.object(AzDataLakeClient, "_info", func_mock)
         # the file below is not exists
         path = "https://testazfs.dfs.core.windows.net/test_caontainer/test3.csv"
         result = var_azc.exists(path=path)
