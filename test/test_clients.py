@@ -67,6 +67,50 @@ class TestReadCsv:
         assert "age" in columns
         assert len(df.index) == 2
 
+        df = var_azc.read(path=path).csv()
+        columns = df.columns
+        assert "name" in columns
+        assert "age" in columns
+        assert len(df.index) == 2
+
+    def test_blob_read_glob_csv(self, mocker, _get_csv, var_azc, _ls_for_glob):
+        mocker.patch.object(AzBlobClient, "_get", _get_csv)
+        mocker.patch.object(AzBlobClient, "_ls", _ls_for_glob)
+
+        # the file below is not exists
+        path = "https://testazfs.blob.core.windows.net/test_caontainer/root_folder/*.csv"
+        df = var_azc.read().csv(path=path)
+        columns = df.columns
+        assert "name" in columns
+        assert "age" in columns
+        assert len(df.index) == 4
+
+        df = var_azc.read(path=path).csv()
+        columns = df.columns
+        assert "name" in columns
+        assert "age" in columns
+        assert len(df.index) == 4
+
+    def test_blob_read_list_csv(self, mocker, _get_csv, var_azc):
+        mocker.patch.object(AzBlobClient, "_get", _get_csv)
+
+        # the file below is not exists
+        path_list = [
+            "https://testazfs.blob.core.windows.net/test_caontainer/root_folder/test1.csv",
+            "https://testazfs.blob.core.windows.net/test_caontainer/root_folder/test2.csv"
+        ]
+        df = var_azc.read().csv(path=path_list)
+        columns = df.columns
+        assert "name" in columns
+        assert "age" in columns
+        assert len(df.index) == 4
+
+        df = var_azc.read(path=path_list).csv()
+        columns = df.columns
+        assert "name" in columns
+        assert "age" in columns
+        assert len(df.index) == 4
+
     def test_blob_read_csv_gz(self, mocker, _get_csv_gz, var_azc):
         mocker.patch.object(AzBlobClient, "_get", _get_csv_gz)
 
