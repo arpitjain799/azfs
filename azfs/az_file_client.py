@@ -601,7 +601,7 @@ class AzFileClient:
             raise AzfsInputError("no any `*` in the `pattern_path`")
         url, account_kind, container_name, file_path = BlobPathDecoder(pattern_path).get_with_url()
 
-        acceptable_folder_pattern = r"(?P<root_folder>[^\*.]+)/(?P<folders>.*)"
+        acceptable_folder_pattern = r"(?P<root_folder>[^\*]+)/(?P<folders>.*)"
         result = re.match(acceptable_folder_pattern, file_path)
         if result:
             result_dict = result.groupdict()
