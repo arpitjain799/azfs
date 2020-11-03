@@ -48,6 +48,10 @@ class TestClientInterface:
             # use with multiprocessing
             var_azc.read(mp=True).csv(path=path)
 
+        with pytest.raises(NotImplementedError):
+            # use with multiprocessing
+            var_azc.glob("https://testazfs.queue.core.windows.net/test_queue/test/*.msg")
+
     def test_azfs_input_error(self, var_azc):
         with pytest.raises(AzfsInputError):
             var_azc.read().csv(path=0)
