@@ -8,8 +8,8 @@ AzFS
 
 code status
 
-.. image:: https://circleci.com/gh/gsy0911/azfs.svg?style=svg&circle-token=ccd8e1ece489b247bcaac84861ae725b0f89a605
-    :target: https://circleci.com/gh/gsy0911/azfs
+.. image:: https://github.com/gsy0911/azfs/workflows/pytest/badge.svg
+    :target: https://github.com/gsy0911/azfs/actions?query=workflow%3Apytest
 
 .. image:: https://codecov.io/gh/gsy0911/azfs/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/gsy0911/azfs
