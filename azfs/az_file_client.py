@@ -612,8 +612,8 @@ class AzFileClient:
             )
         # get container root path
         base_path = f"{url}/{container_name}/"
-        file_list = self._client.get_client(account_kind=account_kind).ls(path=base_path, file_path=root_folder)
         if account_kind in ["dfs", "blob"]:
+            file_list = self._client.get_client(account_kind=account_kind).ls(path=base_path, file_path=root_folder)
             # fix pattern_path, in order to avoid matching `/`
             pattern_path = rf"{pattern_path.replace('*', '([^/])*?')}$"
             pattern = re.compile(pattern_path)
