@@ -98,7 +98,7 @@ Supported authentication types are
 
 ### types of storage account kind
 
-The table blow shows if `AzFS` provides read/write functions for the storage. 
+The table below shows if `AzFS` provides read/write functions for the storage. 
 
 
 | account kind | Blob | Data Lake | Queue | File | Table |
