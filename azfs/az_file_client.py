@@ -625,8 +625,12 @@ class AzFileClient:
             raise NotImplementedError
 
     def read(
-            self, *, path: Union[str, List[str]] = None, mp: bool = False, file_format: str = "csv") -> DataFrameReader:
-        return DataFrameReader(_azc=self, path=path, mp=mp, file_format=file_format)
+            self,
+            *,
+            path: Union[str, List[str]] = None,
+            use_mp: bool = False,
+            file_format: str = "csv") -> DataFrameReader:
+        return DataFrameReader(_azc=self, path=path, use_mp=use_mp, file_format=file_format)
 
     def _get(self, path: str, offset: int = None, length: int = None, **kwargs) -> Union[bytes, str, io.BytesIO, dict]:
         """
