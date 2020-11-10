@@ -1,4 +1,5 @@
 import bz2
+from functools import partial
 import gzip
 import io
 import json
@@ -28,6 +29,7 @@ class DataFrameReader:
         self.path: Optional[List[str]] = self._decode_path(path=path)
         self.file_format = file_format
         self.use_mp = use_mp
+        self._apply_method = None
 
     def _decode_path(self, path: Optional[Union[str, List[str]]]) -> Optional[List[str]]:
         """
@@ -135,8 +137,36 @@ class DataFrameReader:
             raise AzfsInputError("file_format is incorrect")
         return load_function
 
-    def _load_wrapper(self, inputs):
-        return self._load_function()(**inputs)
+    def apply(self, *, function: callable, **kwargs):
+        """
+        to apply pandas DataFrame
+
+        Args:
+            function: first argument must pass pd.DataFrame
+            **kwargs: argument to pass the function
+
+        Returns:
+            self
+        """
+        self._apply_method = partial(function, **kwargs)
+        return self
+
+    def _load_wrapper(self, inputs: dict):
+        """
+        used only use_mp=True,
+        in addition, if apply() is called, also invoked.
+
+        Args:
+            inputs: arguments to pass _load_function() such as read_csv, read_parquet, etc.
+
+        Returns:
+            pd.DataFrame
+        """
+        if self._apply_method is None:
+            return self._load_function()(**inputs)
+        else:
+            result: pd.DataFrame = self._load_function()(**inputs)
+            return self._apply_method(result)
 
     def _load(self, **kwargs):
         if self.path is None:
@@ -153,7 +183,10 @@ class DataFrameReader:
             with mp.Pool(mp.cpu_count()) as pool:
                 df_list = pool.map(self._load_wrapper, params_list)
         else:
-            df_list = [load_function(f, **kwargs) for f in self.path]
+            if self._apply_method is None:
+                df_list = [load_function(f, **kwargs) for f in self.path]
+            else:
+                df_list = [self._apply_method(load_function(f, **kwargs)) for f in self.path]
         return pd.concat(df_list)
 
 
