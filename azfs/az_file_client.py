@@ -3,6 +3,7 @@ import gzip
 import io
 import json
 import lzma
+import multiprocessing as mp
 import pickle
 import re
 from typing import Union, Optional, List
@@ -22,11 +23,11 @@ __all__ = ["AzFileClient"]
 
 
 class DataFrameReader:
-    def __init__(self, _azc, path: Union[str, List[str]] = None, mp=False, file_format: Optional[str] = None):
+    def __init__(self, _azc, path: Union[str, List[str]] = None, use_mp=False, file_format: Optional[str] = None):
         self._azc: AzFileClient = _azc
         self.path: Optional[List[str]] = self._decode_path(path=path)
         self.file_format = file_format
-        self.use_mp = mp
+        self.use_mp = use_mp
 
     def _decode_path(self, path: Optional[Union[str, List[str]]]) -> Optional[List[str]]:
         """
@@ -134,6 +135,9 @@ class DataFrameReader:
             raise AzfsInputError("file_format is incorrect")
         return load_function
 
+    def _load_wrapper(self, inputs):
+        return self._load_function()(**inputs)
+
     def _load(self, **kwargs):
         if self.path is None:
             raise AzfsInputError("input azure blob path")
@@ -141,13 +145,9 @@ class DataFrameReader:
         load_function = self._load_function()
 
         if self.use_mp:
-
-            raise NotImplementedError("multiprocessing is not implemented yet")
-            # def _load_wrapper(inputs: dict):
-            #     return self._load_function()(**inputs)
-            # params_list = [{"path": f} for f in self.path]
-            # with mp.Pool(mp.cpu_count()) as pool:
-            #     df_list = pool.map(self.load_wrapper, params_list)
+            params_list = [{"path": f} for f in self.path]
+            with mp.Pool(mp.cpu_count()) as pool:
+                df_list = pool.map(self._load_wrapper, params_list)
         else:
             df_list = [load_function(f, **kwargs) for f in self.path]
         return pd.concat(df_list)
