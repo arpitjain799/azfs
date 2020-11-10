@@ -24,11 +24,18 @@ __all__ = ["AzFileClient"]
 
 
 class DataFrameReader:
-    def __init__(self, _azc, path: Union[str, List[str]] = None, use_mp=False, file_format: Optional[str] = None):
+    def __init__(
+            self,
+            _azc,
+            path: Union[str, List[str]] = None,
+            use_mp=False,
+            cpu_count: Optional[int] = None,
+            file_format: Optional[str] = None):
         self._azc: AzFileClient = _azc
         self.path: Optional[List[str]] = self._decode_path(path=path)
         self.file_format = file_format
         self.use_mp = use_mp
+        self.cpu_count = mp.cpu_count() if cpu_count is None else cpu_count
         self._apply_method = None
 
     def _decode_path(self, path: Optional[Union[str, List[str]]]) -> Optional[List[str]]:
@@ -148,7 +155,10 @@ class DataFrameReader:
         Returns:
             self
         """
-        self._apply_method = partial(function, **kwargs)
+        if kwargs:
+            self._apply_method = partial(function, **kwargs)
+        else:
+            self._apply_method = function
         return self
 
     def _load_wrapper(self, inputs: dict):
@@ -180,7 +190,7 @@ class DataFrameReader:
                 _input = {"path": f}
                 _input.update(kwargs)
                 params_list.append(_input)
-            with mp.Pool(mp.cpu_count()) as pool:
+            with mp.Pool(self.cpu_count) as pool:
                 df_list = pool.map(self._load_wrapper, params_list)
         else:
             if self._apply_method is None:
@@ -666,6 +676,7 @@ class AzFileClient:
             *,
             path: Union[str, List[str]] = None,
             use_mp: bool = False,
+            cpu_count: Optional[int] = None,
             file_format: str = "csv") -> DataFrameReader:
         return DataFrameReader(_azc=self, path=path, use_mp=use_mp, file_format=file_format)
 
