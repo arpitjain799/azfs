@@ -1,8 +1,10 @@
 import bz2
+from functools import partial
 import gzip
 import io
 import json
 import lzma
+import multiprocessing as mp
 import pickle
 import re
 from typing import Union, Optional, List
@@ -22,11 +24,19 @@ __all__ = ["AzFileClient"]
 
 
 class DataFrameReader:
-    def __init__(self, _azc, path: Union[str, List[str]] = None, mp=False, file_format: Optional[str] = None):
+    def __init__(
+            self,
+            _azc,
+            path: Union[str, List[str]] = None,
+            use_mp=False,
+            cpu_count: Optional[int] = None,
+            file_format: Optional[str] = None):
         self._azc: AzFileClient = _azc
         self.path: Optional[List[str]] = self._decode_path(path=path)
         self.file_format = file_format
-        self.use_mp = mp
+        self.use_mp = use_mp
+        self.cpu_count = mp.cpu_count() if cpu_count is None else cpu_count
+        self._apply_method = None
 
     def _decode_path(self, path: Optional[Union[str, List[str]]]) -> Optional[List[str]]:
         """
@@ -77,6 +87,13 @@ class DataFrameReader:
             # in addition, you can use `*`
             >>> blob_path_pattern = "https://testazfs.blob.core.windows.net/test_container/test*.csv"
             >>> df = azc.read().csv(blob_path_pattern)
+            # you can use multiprocessing with `use_mp` argument
+            >>> df = azc.read(use_mp=True).csv(blob_path_pattern)
+            # if you want to filter or apply some method, you can use your defined function as below
+            >>> def filter_function(_df: pd.DataFrame, _id: str) -> pd.DataFrame:
+            ...     return _df[_df['id'] == _id]
+            >>> df = azc.read(use_mp=True).apply(function=filter_function, _id="aaa").csv(blob_path_pattern)
+
 
         """
         self.file_format = "csv"
@@ -134,6 +151,40 @@ class DataFrameReader:
             raise AzfsInputError("file_format is incorrect")
         return load_function
 
+    def apply(self, *, function: callable, **kwargs):
+        """
+        to apply pandas DataFrame
+
+        Args:
+            function: first argument must pass pd.DataFrame
+            **kwargs: argument to pass the function
+
+        Returns:
+            self
+        """
+        if kwargs:
+            self._apply_method = partial(function, **kwargs)
+        else:
+            self._apply_method = function
+        return self
+
+    def _load_wrapper(self, inputs: dict):
+        """
+        used only use_mp=True,
+        in addition, if apply() is called, also invoked.
+
+        Args:
+            inputs: arguments to pass _load_function() such as read_csv, read_parquet, etc.
+
+        Returns:
+            pd.DataFrame
+        """
+        if self._apply_method is None:
+            return self._load_function()(**inputs)
+        else:
+            result: pd.DataFrame = self._load_function()(**inputs)
+            return self._apply_method(result)
+
     def _load(self, **kwargs):
         if self.path is None:
             raise AzfsInputError("input azure blob path")
@@ -141,15 +192,18 @@ class DataFrameReader:
         load_function = self._load_function()
 
         if self.use_mp:
-
-            raise NotImplementedError("multiprocessing is not implemented yet")
-            # def _load_wrapper(inputs: dict):
-            #     return self._load_function()(**inputs)
-            # params_list = [{"path": f} for f in self.path]
-            # with mp.Pool(mp.cpu_count()) as pool:
-            #     df_list = pool.map(self.load_wrapper, params_list)
+            params_list = []
+            for f in self.path:
+                _input = {"path": f}
+                _input.update(kwargs)
+                params_list.append(_input)
+            with mp.Pool(self.cpu_count) as pool:
+                df_list = pool.map(self._load_wrapper, params_list)
         else:
-            df_list = [load_function(f, **kwargs) for f in self.path]
+            if self._apply_method is None:
+                df_list = [load_function(f, **kwargs) for f in self.path]
+            else:
+                df_list = [self._apply_method(load_function(f, **kwargs)) for f in self.path]
         return pd.concat(df_list)
 
 
@@ -601,7 +655,7 @@ class AzFileClient:
             raise AzfsInputError("no any `*` in the `pattern_path`")
         url, account_kind, container_name, file_path = BlobPathDecoder(pattern_path).get_with_url()
 
-        acceptable_folder_pattern = r"(?P<root_folder>[^\*.]+)/(?P<folders>.*)"
+        acceptable_folder_pattern = r"(?P<root_folder>[^\*]+)/(?P<folders>.*)"
         result = re.match(acceptable_folder_pattern, file_path)
         if result:
             result_dict = result.groupdict()
@@ -612,8 +666,8 @@ class AzFileClient:
             )
         # get container root path
         base_path = f"{url}/{container_name}/"
-        file_list = self._client.get_client(account_kind=account_kind).ls(path=base_path, file_path=root_folder)
         if account_kind in ["dfs", "blob"]:
+            file_list = self._client.get_client(account_kind=account_kind).ls(path=base_path, file_path=root_folder)
             # fix pattern_path, in order to avoid matching `/`
             pattern_path = rf"{pattern_path.replace('*', '([^/])*?')}$"
             pattern = re.compile(pattern_path)
@@ -625,8 +679,13 @@ class AzFileClient:
             raise NotImplementedError
 
     def read(
-            self, *, path: Union[str, List[str]] = None, mp: bool = False, file_format: str = "csv") -> DataFrameReader:
-        return DataFrameReader(_azc=self, path=path, mp=mp, file_format=file_format)
+            self,
+            *,
+            path: Union[str, List[str]] = None,
+            use_mp: bool = False,
+            cpu_count: Optional[int] = None,
+            file_format: str = "csv") -> DataFrameReader:
+        return DataFrameReader(_azc=self, path=path, use_mp=use_mp, file_format=file_format)
 
     def _get(self, path: str, offset: int = None, length: int = None, **kwargs) -> Union[bytes, str, io.BytesIO, dict]:
         """

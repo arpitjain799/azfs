@@ -1,6 +1,6 @@
 # AzFS
 
-[![CircleCI](https://circleci.com/gh/gsy0911/azfs.svg?style=svg&circle-token=ccd8e1ece489b247bcaac84861ae725b0f89a605)](https://circleci.com/gh/gsy0911/azfs)
+[![pytest](https://github.com/gsy0911/azfs/workflows/pytest/badge.svg)](https://github.com/gsy0911/azfs/actions?query=workflow%3Apytest)
 [![codecov](https://codecov.io/gh/gsy0911/azfs/branch/master/graph/badge.svg)](https://codecov.io/gh/gsy0911/azfs)
 [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/gsy0911/azfs.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/gsy0911/azfs/context:python)
 [![Documentation Status](https://readthedocs.org/projects/azfs/badge/?version=latest)](https://azfs.readthedocs.io/en/latest/?badge=latest)
@@ -98,7 +98,7 @@ Supported authentication types are
 
 ### types of storage account kind
 
-The table blow shows if `AzFS` provides read/write functions for the storage. 
+The table below shows if `AzFS` provides read/write functions for the storage. 
 
 
 | account kind | Blob | Data Lake | Queue | File | Table |
