@@ -87,6 +87,13 @@ class DataFrameReader:
             # in addition, you can use `*`
             >>> blob_path_pattern = "https://testazfs.blob.core.windows.net/test_container/test*.csv"
             >>> df = azc.read().csv(blob_path_pattern)
+            # you can use multiprocessing with `use_mp` argument
+            >>> df = azc.read(use_mp=True).csv(blob_path_pattern)
+            # if you want to filter or apply some method, you can use your defined function as below
+            >>> def filter_function(_df: pd.DataFrame, _id: str) -> pd.DataFrame:
+            ...     return _df[_df['id'] == _id]
+            >>> df = azc.read(use_mp=True).apply(function=filter_function, _id="aaa").csv(blob_path_pattern)
+
 
         """
         self.file_format = "csv"
