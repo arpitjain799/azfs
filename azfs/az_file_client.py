@@ -145,7 +145,11 @@ class DataFrameReader:
         load_function = self._load_function()
 
         if self.use_mp:
-            params_list = [{"path": f} for f in self.path]
+            params_list = []
+            for f in self.path:
+                _input = {"path": f}
+                _input.update(kwargs)
+                params_list.append(_input)
             with mp.Pool(mp.cpu_count()) as pool:
                 df_list = pool.map(self._load_wrapper, params_list)
         else:
