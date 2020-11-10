@@ -1,6 +1,13 @@
 Release History
 ===============
 
+0.2.6 (2020-11-11)
+------------------
+
+* add multiprocessing-read, as ``azc.read(use_mp=True).csv()``.
+* add apply() function, as ``azc.read(use_mp=True).apply(function=some_function).csv()``
+* modify glob(): not working under a certain directory.
+
 0.2.5 (2020-11-01)
 ------------------
 
