@@ -1094,7 +1094,8 @@ class AzFileClient:
             >>> azc.write_json(path=path, data={"": ""})
 
         """
-        return self._put(path=path, data=json.dumps(data, **kwargs))
+        # encode with UTF-8 to fully upload data including not ascii character
+        return self._put(path=path, data=json.dumps(data, **kwargs).encode("utf-8"))
 
     # ===================
     # alias for functions
