@@ -27,11 +27,13 @@ class DataFrameReader:
     def __init__(
             self,
             _azc,
+            credential: Union[str, DefaultAzureCredential],
             path: Union[str, List[str]] = None,
             use_mp=False,
             cpu_count: Optional[int] = None,
             file_format: Optional[str] = None):
         self._azc: AzFileClient = _azc
+        self._credential = credential
         self.path: Optional[List[str]] = self._decode_path(path=path)
         self.file_format = file_format
         self.use_mp = use_mp
@@ -198,7 +200,18 @@ class DataFrameReader:
                 _input.update(kwargs)
                 params_list.append(_input)
             with mp.Pool(self.cpu_count) as pool:
-                df_list = pool.map(self._load_wrapper, params_list)
+
+                def _mp_wrapper(credential: Optional[str]):
+                    print(type(credential))
+                    azc = AzFileClient(credential=credential)
+                    return azc.read_csv
+
+                # AzureDefaultCredential cannot pickle
+                if type(self._credential) is not str:
+                    _credential = None
+                else:
+                    _credential = self._credential
+                df_list = pool.map(_mp_wrapper("jiojfoeijaoief"), params_list)
         else:
             if self._apply_method is None:
                 df_list = [load_function(f, **kwargs) for f in self.path]
@@ -349,6 +362,7 @@ class AzFileClient:
         if credential is None and connection_string is None:
             credential = DefaultAzureCredential()
         self._client = AzfsClient(credential=credential, connection_string=connection_string)
+        self._credential = credential
 
     def __enter__(self):
         """
@@ -685,7 +699,7 @@ class AzFileClient:
             use_mp: bool = False,
             cpu_count: Optional[int] = None,
             file_format: str = "csv") -> DataFrameReader:
-        return DataFrameReader(_azc=self, path=path, use_mp=use_mp, file_format=file_format)
+        return DataFrameReader(_azc=self, credential=self._credential, path=path, use_mp=use_mp, file_format=file_format)
 
     def _get(self, path: str, offset: int = None, length: int = None, **kwargs) -> Union[bytes, str, io.BytesIO, dict]:
         """
