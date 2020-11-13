@@ -23,6 +23,19 @@ from azfs.utils import (
 __all__ = ["AzFileClient"]
 
 
+def wrap_quick_load(inputs: dict):
+    return quick_load(**inputs)
+
+
+def quick_load(path: str, file_format: Optional[str] = None, credential: Optional[str] = None):
+    if credential is None:
+        azc = AzFileClient()
+    else:
+        azc = AzFileClient(credential=credential)
+    if file_format == "csv":
+        return azc.read_csv(path=path)
+
+
 class DataFrameReader:
     def __init__(
             self,
