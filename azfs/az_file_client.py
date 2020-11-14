@@ -725,9 +725,18 @@ class AzFileClient:
         base_path = f"{url}/{container_name}/"
         if account_kind in ["dfs", "blob"]:
             file_list = self._client.get_client(account_kind=account_kind).ls(path=base_path, file_path=root_folder)
+
+            # to escape special chars for regular-expression
+            def _escape(input_str: str) -> str:
+                special_chars = ["(", ")", "[", "]"]
+                for c in special_chars:
+                    input_str = input_str.replace(c, f"\\{c}")
+                return input_str
+
+            escaped_pattern_path = _escape(pattern_path)
             # fix pattern_path, in order to avoid matching `/`
-            pattern_path = rf"{pattern_path.replace('*', '([^/])*?')}$"
-            pattern = re.compile(pattern_path)
+            replace_pattern_path = escaped_pattern_path.replace('*', '([^/])*?')
+            pattern = re.compile(f"{replace_pattern_path}$")
             file_full_path_list = [f"{base_path}{f}" for f in file_list]
             # filter with pattern.match
             matched_full_path_list = [f for f in file_full_path_list if pattern.match(f)]
