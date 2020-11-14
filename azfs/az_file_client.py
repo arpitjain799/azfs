@@ -23,15 +23,36 @@ from azfs.utils import (
 __all__ = ["AzFileClient"]
 
 
-def wrap_quick_load(inputs: dict):
-    return quick_load(**inputs)
+def _wrap_quick_load(inputs: dict):
+    """
+    read wrapper function for multiprocessing.
+
+    Args:
+        inputs:
+
+    Returns:
+
+    """
+    return _quick_load(**inputs)
 
 
-def quick_load(
+def _quick_load(
         path: str,
         file_format: Optional[str] = None,
         credential: Optional[str] = None,
         apply_method: Optional[callable] = None) -> pd.DataFrame:
+    """
+    read function for multiprocessing.
+
+    Args:
+        path: file-path to read
+        file_format: format of the file
+        credential:
+        apply_method:
+
+    Returns:
+        pd.DataFrame
+    """
     if credential is None:
         azc = AzFileClient()
     else:
@@ -73,6 +94,7 @@ class DataFrameReader:
             cpu_count: Optional[int] = None,
             file_format: Optional[str] = None):
         self._azc: AzFileClient = _azc
+        # DefaultCredential cannot be pickle (when use multiprocessing), so make it None
         self._credential = credential if type(credential) is str else None
         self.path: Optional[List[str]] = self._decode_path(path=path)
         self.file_format = file_format
@@ -210,7 +232,7 @@ class DataFrameReader:
             self._apply_method = function
         return self
 
-    def _load(self, **kwargs):
+    def _load(self, **kwargs) -> Optional[pd.DataFrame]:
         if self.path is None:
             raise AzfsInputError("input azure blob path")
 
@@ -226,13 +248,15 @@ class DataFrameReader:
                 _input.update(kwargs)
                 params_list.append(_input)
             with mp.Pool(self.cpu_count) as pool:
-                df_list = pool.map(wrap_quick_load, params_list)
+                df_list = pool.map(_wrap_quick_load, params_list)
         else:
             load_function = self._load_function()
             if self._apply_method is None:
                 df_list = [load_function(f, **kwargs) for f in self.path]
             else:
                 df_list = [self._apply_method(load_function(f, **kwargs)) for f in self.path]
+        if len(df_list) == 0:
+            return None
         return pd.concat(df_list)
 
 
