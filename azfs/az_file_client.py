@@ -27,13 +27,40 @@ def wrap_quick_load(inputs: dict):
     return quick_load(**inputs)
 
 
-def quick_load(path: str, file_format: Optional[str] = None, credential: Optional[str] = None):
+def quick_load(
+        path: str,
+        file_format: Optional[str] = None,
+        credential: Optional[str] = None,
+        apply_method: Optional[callable] = None) -> pd.DataFrame:
     if credential is None:
         azc = AzFileClient()
     else:
         azc = AzFileClient(credential=credential)
+
+    # set file_format if None
+    if file_format is None:
+        if path.endswith(".csv"):
+            file_format = "csv"
+        elif path.endswith(".parquet"):
+            file_format = "parquet"
+        elif path.endswith("pickle"):
+            file_format = "pickle"
+
+    # read file as pandas DataFrame
     if file_format == "csv":
-        return azc.read_csv(path=path)
+        df = azc.read_csv(path=path)
+    elif file_format == "parquet":
+        df = azc.read_parquet(path=path)
+    elif file_format == "pickle":
+        df = azc.read_pickle(path=path)
+    else:
+        raise AzfsInputError("file_format is incorrect")
+
+    # apply additional function
+    if apply_method is None:
+        return df
+    else:
+        return apply_method(df)
 
 
 class DataFrameReader:
@@ -208,7 +235,12 @@ class DataFrameReader:
         if self.use_mp:
             params_list = []
             for f in self.path:
-                _input = {"path": f, "file_format": self.file_format, "credential": self._credential}
+                _input = {
+                    "path": f,
+                    "file_format": self.file_format,
+                    "credential": self._credential,
+                    "apply_method": self._apply_method
+                }
                 _input.update(kwargs)
                 params_list.append(_input)
             with mp.Pool(self.cpu_count) as pool:
