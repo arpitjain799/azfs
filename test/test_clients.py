@@ -1,4 +1,14 @@
 import pytest
+
+# in order to avoid warning .coverage
+# see https://pytest-cov.readthedocs.io/en/latest/subprocess-support.html#if-you-use-multiprocessing-process
+try:
+    from pytest_cov.embed import cleanup_on_sigterm
+except ImportError:
+    pass
+else:
+    cleanup_on_sigterm()
+
 from azure.core.exceptions import ResourceNotFoundError
 from azfs.clients.blob_client import AzBlobClient
 from azfs.clients.datalake_client import AzDataLakeClient
@@ -79,6 +89,19 @@ class TestReadCsv:
         assert len(df.index) == 2
 
         df = var_azc.read(path=path).csv()
+        columns = df.columns
+        assert "name" in columns
+        assert "age" in columns
+        assert len(df.index) == 2
+
+        # with multiprocessing
+        df = var_azc.read(use_mp=True).csv(path=path)
+        columns = df.columns
+        assert "name" in columns
+        assert "age" in columns
+        assert len(df.index) == 2
+
+        df = var_azc.read(path=path, use_mp=True).csv()
         columns = df.columns
         assert "name" in columns
         assert "age" in columns

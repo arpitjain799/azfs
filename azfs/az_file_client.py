@@ -23,15 +23,81 @@ from azfs.utils import (
 __all__ = ["AzFileClient"]
 
 
+def _wrap_quick_load(inputs: dict):
+    """
+    read wrapper function for multiprocessing.
+
+    Args:
+        inputs:
+
+    Returns:
+
+    """
+    return _quick_load(**inputs)
+
+
+def _quick_load(
+        path: str,
+        file_format: Optional[str] = None,
+        credential: Optional[str] = None,
+        apply_method: Optional[callable] = None) -> pd.DataFrame:
+    """
+    read function for multiprocessing.
+
+    Args:
+        path: file-path to read
+        file_format: format of the file
+        credential:
+        apply_method:
+
+    Returns:
+        pd.DataFrame
+    """
+    if credential is None:
+        azc = AzFileClient()
+    else:
+        azc = AzFileClient(credential=credential)
+
+    # set file_format if None
+    if file_format is None:
+        if path.endswith(".csv"):
+            file_format = "csv"
+        elif path.endswith(".parquet"):
+            file_format = "parquet"
+        elif path.endswith(".pkl"):
+            file_format = "pickle"
+        else:
+            raise AzfsInputError("file_format is incorrect")
+
+    # read file as pandas DataFrame
+    if file_format == "csv":
+        df = azc.read_csv(path=path)
+    elif file_format == "parquet":
+        df = azc.read_parquet(path=path)
+    elif file_format == "pickle":
+        df = azc.read_pickle(path=path)
+    else:
+        raise AzfsInputError("file_format is incorrect")
+
+    # apply additional function
+    if apply_method is None:
+        return df
+    else:
+        return apply_method(df)
+
+
 class DataFrameReader:
     def __init__(
             self,
             _azc,
+            credential: Union[str, DefaultAzureCredential],
             path: Union[str, List[str]] = None,
             use_mp=False,
             cpu_count: Optional[int] = None,
             file_format: Optional[str] = None):
         self._azc: AzFileClient = _azc
+        # DefaultCredential cannot be pickle (when use multiprocessing), so make it None
+        self._credential = credential if type(credential) is str else None
         self.path: Optional[List[str]] = self._decode_path(path=path)
         self.file_format = file_format
         self.use_mp = use_mp
@@ -168,42 +234,32 @@ class DataFrameReader:
             self._apply_method = function
         return self
 
-    def _load_wrapper(self, inputs: dict):
-        """
-        used only use_mp=True,
-        in addition, if apply() is called, also invoked.
-
-        Args:
-            inputs: arguments to pass _load_function() such as read_csv, read_parquet, etc.
-
-        Returns:
-            pd.DataFrame
-        """
-        if self._apply_method is None:
-            return self._load_function()(**inputs)
-        else:
-            result: pd.DataFrame = self._load_function()(**inputs)
-            return self._apply_method(result)
-
-    def _load(self, **kwargs):
+    def _load(self, **kwargs) -> Optional[pd.DataFrame]:
         if self.path is None:
             raise AzfsInputError("input azure blob path")
-
-        load_function = self._load_function()
 
         if self.use_mp:
             params_list = []
             for f in self.path:
-                _input = {"path": f}
+                _input = {
+                    "path": f,
+                    "file_format": self.file_format,
+                    "credential": self._credential,
+                    "apply_method": self._apply_method
+                }
                 _input.update(kwargs)
                 params_list.append(_input)
             with mp.Pool(self.cpu_count) as pool:
-                df_list = pool.map(self._load_wrapper, params_list)
+                df_list = pool.map(_wrap_quick_load, params_list)
+            pool.join()
         else:
+            load_function = self._load_function()
             if self._apply_method is None:
                 df_list = [load_function(f, **kwargs) for f in self.path]
             else:
                 df_list = [self._apply_method(load_function(f, **kwargs)) for f in self.path]
+        if len(df_list) == 0:
+            return None
         return pd.concat(df_list)
 
 
@@ -349,6 +405,7 @@ class AzFileClient:
         if credential is None and connection_string is None:
             credential = DefaultAzureCredential()
         self._client = AzfsClient(credential=credential, connection_string=connection_string)
+        self._credential = credential
 
     def __enter__(self):
         """
@@ -685,7 +742,7 @@ class AzFileClient:
             use_mp: bool = False,
             cpu_count: Optional[int] = None,
             file_format: str = "csv") -> DataFrameReader:
-        return DataFrameReader(_azc=self, path=path, use_mp=use_mp, file_format=file_format)
+        return DataFrameReader(_azc=self, credential=self._credential, path=path, use_mp=use_mp, file_format=file_format)
 
     def _get(self, path: str, offset: int = None, length: int = None, **kwargs) -> Union[bytes, str, io.BytesIO, dict]:
         """
