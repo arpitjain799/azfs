@@ -46,7 +46,7 @@ class DataFrameReader:
             cpu_count: Optional[int] = None,
             file_format: Optional[str] = None):
         self._azc: AzFileClient = _azc
-        self._credential = credential
+        self._credential = credential if type(credential) is str else None
         self.path: Optional[List[str]] = self._decode_path(path=path)
         self.file_format = file_format
         self.use_mp = use_mp
@@ -205,26 +205,14 @@ class DataFrameReader:
             raise AzfsInputError("input azure blob path")
 
         load_function = self._load_function()
-
         if self.use_mp:
             params_list = []
             for f in self.path:
-                _input = {"path": f}
+                _input = {"path": f, "file_format": self.file_format, "credential": self._credential}
                 _input.update(kwargs)
                 params_list.append(_input)
             with mp.Pool(self.cpu_count) as pool:
-
-                def _mp_wrapper(credential: Optional[str]):
-                    print(type(credential))
-                    azc = AzFileClient(credential=credential)
-                    return azc.read_csv
-
-                # AzureDefaultCredential cannot pickle
-                if type(self._credential) is not str:
-                    _credential = None
-                else:
-                    _credential = self._credential
-                df_list = pool.map(_mp_wrapper("jiojfoeijaoief"), params_list)
+                df_list = pool.map(wrap_quick_load, params_list)
         else:
             if self._apply_method is None:
                 df_list = [load_function(f, **kwargs) for f in self.path]
