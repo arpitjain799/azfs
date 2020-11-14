@@ -66,6 +66,8 @@ def _quick_load(
             file_format = "parquet"
         elif path.endswith(".pkl"):
             file_format = "pickle"
+        else:
+            raise AzfsInputError("file_format is incorrect")
 
     # read file as pandas DataFrame
     if file_format == "csv":
