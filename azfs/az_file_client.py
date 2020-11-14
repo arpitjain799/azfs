@@ -43,7 +43,7 @@ def quick_load(
             file_format = "csv"
         elif path.endswith(".parquet"):
             file_format = "parquet"
-        elif path.endswith("pickle"):
+        elif path.endswith(".pkl"):
             file_format = "pickle"
 
     # read file as pandas DataFrame
