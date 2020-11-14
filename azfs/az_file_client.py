@@ -210,28 +210,10 @@ class DataFrameReader:
             self._apply_method = function
         return self
 
-    def _load_wrapper(self, inputs: dict):
-        """
-        used only use_mp=True,
-        in addition, if apply() is called, also invoked.
-
-        Args:
-            inputs: arguments to pass _load_function() such as read_csv, read_parquet, etc.
-
-        Returns:
-            pd.DataFrame
-        """
-        if self._apply_method is None:
-            return self._load_function()(**inputs)
-        else:
-            result: pd.DataFrame = self._load_function()(**inputs)
-            return self._apply_method(result)
-
     def _load(self, **kwargs):
         if self.path is None:
             raise AzfsInputError("input azure blob path")
 
-        load_function = self._load_function()
         if self.use_mp:
             params_list = []
             for f in self.path:
@@ -246,6 +228,7 @@ class DataFrameReader:
             with mp.Pool(self.cpu_count) as pool:
                 df_list = pool.map(wrap_quick_load, params_list)
         else:
+            load_function = self._load_function()
             if self._apply_method is None:
                 df_list = [load_function(f, **kwargs) for f in self.path]
             else:
