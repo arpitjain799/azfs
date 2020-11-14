@@ -1,6 +1,11 @@
 Release History
 ===============
 
+0.2.7 (2020-11-13)
+------------------
+
+* BUG FIX: ``write_json(ensure_ascii=False)`` is not working correctly if data-json has non-ascii character.
+
 0.2.6 (2020-11-11)
 ------------------
 
