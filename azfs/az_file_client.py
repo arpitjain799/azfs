@@ -251,6 +251,7 @@ class DataFrameReader:
                 params_list.append(_input)
             with mp.Pool(self.cpu_count) as pool:
                 df_list = pool.map(_wrap_quick_load, params_list)
+            pool.join()
         else:
             load_function = self._load_function()
             if self._apply_method is None:
