@@ -1,14 +1,15 @@
+#############
 API Reference
-=============
+#############
 
 AzFileClient
-------------
+************
 
 .. autoclass:: azfs.AzFileClient
 
 
 get/download
-^^^^^^^^^^^^
+============
 
 .. autofunction:: azfs.AzFileClient.get
 
@@ -24,7 +25,7 @@ get/download
 
 
 put/upload
-^^^^^^^^^^
+==========
 
 .. autofunction:: azfs.AzFileClient.put
 
@@ -38,7 +39,7 @@ put/upload
 
 
 file enumerating
-^^^^^^^^^^^^^^^^
+================
 
 .. autofunction:: azfs.AzFileClient.ls
 
@@ -47,7 +48,7 @@ file enumerating
 .. autofunction:: azfs.AzFileClient.exists
 
 file manipulating
-^^^^^^^^^^^^^^^^^
+=================
 
 
 .. autofunction:: azfs.AzFileClient.info
@@ -59,7 +60,7 @@ file manipulating
 
 
 TableStorage
-------------
+************
 
 
 .. autoclass:: azfs.TableStorage
@@ -68,7 +69,7 @@ TableStorage
 
 
 BlobPathDecoder
----------------
+***************
 
 
 .. autoclass:: azfs.BlobPathDecoder

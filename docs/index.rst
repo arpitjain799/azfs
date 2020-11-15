@@ -3,8 +3,9 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+####
 AzFS
-====
+####
 
 code status
 
@@ -43,7 +44,7 @@ package status
 * and raise lots of exceptions ! (Thank you for your cooperation)
 
 Installation
-============
+************
 
 **AzFS** can be installed from pip.
 
@@ -52,10 +53,10 @@ Installation
    pip install azfs
 
 Limitation
-==========
+**********
 
 authorization
--------------
+=============
 
 Supported authentication types are
 
@@ -63,7 +64,7 @@ Supported authentication types are
 * connection_string, like `DefaultEndpointsProtocol=https;AccountName=xxxx;AccountKey=xxxx;EndpointSuffix=core.windows.net`
 
 types of storage
-----------------
+================
 
 The table below shows the compatibility read/access of ``AzFS``.
 
@@ -79,11 +80,11 @@ The table below shows the compatibility read/access of ``AzFS``.
 
 
 API Usage
-=========
+*********
 
 
 create the client
------------------
+=================
 
 To manipulate files in Azure Blob Storage,
 firstly you need to create `AzFileClient <./sources/api.html#azfileclient>`_.
@@ -110,7 +111,7 @@ Credential is not required if ``AzFileClient()`` is created on AAD (Azure Active
 
 
 download data
--------------
+=============
 
 ``AzFS`` provides function to download csv or json data from ``Azure Blob Storage``.
 API reference is `get/download <./sources/api.html#get-download>`_.
@@ -146,7 +147,7 @@ API reference is `get/download <./sources/api.html#get-download>`_.
 
 
 upload data
------------
+===========
 
 ``AzFS`` also provides functions to upload csv or json data to ``Azure Blob Storage``.
 API reference is `put/upload <./sources/api.html#put-upload>`_.
@@ -184,7 +185,7 @@ API reference is `put/upload <./sources/api.html#put-upload>`_.
 
 
 enumerating(ls, glob) or checking if file exists
-------------------------------------------------
+================================================
 
 ``ls()`` lists all files in specified folder,
 and ``glob()`` lists pattern-matched files in all folder.
@@ -213,7 +214,7 @@ API reference is `enumerating <./sources/api.html#file-enumerating>`_.
 
 
 remove, copy files, etc...
---------------------------
+==========================
 
 ``AzFS`` also provides remove and copy functions.
 API reference is `manipulating <./sources/api.html#file-manipulating>`_.
@@ -237,7 +238,7 @@ API reference is `manipulating <./sources/api.html#file-manipulating>`_.
 
 
 manipulate TableStorage
------------------------
+=======================
 
 ``AzFS`` can now manipulate TableStorage.
 
@@ -262,7 +263,7 @@ API reference is `table storage <./sources/api.html#tablestorage>`_.
 
 
 For Users
-=========
+*********
 
 .. toctree::
    :maxdepth: 2
@@ -271,7 +272,7 @@ For Users
    sources/release_history
 
 For Developers
-==============
+**************
 
 .. toctree::
    :maxdepth: 2
@@ -279,18 +280,18 @@ For Developers
    sources/development_api
 
 GitHub
-------
+======
 
 **AzFS** repository is `here <https://github.com/gsy0911/azfs>`_.
 
 References
-----------
+==========
 
 * `azure-sdk-for-python/storage <https://github.com/Azure/azure-sdk-for-python/tree/master/sdk/storage>`_
 * `filesystem_spec <https://github.com/intake/filesystem_spec>`_
 
 Indices and tables
-==================
+******************
 
 * :ref:`genindex`
 * :ref:`search`
