@@ -751,7 +751,49 @@ class AzFileClient:
             use_mp: bool = False,
             cpu_count: Optional[int] = None,
             file_format: str = "csv") -> DataFrameReader:
-        return DataFrameReader(_azc=self, credential=self._credential, path=path, use_mp=use_mp, file_format=file_format)
+        """
+        read csv, parquet, picke files in Azure Blob, like PySpark-method.
+
+        Args:
+            path: Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_container/test1.csv``
+            use_mp: Default, False
+            cpu_count: Default, as same as mp.cpu_count()
+            file_format: determined by which function you call
+
+        Returns:
+            pd.DataFrame
+
+        Examples:
+            >>> import azfs
+            >>> azc = azfs.AzFileClient()
+            >>> blob_path = "https://testazfs.blob.core.windows.net/test_container/test1.csv"
+            >>> df = azc.read().csv(blob_path)
+            # result is as same as azc.read_csv(blob_path)
+            >>> blob_path_list = [
+            ...     "https://testazfs.blob.core.windows.net/test_container/test1.csv",
+            ...     "https://testazfs.blob.core.windows.net/test_container/test2.csv"
+            ... ]
+            >>> df = azc.read().csv(blob_path_list)
+            # result is as same as pd.concat([each data-frame])
+            # in addition, you can use `*`
+            >>> blob_path_pattern = "https://testazfs.blob.core.windows.net/test_container/test*.csv"
+            >>> df = azc.read().csv(blob_path_pattern)
+            # you can use multiprocessing with `use_mp` argument
+            >>> df = azc.read(use_mp=True).csv(blob_path_pattern)
+            # if you want to filter or apply some method, you can use your defined function as below
+            >>> def filter_function(_df: pd.DataFrame, _id: str) -> pd.DataFrame:
+            ...     return _df[_df['id'] == _id]
+            >>> df = azc.read(use_mp=True).apply(function=filter_function, _id="aaa").csv(blob_path_pattern)
+
+
+        """
+        return DataFrameReader(
+            _azc=self,
+            credential=self._credential,
+            path=path,
+            use_mp=use_mp,
+            cpu_count=cpu_count,
+            file_format=file_format)
 
     def _get(self, path: str, offset: int = None, length: int = None, **kwargs) -> Union[bytes, str, io.BytesIO, dict]:
         """
