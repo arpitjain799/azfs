@@ -23,6 +23,12 @@ get/download
 
 .. autofunction:: azfs.AzFileClient.read_json
 
+pyspark-like method
+-------------------
+
+You can read multiple files, using multiprocessing or filters,
+
+.. autofunction:: azfs.AzFileClient.read
 
 put/upload
 ==========
