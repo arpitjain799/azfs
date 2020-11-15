@@ -1,6 +1,12 @@
 Release History
 ===============
 
+0.2.8 (2020-mm-dd)
+------------------
+
+* BUG FIX: ``azc.read(use_mp=True)`` is not working correctly, if credential is AzureDefaultCredentials.
+* BUG FIX: ``glob(path)`` is not working correctly if path contains special characters like ``(`` or ``)``, etc.
+
 0.2.7 (2020-11-13)
 ------------------
 
