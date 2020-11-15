@@ -1,14 +1,15 @@
+#############
 API Reference
-=============
+#############
 
 AzFileClient
-------------
+************
 
 .. autoclass:: azfs.AzFileClient
 
 
 get/download
-^^^^^^^^^^^^
+============
 
 .. autofunction:: azfs.AzFileClient.get
 
@@ -22,9 +23,15 @@ get/download
 
 .. autofunction:: azfs.AzFileClient.read_json
 
+pyspark-like method
+-------------------
+
+You can read multiple files, using multiprocessing or filters,
+
+.. autofunction:: azfs.AzFileClient.read
 
 put/upload
-^^^^^^^^^^
+==========
 
 .. autofunction:: azfs.AzFileClient.put
 
@@ -38,7 +45,7 @@ put/upload
 
 
 file enumerating
-^^^^^^^^^^^^^^^^
+================
 
 .. autofunction:: azfs.AzFileClient.ls
 
@@ -47,7 +54,7 @@ file enumerating
 .. autofunction:: azfs.AzFileClient.exists
 
 file manipulating
-^^^^^^^^^^^^^^^^^
+=================
 
 
 .. autofunction:: azfs.AzFileClient.info
@@ -59,7 +66,7 @@ file manipulating
 
 
 TableStorage
-------------
+************
 
 
 .. autoclass:: azfs.TableStorage
@@ -68,7 +75,7 @@ TableStorage
 
 
 BlobPathDecoder
----------------
+***************
 
 
 .. autoclass:: azfs.BlobPathDecoder

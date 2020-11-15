@@ -445,11 +445,11 @@ class AzFileClient:
         Examples:
             >>> import azfs
             >>> azc = azfs.AzFileClient()
-            >>> path = "https://testazfs.blob.core.windows.net/test_container/test1.csv"
-            >>> azc.exists(path=path)
+            >>> csv_path = "https://testazfs.blob.core.windows.net/test_container/test1.csv"
+            >>> azc.exists(path=csv_path)
             True
-            >>> path = "https://testazfs.blob.core.windows.net/test_container/not_exist_test1.csv"
-            >>> azc.exists(path=path)
+            >>> csv_path = "https://testazfs.blob.core.windows.net/test_container/not_exist_test1.csv"
+            >>> azc.exists(path=csv_path)
             False
 
         """
@@ -474,8 +474,8 @@ class AzFileClient:
         Examples:
             >>> import azfs
             >>> azc = azfs.AzFileClient()
-            >>> path = "https://testazfs.blob.core.windows.net/test_container"
-            >>> azc.ls(path)
+            >>> csv_path = "https://testazfs.blob.core.windows.net/test_container"
+            >>> azc.ls(csv_path)
             [
                 "test1.csv",
                 "test2.csv",
@@ -559,8 +559,8 @@ class AzFileClient:
         Examples:
             >>> import azfs
             >>> azc = azfs.AzFileClient()
-            >>> path = "https://testazfs.blob.core.windows.net/test_container/test1.csv"
-            >>> azc.info(path=path)
+            >>> csv_path = "https://testazfs.blob.core.windows.net/test_container/test1.csv"
+            >>> azc.info(path=csv_path)
             {
                 "name": "test1.csv",
                 "size": "128KB",
@@ -683,23 +683,23 @@ class AzFileClient:
                 "directory_2"
             ]
             glob() lists specified files according to the wildcard, and lists with formatted-URL by default
-            >>> pattern_path = "https://testazfs.blob.core.windows.net/test_container/some_folder/*.csv"
-            >>> azc.glob(path=pattern_path)
+            >>> csv_pattern_path = "https://testazfs.blob.core.windows.net/test_container/some_folder/*.csv"
+            >>> azc.glob(path=csv_pattern_path)
             [
                 "https://testazfs.blob.core.windows.net/test_container/some_folder/test1.csv",
                 "https://testazfs.blob.core.windows.net/test_container/some_folder/test2.csv",
                 "https://testazfs.blob.core.windows.net/test_container/some_folder/test3.csv"
             ]
             glob() can use any path
-            >>> pattern_path = "https://testazfs.blob.core.windows.net/test_container/some_folder/test1.*"
-            >>> azc.glob(path=pattern_path)
+            >>> csv_pattern_path = "https://testazfs.blob.core.windows.net/test_container/some_folder/test1.*"
+            >>> azc.glob(path=csv_pattern_path)
             [
                 "https://testazfs.blob.core.windows.net/test_container/some_folder/test1.csv",
                 "https://testazfs.blob.core.windows.net/test_container/some_folder/test1.json"
             ]
             also deeper folders
-            >>> pattern_path = "https://testazfs.blob.core.windows.net/test_container/some_folder/*/*.csv"
-            >>> azc.glob(path=pattern_path)
+            >>> csv_pattern_path = "https://testazfs.blob.core.windows.net/test_container/some_folder/*/*.csv"
+            >>> azc.glob(path=csv_pattern_path)
             [
                 "https://testazfs.blob.core.windows.net/test_container/some_folder/directory_1/deeper_test1.csv",
                 "https://testazfs.blob.core.windows.net/test_container/some_folder/directory_2/deeper_test2.csv"
@@ -751,7 +751,49 @@ class AzFileClient:
             use_mp: bool = False,
             cpu_count: Optional[int] = None,
             file_format: str = "csv") -> DataFrameReader:
-        return DataFrameReader(_azc=self, credential=self._credential, path=path, use_mp=use_mp, file_format=file_format)
+        """
+        read csv, parquet, picke files in Azure Blob, like PySpark-method.
+
+        Args:
+            path: Azure Blob path URL format, ex: ``https://testazfs.blob.core.windows.net/test_container/test1.csv``
+            use_mp: Default, False
+            cpu_count: Default, as same as mp.cpu_count()
+            file_format: determined by which function you call
+
+        Returns:
+            pd.DataFrame
+
+        Examples:
+            >>> import azfs
+            >>> azc = azfs.AzFileClient()
+            >>> blob_path = "https://testazfs.blob.core.windows.net/test_container/test1.csv"
+            >>> df = azc.read().csv(blob_path)
+            # result is as same as azc.read_csv(blob_path)
+            >>> blob_path_list = [
+            ...     "https://testazfs.blob.core.windows.net/test_container/test1.csv",
+            ...     "https://testazfs.blob.core.windows.net/test_container/test2.csv"
+            ... ]
+            >>> df = azc.read().csv(blob_path_list)
+            # result is as same as pd.concat([each data-frame])
+            # in addition, you can use `*`
+            >>> blob_path_pattern = "https://testazfs.blob.core.windows.net/test_container/test*.csv"
+            >>> df = azc.read().csv(blob_path_pattern)
+            # you can use multiprocessing with `use_mp` argument
+            >>> df = azc.read(use_mp=True).csv(blob_path_pattern)
+            # if you want to filter or apply some method, you can use your defined function as below
+            >>> def filter_function(_df: pd.DataFrame, _id: str) -> pd.DataFrame:
+            ...     return _df[_df['id'] == _id]
+            >>> df = azc.read(use_mp=True).apply(function=filter_function, _id="aaa").csv(blob_path_pattern)
+
+
+        """
+        return DataFrameReader(
+            _azc=self,
+            credential=self._credential,
+            path=path,
+            use_mp=use_mp,
+            cpu_count=cpu_count,
+            file_format=file_format)
 
     def _get(self, path: str, offset: int = None, length: int = None, **kwargs) -> Union[bytes, str, io.BytesIO, dict]:
         """
@@ -769,11 +811,11 @@ class AzFileClient:
         Examples:
             >>> import azfs
             >>> azc = azfs.AzFileClient()
-            >>> path = "https://testazfs.blob.core.windows.net/test_container/test1.csv"
+            >>> csv_path = "https://testazfs.blob.core.windows.net/test_container/test1.csv"
             you can read csv file in azure blob storage
-            >>> data = azc.get(path=path)
+            >>> data = azc.get(path=csv_path)
             `download()` is same method as `get()`
-            >>> data = azc.download(path=path)
+            >>> data = azc.download(path=csv_path)
 
         """
         _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
@@ -804,8 +846,8 @@ class AzFileClient:
         Examples:
             >>> import azfs
             >>> azc = azfs.AzFileClient()
-            >>> path = "https://testazfs.blob.core.windows.net/test_container/test1.csv"
-            >>> for l in azc.read_line_iter(path=path)
+            >>> csv_path = "https://testazfs.blob.core.windows.net/test_container/test1.csv"
+            >>> for l in azc.read_line_iter(path=csv_path)
             ...     print(l.decode("utf-8"))
 
         """
@@ -828,10 +870,10 @@ class AzFileClient:
         Examples:
             >>> import azfs
             >>> azc = azfs.AzFileClient()
-            >>> path = "https://testazfs.blob.core.windows.net/test_container/test1.csv"
-            >>> chunk_size = 100
-            >>> for df in azc.read_csv_chunk(path=path, chunk_size=chunk_size):
-            ...   print(df)
+            >>> csv_path = "https://testazfs.blob.core.windows.net/test_container/test1.csv"
+            >>> read_chunk_size = 100
+            >>> for _df in azc.read_csv_chunk(path=csv_path, chunk_size=read_chunk_size):
+            ...   print(_df)
         """
         warning_message = """
             The method is under developing. 
@@ -876,11 +918,10 @@ class AzFileClient:
 
         Examples:
             >>> import azfs
-            >>> import pandas as pd
             >>> azc = azfs.AzFileClient()
-            >>> path = "https://testazfs.blob.core.windows.net/test_container/test1.csv"
+            >>> csv_path = "https://testazfs.blob.core.windows.net/test_container/test1.csv"
             you can read and write csv file in azure blob storage
-            >>> df = azc.read_csv(path=path)
+            >>> df = azc.read_csv(path=csv_path)
             Using `with` statement, you can use `pandas`-like methods
             >>> with azc:
             >>>     df = pd.read_csv_az(path)
@@ -904,14 +945,13 @@ class AzFileClient:
 
         Examples:
             >>> import azfs
-            >>> import pandas as pd
             >>> azc = azfs.AzFileClient()
-            >>> path = "https://testazfs.blob.core.windows.net/test_container/test1.tsv"
+            >>> tsv_path = "https://testazfs.blob.core.windows.net/test_container/test1.tsv"
             you can read and write csv file in azure blob storage
-            >>> df = azc.read_table(path=path)
+            >>> df = azc.read_table(path=tsv_path)
             Using `with` statement, you can use `pandas`-like methods
             >>> with azc:
-            >>>     df = pd.read_table_az(path)
+            >>>     df = pd.read_table_az(tsv_path)
 
         """
         file_to_read = self._get(path)
@@ -931,17 +971,16 @@ class AzFileClient:
 
         Examples:
             >>> import azfs
-            >>> import pandas as pd
             >>> azc = azfs.AzFileClient()
-            >>> path = "https://testazfs.blob.core.windows.net/test_container/test1.pkl"
+            >>> pkl_path = "https://testazfs.blob.core.windows.net/test_container/test1.pkl"
             you can read and write csv file in azure blob storage
-            >>> df = azc.read_pickle(path=path)
+            >>> df = azc.read_pickle(path=pkl_path)
             Using `with` statement, you can use `pandas`-like methods
             >>> with azc:
-            >>>     df = pd.read_pickle_az(path)
+            >>>     df = pd.read_pickle_az(pkl_path)
             you can use difference compression
             >>> with azc:
-            >>>     df = pd.read_pickle_az(path, compression="bz2")
+            >>>     df = pd.read_pickle_az(pkl_path, compression="bz2")
 
         """
         file_to_read = self._get(path).read()
@@ -965,14 +1004,13 @@ class AzFileClient:
 
         Examples:
             >>> import azfs
-            >>> import pandas as pd
             >>> azc = azfs.AzFileClient()
-            >>> path = "https://testazfs.blob.core.windows.net/test_container/test1.parquet"
+            >>> parquet_path = "https://testazfs.blob.core.windows.net/test_container/test1.parquet"
             you can read and write csv file in azure blob storage
-            >>> df = azc.read_parquet(path=path)
+            >>> df = azc.read_parquet(path=parquet_path)
             Using `with` statement, you can use `pandas`-like methods
             >>> with azc:
-            >>>     df = pd.read_parquet_az(path)
+            >>>     df = pd.read_parquet_az(parquet_path)
 
 
         """
@@ -994,11 +1032,11 @@ class AzFileClient:
         Examples:
             >>> import azfs
             >>> azc = azfs.AzFileClient()
-            >>> path = "https://testazfs.blob.core.windows.net/test_container/test1.csv"
+            >>> csv_path = "https://testazfs.blob.core.windows.net/test_container/test1.csv"
             you can write file in azure blob storage
-            >>> data = azc.put(path=path)
+            >>> _data = azc.put(path=csv_path)
             `download()` is same method as `get()`
-            >>> data = azc.upload(path=path)
+            >>> _data = azc.upload(path=csv_path)
 
         """
         _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
@@ -1020,12 +1058,12 @@ class AzFileClient:
         Examples:
             >>> import azfs
             >>> azc = azfs.AzFileClient()
-            >>> path = "https://testazfs.blob.core.windows.net/test_container/test1.csv"
+            >>> csv_path = "https://testazfs.blob.core.windows.net/test_container/test1.csv"
             you can read and write csv file in azure blob storage
-            >>> azc.write_csv(path=path, df=df)
+            >>> azc.write_csv(path=csv_path, df=df)
             Using `with` statement, you can use `pandas`-like methods
             >>> with azc:
-            >>>     df.to_csv_az(path)
+            >>>     df.to_csv_az(csv_path)
         """
         csv_str = df.to_csv(**kwargs).encode("utf-8")
         return self._put(path=path, data=csv_str)
@@ -1046,12 +1084,12 @@ class AzFileClient:
         Examples:
             >>> import azfs
             >>> azc = azfs.AzFileClient()
-            >>> path = "https://testazfs.blob.core.windows.net/test_container/test1.tsv"
+            >>> tsv_path = "https://testazfs.blob.core.windows.net/test_container/test1.tsv"
             you can read and write csv file in azure blob storage
-            >>> azc.write_table(path=path, df=df)
+            >>> azc.write_table(path=tsv_path, df=df)
             Using `with` statement, you can use `pandas`-like methods
             >>> with azc:
-            >>>     df.to_table_az(path)
+            >>>     df.to_table_az(tsv_path)
         """
         table_str = df.to_csv(sep="\t", **kwargs).encode("utf-8")
         return self._put(path=path, data=table_str)
@@ -1071,17 +1109,16 @@ class AzFileClient:
 
         Examples:
             >>> import azfs
-            >>> import pandas as pd
             >>> azc = azfs.AzFileClient()
-            >>> path = "https://testazfs.blob.core.windows.net/test_container/test1.pkl"
+            >>> pkl_path = "https://testazfs.blob.core.windows.net/test_container/test1.pkl"
             you can read and write csv file in azure blob storage
-            >>> azc.write_pickle(path=path, df=df)
+            >>> azc.write_pickle(path=pkl_path, df=df)
             Using `with` statement, you can use `pandas`-like methods
             >>> with azc:
-            >>>     df.to_pickle_az(path)
+            >>>     df.to_pickle_az(pkl_path)
             you can use difference compression
             >>> with azc:
-            >>>     df.to_pickle_az(path, compression="bz2")
+            >>>     df.to_pickle_az(pkl_path, compression="bz2")
 
         """
         serialized_data = pickle.dumps(df)
@@ -1130,9 +1167,9 @@ class AzFileClient:
         Examples:
             >>> import azfs
             >>> azc = azfs.AzFileClient()
-            >>> path = "https://testazfs.blob.core.windows.net/test_container/test1.json"
+            >>> json_path = "https://testazfs.blob.core.windows.net/test_container/test1.json"
             you can read and write csv file in azure blob storage
-            >>> azc.read_json(path=path)
+            >>> azc.read_json(path=json_path)
 
         """
         file_bytes = self._get(path)
@@ -1155,9 +1192,9 @@ class AzFileClient:
         Examples:
             >>> import azfs
             >>> azc = azfs.AzFileClient()
-            >>> path = "https://testazfs.blob.core.windows.net/test_container/test1.json"
+            >>> json_path = "https://testazfs.blob.core.windows.net/test_container/test1.json"
             you can read and write csv file in azure blob storage
-            >>> azc.write_json(path=path, data={"": ""})
+            >>> azc.write_json(path=json_path, data={"": ""})
 
         """
         # encode with UTF-8 to fully upload data including not ascii character
