@@ -2,7 +2,7 @@
 Release History
 ###############
 
-0.2.8 (2020-mm-dd)
+0.2.8 (2020-11-24)
 ******************
 
 * BUG FIX: ``azc.read(use_mp=True)`` is not working correctly, if credential is AzureDefaultCredentials.
