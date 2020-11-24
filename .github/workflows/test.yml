@@ -34,7 +34,7 @@ jobs:
           curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
       # add path to Poetry
       - name: Add path for Poetry
-        run: echo "::add-path::$HOME/.poetry/bin"
+        run: echo "$HOME/.poetry/bin" >> $GITHUB_PATH
       - name: Install Dependencies
         run: poetry install --no-interaction --no-dev
       # pytest
