@@ -1,20 +1,21 @@
+#############################
 API Reference (for Developer)
-=============================
+#############################
 
 AzfsClient
-----------
+**********
 
 .. autoclass:: azfs.clients.AzfsClient
 
 
 ClientInterface
----------------
+***************
 
 .. autoclass:: azfs.clients.client_interface.ClientInterface
 
 
 Clients
-^^^^^^^
+=======
 
 
 .. autofunction:: azfs.clients.client_interface.ClientInterface.get_file_client_from_path

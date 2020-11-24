@@ -17,8 +17,7 @@ AzFS is to provide convenient Python read/write functions for Azure Storage Acco
 * list files in blob (also with wildcard `*`),
 * check if file exists,
 * read csv as pd.DataFrame, and json as dict from blob,
-* write pd.DataFrame as csv, and dict as json to blob,
-* and raise lots of exceptions ! (Thank you for your cooperation)
+* write pd.DataFrame as csv, and dict as json to blob.
 
 ## install
 
@@ -28,7 +27,7 @@ $ pip install azfs
 
 ## usage
 
-For `Blob` and `Queue` Storage.
+For `Blob` Storage.
 
 
 ```python
@@ -65,6 +64,15 @@ azc.write_csv(path=csv_path, df=df)
 with azc:
     df.to_csv_az(path=csv_path, index=False)
 
+# you can read multiple files
+csv_pattern_path = "https://testazfs.blob.core.windows.net/test_caontainer/*.csv" 
+df = azc.read().csv(csv_pattern_path)
+
+# to apply additional filter or another process
+df = azc.read().apply(function=lambda x: x[x['id'] == 'AAA']).csv(csv_pattern_path)
+
+# in addition, you can use multiprocessing
+df = azc.read(use_mp=True).apply(function=lambda x: x[x['id'] == 'AAA']).csv(csv_pattern_path)
 ```
 
 For `Table` Storage

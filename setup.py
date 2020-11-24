@@ -24,6 +24,12 @@ VERSION = get_version(init_file_path=init)
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
+PROJECT_URLS = {
+    "Bug Tracker": "https://github.com/gsy0911/azfs/issues",
+    "Documentation": "https://azfs.readthedocs.io/en/latest/?badge=latest",
+    "Source Code": "https://github.com/gsy0911/azfs",
+}
+
 
 setuptools.setup(
     name="azfs",
@@ -34,6 +40,7 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/gsy0911/azfs",
+    project_urls=PROJECT_URLS,
     packages=setuptools.find_packages(),
     install_requires=[
         "pandas",
