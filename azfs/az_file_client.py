@@ -15,6 +15,7 @@ from azure.identity import DefaultAzureCredential
 from azure.core.exceptions import ResourceNotFoundError
 from azfs.clients import AzfsClient, TextReader
 from azfs.error import AzfsInputError
+from azfs.export_decorator import ExportDecorator
 from azfs.utils import (
     BlobPathDecoder,
     ls_filter
@@ -1199,6 +1200,10 @@ class AzFileClient:
         """
         # encode with UTF-8 to fully upload data including not ascii character
         return self._put(path=path, data=json.dumps(data, **kwargs).encode("utf-8"))
+
+    # import decorator
+    def import_decorator(self, export_df: ExportDecorator):
+        pass
 
     # ===================
     # alias for functions
