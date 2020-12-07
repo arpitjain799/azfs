@@ -1218,23 +1218,27 @@ class AzFileClient:
             func_name = func_dict['function_name']
             func = func_dict['function']
 
-            def _decorator(*args, **kwargs):
-                output_path_list = []
-                for keyword in keyword_list:
-                    _storage_account: str = kwargs.pop(f"{keyword}_storage_account", storage_account)
-                    _container: str = kwargs.pop(f"{keyword}_container", container)
-                    _key: str = kwargs.pop(f"{keyword}_key", key)
-                    _output_parent_path: str = kwargs.pop(f"{keyword}_key", output_parent_path)
-                    _file_name: str = kwargs.pop(f"{keyword}_file_name", file_name)
-                    _export: str = kwargs.pop(f"{keyword}_export", export)
-                    if _export:
-                        output_path_list.append(f"{_storage_account}/{_container}/{_key}/{_file_name}")
+            def _wrapper(_func: callable):
+                def _actual_function(*args, **kwargs):
+                    output_path_list = []
+                    for keyword in keyword_list:
+                        _storage_account: str = kwargs.pop(f"{keyword}_storage_account", storage_account)
+                        _container: str = kwargs.pop(f"{keyword}_container", container)
+                        _key: str = kwargs.pop(f"{keyword}_key", key)
+                        _output_parent_path: str = kwargs.pop(f"{keyword}_key", output_parent_path)
+                        _file_name: str = kwargs.pop(f"{keyword}_file_name", file_name)
+                        _export: str = kwargs.pop(f"{keyword}_export", export)
+                        if _export:
+                            if _output_parent_path is not None and _file_name is not None:
+                                output_path_list.append(f"{_output_parent_path}/{_file_name}")
+                            elif _storage_account is not None:
+                                output_path_list.append(f"{_storage_account}/{_container}/{_key}/{_file_name}")
 
-                _df = func(*args, **kwargs)
-                for output_path in output_path_list:
-                    print(output_path)
-                    # self.write_csv(path=output_path, df=_df)
-                return _df
+                    _df = _func(*args, **kwargs)
+                    for output_path in output_path_list:
+                        self.write_csv(path=output_path, df=_df, **kwargs)
+                    return _df
+                return _actual_function
 
             def _generate_parameter_args(additional_args: str) -> str:
                 args_list = [
@@ -1266,8 +1270,9 @@ class AzFileClient:
                     result_list.append(addition_s)
                     return "\n\n".join(result_list)
 
-            _decorator.__doc__ = _append_docs(func.__doc__, additional_args_list=keyword_list)
-            setattr(self, func_name, _decorator)
+            wrapped_function = _wrapper(_func=func)
+            wrapped_function.__doc__ = _append_docs(wrapped_function.__doc__, additional_args_list=keyword_list)
+            setattr(self, func_name, wrapped_function)
 
     # ===================
     # alias for functions
