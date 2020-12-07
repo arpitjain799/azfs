@@ -1229,6 +1229,37 @@ class AzFileClient:
                     print(output_path)
                     # self.write_csv(path=output_path, df=_df)
                 return _df
+
+            def _generate_parameter_args(additional_args: str) -> str:
+                args_list = [
+                    f"\n        == params for {additional_args} ==",
+                    f"\n        {additional_args}_storage_account: (str) storage account, default:={storage_account}",
+                    f"\n        {additional_args}_container: (str) container, default:={container}",
+                    f"\n        {additional_args}_key: (str) folder path, default:={key}",
+                    f"\n        {additional_args}_output_parent_path: (str) parent path, default:={output_parent_path}",
+                    f"\n        {additional_args}_file_name: (str) file name, default:={file_name}"
+                ]
+                return "".join(args_list)
+
+            def _append_docs(docstring: Optional[str], additional_args_list: list) -> str:
+                result_list = []
+                if docstring is not None:
+                    for s in docstring.split("\n\n"):
+                        if "Args:" in s:
+                            args_list = [_generate_parameter_args(arg) for arg in additional_args_list]
+                            addition_s = f"{s}{''.join(args_list)}"
+                            result_list.append(addition_s)
+                        else:
+                            result_list.append(s)
+                    return "\n\n".join(result_list)
+                else:
+                    result_list.append("Args:")
+                    args_list = [_generate_parameter_args(arg) for arg in additional_args_list]
+                    addition_s = ''.join(args_list)
+                    result_list.append(addition_s)
+                    return "\n\n".join(result_list)
+
+            _decorator.__doc__ = _append_docs(func.__doc__, additional_args_list=keyword_list)
             setattr(self, func_name, _decorator)
 
     # ===================
