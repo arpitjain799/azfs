@@ -1205,12 +1205,14 @@ class AzFileClient:
     def import_decorator(
             self,
             export_df: ExportDecorator,
+            *,
             keyword_list: Optional[list],
             storage_account: Optional[str] = None,
             container: Optional[str] = None,
             key: Optional[str] = None,
             output_parent_path: Optional[str] = None,
-            file_name: Optional[str] = None
+            file_name: Optional[str] = None,
+            export: bool = True
     ):
         for func_dict in export_df.functions:
             func_name = func_dict['function_name']
@@ -1224,7 +1226,9 @@ class AzFileClient:
                     _key: str = kwargs.pop(f"{keyword}_key", key)
                     _output_parent_path: str = kwargs.pop(f"{keyword}_key", output_parent_path)
                     _file_name: str = kwargs.pop(f"{keyword}_file_name", file_name)
-                    output_path_list.append(f"{_storage_account}/{_container}/{_key}/{_file_name}")
+                    _export: str = kwargs.pop(f"{keyword}_export", export)
+                    if _export:
+                        output_path_list.append(f"{_storage_account}/{_container}/{_key}/{_file_name}")
 
                 _df = func(*args, **kwargs)
                 for output_path in output_path_list:
@@ -1240,6 +1244,7 @@ class AzFileClient:
                     f"\n        {additional_args}_key: (str) folder path, default:={key}",
                     f"\n        {additional_args}_output_parent_path: (str) parent path, default:={output_parent_path}",
                     f"\n        {additional_args}_file_name: (str) file name, default:={file_name}"
+                    f"\n        {additional_args}_export: (str) export if True, default:={export}"
                 ]
                 return "".join(args_list)
 
