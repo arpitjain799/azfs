@@ -2,12 +2,12 @@
 
 class ExportDecorator:
     def __init__(self):
-        self.function_export_target_keyword_dict = {}
+        self.functions = []
 
     def register(self):
         def _wrapper(func: callable):
-            self.function_export_target_keyword_dict.update(
-                {func.__name__: func}
+            self.functions.append(
+                {"function_name": func.__name__, "function": func}
             )
             return func
         return _wrapper
