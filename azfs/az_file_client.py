@@ -1211,7 +1211,9 @@ class AzFileClient:
             container: Optional[str] = None,
             key: Optional[str] = None,
             output_parent_path: Optional[str] = None,
+            file_name_prefix: Optional[str] = None,
             file_name: Optional[str] = None,
+            file_name_suffix: Optional[str] = None,
             export: bool = True
     ):
         for func_dict in export_df.functions:
@@ -1226,8 +1228,17 @@ class AzFileClient:
                         _container: str = kwargs.pop(f"{keyword}_container", container)
                         _key: str = kwargs.pop(f"{keyword}_key", key)
                         _output_parent_path: str = kwargs.pop(f"{keyword}_key", output_parent_path)
+                        _file_name_prefix: str = kwargs.pop(f"{keyword}_file_name", file_name_prefix)
                         _file_name: str = kwargs.pop(f"{keyword}_file_name", file_name)
+                        _file_name_suffix: str = kwargs.pop(f"{keyword}_file_name", file_name_suffix)
                         _export: str = kwargs.pop(f"{keyword}_export", export)
+
+                        # add prefix and suffix
+                        if _file_name_prefix is not None:
+                            _file_name = f"{_file_name_prefix}{_file_name}"
+                        if _file_name_suffix is not None:
+                            _file_name = f"{_file_name}{_file_name_suffix}"
+                            
                         if _export:
                             if _output_parent_path is not None and _file_name is not None:
                                 output_path_list.append(f"{_output_parent_path}/{_file_name}")
