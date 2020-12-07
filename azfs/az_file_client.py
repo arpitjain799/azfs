@@ -1202,8 +1202,34 @@ class AzFileClient:
         return self._put(path=path, data=json.dumps(data, **kwargs).encode("utf-8"))
 
     # import decorator
-    def import_decorator(self, export_df: ExportDecorator):
-        pass
+    def import_decorator(
+            self,
+            export_df: ExportDecorator,
+            keyword_list: Optional[list],
+            storage_account: Optional[str] = None,
+            container: Optional[str] = None,
+            key: Optional[str] = None,
+            file_name: Optional[str] = None
+    ):
+        for func_dict in export_df.functions:
+            func_name = func_dict['function_name']
+            func = func_dict['function']
+
+            def _decorator(*args, **kwargs):
+                output_path_list = []
+                for keyword in keyword_list:
+                    _storage_account: str = kwargs.pop(f"{keyword}_storage_account", storage_account)
+                    _container: str = kwargs.pop(f"{keyword}_container", container)
+                    _key: str = kwargs.pop(f"{keyword}_key", key)
+                    _file_name: str = kwargs.pop(f"{keyword}_file_name", file_name)
+                    output_path_list.append(f"{_storage_account}/{_container}/{_key}/{_file_name}")
+
+                _df = func(*args, **kwargs)
+                for output_path in output_path_list:
+                    print(output_path)
+                    # self.write_csv(path=output_path, df=_df)
+                return _df
+            setattr(self, func_name, _decorator)
 
     # ===================
     # alias for functions
