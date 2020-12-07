@@ -1209,6 +1209,7 @@ class AzFileClient:
             storage_account: Optional[str] = None,
             container: Optional[str] = None,
             key: Optional[str] = None,
+            output_parent_path: Optional[str] = None,
             file_name: Optional[str] = None
     ):
         for func_dict in export_df.functions:
@@ -1221,6 +1222,7 @@ class AzFileClient:
                     _storage_account: str = kwargs.pop(f"{keyword}_storage_account", storage_account)
                     _container: str = kwargs.pop(f"{keyword}_container", container)
                     _key: str = kwargs.pop(f"{keyword}_key", key)
+                    _output_parent_path: str = kwargs.pop(f"{keyword}_key", output_parent_path)
                     _file_name: str = kwargs.pop(f"{keyword}_file_name", file_name)
                     output_path_list.append(f"{_storage_account}/{_container}/{_key}/{_file_name}")
 
