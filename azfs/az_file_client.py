@@ -2,6 +2,7 @@ import bz2
 from functools import partial
 import gzip
 import io
+from inspect import signature
 import json
 import lzma
 import multiprocessing as mp
@@ -1246,7 +1247,15 @@ class AzFileClient:
                             elif _storage_account is not None:
                                 output_path_list.append(f"{_storage_account}/{_container}/{_key}/{_file_name}")
 
-                    _df = _func(*args, **kwargs)
+                    # check the argument for the `_func`, and replace only `keyword arguments`
+                    sig = signature(_func)
+                    kwargs_for_func = {}
+                    for signature_params in sig.parameters:
+                        if signature_params in kwargs:
+                            kwargs_for_func.update({signature_params: kwargs.pop(signature_params)})
+
+                    # get return of the `_func`
+                    _df = _func(*args, **kwargs_for_func)
                     for output_path in output_path_list:
                         self.write_csv(path=output_path, df=_df, **kwargs)
                     return _df
