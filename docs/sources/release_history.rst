@@ -2,6 +2,11 @@
 Release History
 ###############
 
+0.2.9 (2020-12-08)
+******************
+
+* add Experimental feature: ``azfs.ExportDecorator()``
+
 0.2.8 (2020-11-24)
 ******************
 
