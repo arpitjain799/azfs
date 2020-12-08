@@ -1259,6 +1259,8 @@ class AzFileClient:
 
                     # get return of the `_func`
                     _df = _func(*args, **kwargs_for_func)
+                    if type(_df) is not pd.DataFrame:
+                        raise ValueError("return type of the given function must be `pd.DataFrame`")
                     for output_path in output_path_list:
                         if output_path.endswith("csv"):
                             self.write_csv(path=output_path, df=_df, **kwargs)
