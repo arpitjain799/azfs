@@ -1209,6 +1209,7 @@ class AzFileClient:
             *,
             keyword_list: Optional[list],
             storage_account: Optional[str] = None,
+            storage_type: str = "blob",
             container: Optional[str] = None,
             key: Optional[str] = None,
             output_parent_path: Optional[str] = None,
@@ -1228,6 +1229,7 @@ class AzFileClient:
                     output_path_list = []
                     for keyword in keyword_list:
                         _storage_account: str = kwargs.pop(f"{keyword}_storage_account", storage_account)
+                        _storage_type: str = kwargs.pop(f"{keyword}_storage_type", storage_type)
                         _container: str = kwargs.pop(f"{keyword}_container", container)
                         _key: str = kwargs.pop(f"{keyword}_key", key)
                         _output_parent_path: str = kwargs.pop(f"{keyword}_key", output_parent_path)
@@ -1246,9 +1248,13 @@ class AzFileClient:
                         if _export:
                             if _output_parent_path is not None and _file_name is not None:
                                 output_path_list.append(f"{_output_parent_path}/{_file_name}.{_format_type}")
-                            elif _storage_account is not None:
-                                output_path_list.append(
-                                    f"{_storage_account}/{_container}/{_key}/{_file_name}.{_format_type}")
+                            elif _storage_account is not None and \
+                                    _storage_type is not None and \
+                                    _container is not None and \
+                                    _key is not None and \
+                                    _file_name is not None:
+                                _url = f"https://{_storage_account}.{_storage_type}.core.windows.net"
+                                output_path_list.append(f"{_url}/{_container}/{_key}/{_file_name}.{_format_type}")
 
                     # check the argument for the `_func`, and replace only `keyword arguments`
                     sig = signature(_func)
@@ -1275,6 +1281,7 @@ class AzFileClient:
                 args_list = [
                     f"\n        == params for {additional_args} ==",
                     f"\n        {additional_args}_storage_account: (str) storage account, default:={storage_account}",
+                    f"\n        {additional_args}_storage_type: (str) `blob` or `dfs`, default:={storage_type}",
                     f"\n        {additional_args}_container: (str) container, default:={container}",
                     f"\n        {additional_args}_key: (str) folder path, default:={key}",
                     f"\n        {additional_args}_output_parent_path: (str) parent path, default:={output_parent_path}",
