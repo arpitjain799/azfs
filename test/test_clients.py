@@ -9,6 +9,7 @@ except ImportError:
 else:
     cleanup_on_sigterm()
 
+import azfs
 from azure.core.exceptions import ResourceNotFoundError
 from azfs.clients.blob_client import AzBlobClient
 from azfs.clients.datalake_client import AzDataLakeClient
@@ -17,7 +18,7 @@ from azfs.error import AzfsInputError
 import pandas as pd
 
 
-class TestClientInterface:
+class TestClientIntexrface:
     def test_not_implemented_error(self, var_azc):
         client_interface = ClientInterface(credential="")
         # the file below is not exists
@@ -698,3 +699,63 @@ class TestExists:
         path = "https://testazfs.dfs.core.windows.net/test_caontainer/test3.csv"
         result = var_azc.exists(path=path)
         assert not result
+
+
+class TestExportDecorator:
+    decorator = azfs.ExportDecorator()
+
+    @staticmethod
+    @decorator.register()
+    def export_df_example_1(_input: str) -> str:
+        return _input
+
+    @staticmethod
+    @decorator.register()
+    def export_df_example_2(_input: str) -> pd.DataFrame:
+        return pd.DataFrame()
+
+    @staticmethod
+    @decorator.register()
+    def export_df_example_3(_input: str) -> pd.DataFrame:
+        """
+
+        Args:
+            _input: some_name
+
+        """
+        return pd.DataFrame()
+
+    azc = azfs.AzFileClient()
+    azc.import_decorator(decorator, keyword_list=["prod"])
+
+    def test_return_type_not_matched(self):
+        with pytest.raises(ValueError):
+            self.azc.export_df_example_1(
+                _input="error",
+                prod_file_name_prefix="prefix",
+                prod_file_name="the_file_name",
+                prod_file_name_suffix="suffix"
+            )
+
+    def test_format_type_not_matched(self):
+        with pytest.raises(ValueError):
+            self.azc.export_df_example_2(
+                _input="error",
+                prod_output_parent_path="https://testazfs.dfs.core.windows.net/test_caontainer",
+                prod_file_name_prefix="prefix",
+                prod_file_name="the_file_name",
+                prod_file_name_suffix="suffix",
+                prod_format_type="parquet"
+            )
+
+        with pytest.raises(ValueError):
+            self.azc.export_df_example_3(
+                _input="error",
+                prod_storage_account="testazfs",
+                prod_container="test_container",
+                prod_key="some_folder",
+                prod_file_name_prefix="prefix",
+                prod_file_name="the_file_name",
+                prod_file_name_suffix="suffix",
+                prod_format_type="parquet"
+            )
