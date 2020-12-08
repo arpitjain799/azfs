@@ -1217,7 +1217,8 @@ class AzFileClient:
             export: bool = True
     ):
         for func_dict in export_df.functions:
-            func_name = func_dict['function_name']
+            original_func_name = func_dict['function_name']
+            func_name = func_dict['register_as']
             func = func_dict['function']
 
             def _wrapper(_func: callable):
@@ -1238,7 +1239,7 @@ class AzFileClient:
                             _file_name = f"{_file_name_prefix}{_file_name}"
                         if _file_name_suffix is not None:
                             _file_name = f"{_file_name}{_file_name_suffix}"
-                            
+
                         if _export:
                             if _output_parent_path is not None and _file_name is not None:
                                 output_path_list.append(f"{_output_parent_path}/{_file_name}")
@@ -1275,6 +1276,7 @@ class AzFileClient:
                             result_list.append(s)
                     return "\n\n".join(result_list)
                 else:
+                    result_list.append(f"original_func_name:= {original_func_name}")
                     result_list.append("Args:")
                     args_list = [_generate_parameter_args(arg) for arg in additional_args_list]
                     addition_s = ''.join(args_list)
