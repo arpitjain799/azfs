@@ -1230,9 +1230,9 @@ class AzFileClient:
                         _container: str = kwargs.pop(f"{keyword}_container", container)
                         _key: str = kwargs.pop(f"{keyword}_key", key)
                         _output_parent_path: str = kwargs.pop(f"{keyword}_key", output_parent_path)
-                        _file_name_prefix: str = kwargs.pop(f"{keyword}_file_name", file_name_prefix)
+                        _file_name_prefix: str = kwargs.pop(f"{keyword}_file_name_prefix", file_name_prefix)
                         _file_name: str = kwargs.pop(f"{keyword}_file_name", file_name)
-                        _file_name_suffix: str = kwargs.pop(f"{keyword}_file_name", file_name_suffix)
+                        _file_name_suffix: str = kwargs.pop(f"{keyword}_file_name_suffix", file_name_suffix)
                         _export: str = kwargs.pop(f"{keyword}_export", export)
 
                         # add prefix and suffix
