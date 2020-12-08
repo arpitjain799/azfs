@@ -1307,6 +1307,8 @@ class AzFileClient:
 
             wrapped_function = _wrapper(_func=func)
             wrapped_function.__doc__ = _append_docs(wrapped_function.__doc__, additional_args_list=keyword_list)
+            if func_name in self.__dict__.keys():
+                warnings.warn(f"function name `{func_name}` is already given.")
             setattr(self, func_name, wrapped_function)
 
     # ===================
