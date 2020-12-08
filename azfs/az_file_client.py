@@ -2,6 +2,7 @@ import bz2
 from functools import partial
 import gzip
 import io
+from inspect import signature
 import json
 import lzma
 import multiprocessing as mp
@@ -15,6 +16,7 @@ from azure.identity import DefaultAzureCredential
 from azure.core.exceptions import ResourceNotFoundError
 from azfs.clients import AzfsClient, TextReader
 from azfs.error import AzfsInputError
+from azfs.export_decorator import ExportDecorator
 from azfs.utils import (
     BlobPathDecoder,
     ls_filter
@@ -1199,6 +1201,122 @@ class AzFileClient:
         """
         # encode with UTF-8 to fully upload data including not ascii character
         return self._put(path=path, data=json.dumps(data, **kwargs).encode("utf-8"))
+
+    # import decorator
+    def import_decorator(
+            self,
+            export_df: ExportDecorator,
+            *,
+            keyword_list: Optional[list],
+            storage_account: Optional[str] = None,
+            storage_type: str = "blob",
+            container: Optional[str] = None,
+            key: Optional[str] = None,
+            output_parent_path: Optional[str] = None,
+            file_name_prefix: Optional[str] = None,
+            file_name: Optional[str] = None,
+            file_name_suffix: Optional[str] = None,
+            export: bool = True,
+            format_type: str = "csv"
+    ):
+        for func_dict in export_df.functions:
+            original_func_name = func_dict['function_name']
+            func_name = func_dict['register_as']
+            func = func_dict['function']
+
+            def _wrapper(_func: callable):
+                def _actual_function(*args, **kwargs):
+                    output_path_list = []
+                    for keyword in keyword_list:
+                        _storage_account: str = kwargs.pop(f"{keyword}_storage_account", storage_account)
+                        _storage_type: str = kwargs.pop(f"{keyword}_storage_type", storage_type)
+                        _container: str = kwargs.pop(f"{keyword}_container", container)
+                        _key: str = kwargs.pop(f"{keyword}_key", key)
+                        _output_parent_path: str = kwargs.pop(f"{keyword}_output_parent_path", output_parent_path)
+                        _file_name_prefix: str = kwargs.pop(f"{keyword}_file_name_prefix", file_name_prefix)
+                        _file_name: str = kwargs.pop(f"{keyword}_file_name", file_name)
+                        _file_name_suffix: str = kwargs.pop(f"{keyword}_file_name_suffix", file_name_suffix)
+                        _export: bool = kwargs.pop(f"{keyword}_export", export)
+                        _format_type: bool = kwargs.pop(f"{keyword}_format_type", format_type)
+
+                        # add prefix and suffix
+                        if _file_name_prefix is not None:
+                            _file_name = f"{_file_name_prefix}{_file_name}"
+                        if _file_name_suffix is not None:
+                            _file_name = f"{_file_name}{_file_name_suffix}"
+
+                        if _export:
+                            if _output_parent_path is not None and _file_name is not None:
+                                output_path_list.append(f"{_output_parent_path}/{_file_name}.{_format_type}")
+                            elif _storage_account is not None and \
+                                    _storage_type is not None and \
+                                    _container is not None and \
+                                    _key is not None and \
+                                    _file_name is not None:
+                                _url = f"https://{_storage_account}.{_storage_type}.core.windows.net"
+                                output_path_list.append(f"{_url}/{_container}/{_key}/{_file_name}.{_format_type}")
+
+                    # check the argument for the `_func`, and replace only `keyword arguments`
+                    sig = signature(_func)
+                    kwargs_for_func = {}
+                    for signature_params in sig.parameters:
+                        if signature_params in kwargs:
+                            kwargs_for_func.update({signature_params: kwargs.pop(signature_params)})
+
+                    # get return of the `_func`
+                    _df = _func(*args, **kwargs_for_func)
+                    if type(_df) is not pd.DataFrame:
+                        raise ValueError("return type of the given function must be `pd.DataFrame`")
+                    for output_path in output_path_list:
+                        if output_path.endswith("csv"):
+                            self.write_csv(path=output_path, df=_df, **kwargs)
+                        elif output_path.endswith("pickle"):
+                            self.write_pickle(path=output_path, df=_df, **kwargs)
+                        else:
+                            raise ValueError("file format must be `csv` or `pickle`")
+                    return _df
+                return _actual_function
+
+            def _generate_parameter_args(additional_args: str) -> str:
+                args_list = [
+                    f"\n        == params for {additional_args} ==",
+                    f"\n        {additional_args}_storage_account: (str) storage account, default:={storage_account}",
+                    f"\n        {additional_args}_storage_type: (str) `blob` or `dfs`, default:={storage_type}",
+                    f"\n        {additional_args}_container: (str) container, default:={container}",
+                    f"\n        {additional_args}_key: (str) folder path, default:={key}",
+                    f"\n        {additional_args}_output_parent_path: (str) parent path, default:={output_parent_path}",
+                    f"\n        {additional_args}_file_name_prefix: (str) file name prefix, default:={file_name_prefix}"
+                    f"\n        {additional_args}_file_name: (str) file name, default:={file_name}"
+                    f"\n        {additional_args}_file_name_suffix: (str) file name suffix, default:={file_name_suffix}"
+                    f"\n        {additional_args}_export: (bool) export if True, default:={export}"
+                    f"\n        {additional_args}_format_type: (str) file format, default:={format_type}"
+                ]
+                return "".join(args_list)
+
+            def _append_docs(docstring: Optional[str], additional_args_list: list) -> str:
+                result_list = []
+                if docstring is not None:
+                    for s in docstring.split("\n\n"):
+                        if "Args:" in s:
+                            args_list = [_generate_parameter_args(arg) for arg in additional_args_list]
+                            addition_s = f"{s}{''.join(args_list)}"
+                            result_list.append(addition_s)
+                        else:
+                            result_list.append(s)
+                    return "\n\n".join(result_list)
+                else:
+                    result_list.append(f"original_func_name:= {original_func_name}")
+                    result_list.append("Args:")
+                    args_list = [_generate_parameter_args(arg) for arg in additional_args_list]
+                    addition_s = ''.join(args_list)
+                    result_list.append(addition_s)
+                    return "\n\n".join(result_list)
+
+            wrapped_function = _wrapper(_func=func)
+            wrapped_function.__doc__ = _append_docs(func.__doc__, additional_args_list=keyword_list)
+            if func_name in self.__dict__.keys():
+                warnings.warn(f"function name `{func_name}` is already given.")
+            setattr(self, func_name, wrapped_function)
 
     # ===================
     # alias for functions
