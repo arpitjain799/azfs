@@ -1215,7 +1215,8 @@ class AzFileClient:
             file_name_prefix: Optional[str] = None,
             file_name: Optional[str] = None,
             file_name_suffix: Optional[str] = None,
-            export: bool = True
+            export: bool = True,
+            format_type: str = "csv"
     ):
         for func_dict in export_df.functions:
             original_func_name = func_dict['function_name']
@@ -1233,7 +1234,8 @@ class AzFileClient:
                         _file_name_prefix: str = kwargs.pop(f"{keyword}_file_name_prefix", file_name_prefix)
                         _file_name: str = kwargs.pop(f"{keyword}_file_name", file_name)
                         _file_name_suffix: str = kwargs.pop(f"{keyword}_file_name_suffix", file_name_suffix)
-                        _export: str = kwargs.pop(f"{keyword}_export", export)
+                        _export: bool = kwargs.pop(f"{keyword}_export", export)
+                        _format_type: bool = kwargs.pop(f"{keyword}_format_type", format_type)
 
                         # add prefix and suffix
                         if _file_name_prefix is not None:
@@ -1243,9 +1245,10 @@ class AzFileClient:
 
                         if _export:
                             if _output_parent_path is not None and _file_name is not None:
-                                output_path_list.append(f"{_output_parent_path}/{_file_name}")
+                                output_path_list.append(f"{_output_parent_path}/{_file_name}.{_format_type}")
                             elif _storage_account is not None:
-                                output_path_list.append(f"{_storage_account}/{_container}/{_key}/{_file_name}")
+                                output_path_list.append(
+                                    f"{_storage_account}/{_container}/{_key}/{_file_name}.{_format_type}")
 
                     # check the argument for the `_func`, and replace only `keyword arguments`
                     sig = signature(_func)
@@ -1257,7 +1260,12 @@ class AzFileClient:
                     # get return of the `_func`
                     _df = _func(*args, **kwargs_for_func)
                     for output_path in output_path_list:
-                        self.write_csv(path=output_path, df=_df, **kwargs)
+                        if output_path.endswith("csv"):
+                            self.write_csv(path=output_path, df=_df, **kwargs)
+                        elif output_path.endswith("pickle"):
+                            self.write_pickle(path=output_path, df=_df, **kwargs)
+                        else:
+                            raise ValueError("file format must be `csv` or `pickle`")
                     return _df
                 return _actual_function
 
@@ -1268,8 +1276,11 @@ class AzFileClient:
                     f"\n        {additional_args}_container: (str) container, default:={container}",
                     f"\n        {additional_args}_key: (str) folder path, default:={key}",
                     f"\n        {additional_args}_output_parent_path: (str) parent path, default:={output_parent_path}",
+                    f"\n        {additional_args}_file_name_prefix: (str) file name prefix, default:={file_name_prefix}"
                     f"\n        {additional_args}_file_name: (str) file name, default:={file_name}"
-                    f"\n        {additional_args}_export: (str) export if True, default:={export}"
+                    f"\n        {additional_args}_file_name_suffix: (str) file name suffix, default:={file_name_suffix}"
+                    f"\n        {additional_args}_export: (bool) export if True, default:={export}"
+                    f"\n        {additional_args}_format_type: (str) file format, default:={format_type}"
                 ]
                 return "".join(args_list)
 
