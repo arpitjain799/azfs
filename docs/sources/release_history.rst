@@ -2,6 +2,14 @@
 Release History
 ###############
 
+0.2.10 (2020-12-10)
+*******************
+
+* update ``azfs.ExportDecorator()`` (`#120 <https://github.com/gsy0911/azfs/issues/120>`_)
+    * accept multiple ``file_name`` and multiple return values from ``user-defined function``
+    * accept ``str`` or ``dict``, when ``import_decorator()``
+
+
 0.2.9 (2020-12-08)
 ******************
 
