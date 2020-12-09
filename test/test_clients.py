@@ -725,8 +725,29 @@ class TestExportDecorator:
         """
         return pd.DataFrame()
 
+    @staticmethod
+    @decorator.register()
+    def export_df_example_multiple(_input: str) -> (pd.DataFrame, pd.DataFrame):
+        """
+
+        Args:
+            _input: some_name
+
+        """
+        return pd.DataFrame(), pd.DataFrame
+
     azc = azfs.AzFileClient()
     azc.import_decorator(decorator, keyword_list=["prod"])
+
+    azc_multiple = azfs.AzFileClient()
+    azc_multiple.import_decorator(
+        decorator,
+        keyword_list=["prod", "dev"],
+        output_parent_path={
+            "prod": "https://prodazfs.dfs.core.windows.net/test_caontainer",
+            "dev": None
+        }
+    )
 
     def test_return_type_not_matched(self):
         with pytest.raises(ValueError):
@@ -759,3 +780,21 @@ class TestExportDecorator:
                 prod_file_name_suffix="suffix",
                 prod_format_type="parquet"
             )
+
+        with pytest.raises(ValueError):
+            self.azc_multiple.export_df_example_multiple(
+                _input="error",
+                prod_file_name_prefix="prefix",
+                prod_file_name=["the_file_name_1", "the_file_name_2"],
+                prod_file_name_suffix="suffix",
+                prod_format_type="parquet",
+
+                dev_storage_account="devazfs",
+                dev_container="test_container",
+                dev_key="some_folder",
+                dev_file_name_prefix="prefix",
+                dev_file_name=["the_file_name_1", "the_file_name_2"],
+                dev_file_name_suffix="suffix",
+                dev_format_type="parquet",
+            )
+
