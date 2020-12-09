@@ -1233,10 +1233,10 @@ class AzFileClient:
                 """
 
                 Args:
-                    kwrd:
+                    kwrd: one item in `keyword_list`
                     suffix:
-                    kwargs_import_function:
-                    kwargs_invoke_function:
+                    kwargs_import_function: argument from `azfs.AzFileClient::import_decorator`
+                    kwargs_invoke_function: argument from user-defined function
                 """
                 keyword = f"{kwrd}_{suffix}"
                 target_value_from_invoke_function = kwargs_invoke_function.pop(keyword, None)
@@ -1258,6 +1258,22 @@ class AzFileClient:
             ):
 
                 def _actual_function(*args, **kwargs):
+                    """
+                    do the things below:
+                        1. get additional argument with `dict.pop`
+                        2. attach additional prefix/suffix to `file_name`
+                        3. append output candidate paths
+                        4. pick the parameter based on user-defined function and call it
+                        5. get the return value of the user-defined function as pd.DataFrame
+                        6. save the pd.DataFrame to the paths
+
+                    Args:
+                        *args:
+                        **kwargs:
+
+                    Returns:
+                        pd.DataFrame as same as user-defined function
+                    """
                     output_path_list = []
                     for keyword in keyword_list:
                         storage_account_: str = _decode(
@@ -1354,6 +1370,14 @@ class AzFileClient:
                 return _actual_function
 
             def _generate_parameter_args(additional_args: str) -> str:
+                """
+
+                Args:
+                    additional_args:
+
+                Returns:
+                    argument example for the function
+                """
                 args_list = [
                     f"\n        == params for {additional_args} ==",
                     f"\n        {additional_args}_storage_account: (str) storage account, default:={storage_account}",
@@ -1370,6 +1394,16 @@ class AzFileClient:
                 return "".join(args_list)
 
             def _append_docs(docstring: Optional[str], additional_args_list: list) -> str:
+                """
+                append/generate docstring
+
+                Args:
+                    docstring: already written docstring
+                    additional_args_list:
+
+                Returns:
+                    `docstring`
+                """
                 result_list = []
                 if docstring is not None:
                     for s in docstring.split("\n\n"):
