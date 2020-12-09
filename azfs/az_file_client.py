@@ -1207,17 +1207,17 @@ class AzFileClient:
             self,
             export_decorator: ExportDecorator,
             *,
-            keyword_list: Optional[list],
-            storage_account: Optional[str] = None,
-            storage_type: str = "blob",
-            container: Optional[str] = None,
-            key: Optional[str] = None,
-            output_parent_path: Optional[str] = None,
-            file_name_prefix: Optional[str] = None,
-            file_name: Optional[str] = None,
-            file_name_suffix: Optional[str] = None,
-            export: bool = True,
-            format_type: str = "csv"
+            keyword_list: list,
+            storage_account: Optional[Union[str, dict]] = None,
+            storage_type: Union[str, dict] = "blob",
+            container: Optional[Union[str, dict]] = None,
+            key: Optional[Union[str, dict]] = None,
+            output_parent_path: Optional[Union[str, dict]] = None,
+            file_name_prefix: Optional[Union[str, dict]] = None,
+            file_name: Optional[Union[str, dict]] = None,
+            file_name_suffix: Optional[Union[str, dict]] = None,
+            export: Union[bool, dict] = True,
+            format_type: Union[str, dict] = "csv"
     ):
         for func_dict in export_decorator.functions:
             original_func_name = func_dict['function_name']
