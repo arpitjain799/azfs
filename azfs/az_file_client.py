@@ -1224,7 +1224,7 @@ class AzFileClient:
             func_name = func_dict['register_as']
             func = func_dict['function']
 
-            def _decode_arguments(
+            def _decode(
                     kwrd: str,
                     suffix: str,
                     kwargs_import_function: Optional[Union[str, dict]],
@@ -1243,7 +1243,7 @@ class AzFileClient:
                     return target_value_from_invoke_function
                 if kwargs_import_function is None:
                     return None
-                if type(kwargs_import_function) is str:
+                if type(kwargs_import_function) is str or type(kwargs_import_function) is bool:
                     return kwargs_import_function
                 elif type(kwargs_import_function) is dict:
                     return kwargs_import_function.pop(kwrd, None)
