@@ -1255,31 +1255,31 @@ class AzFileClient:
 
             def _wrapper(
                     _func: callable,
-                    _storage_account: Optional[Union[str, dict]],
-                    _storage_type: Union[str, dict],
-                    _container: Optional[Union[str, dict]],
-                    _key: Optional[Union[str, dict]],
-                    _output_parent_path: Union[str, dict],
-                    _file_name_prefix: Optional[Union[str, dict]],
-                    _file_name: Optional[Union[str, dict]],
-                    _file_name_suffix: Optional[Union[str, dict]],
-                    _export: Union[bool, dict],
-                    _format_type: Union[str, dict]
             ):
 
                 def _actual_function(*args, **kwargs):
                     output_path_list = []
                     for keyword in keyword_list:
-                        storage_account_: str = _decode(keyword, "storage_account", _storage_account, kwargs)
-                        storage_type_: str = _decode(keyword, "storage_type", _storage_type, kwargs)
-                        container_: str = _decode(keyword, "container", _container, kwargs)
-                        key_: str = _decode(keyword, "key", _key, kwargs)
-                        output_parent_path_: str = _decode(keyword, "output_parent_path", _output_parent_path, kwargs)
-                        file_name_prefix_: str = _decode(keyword, "file_name_prefix", _file_name_prefix, kwargs)
-                        file_name_: Union[str, list] = _decode(keyword, "file_name", _file_name, kwargs)
-                        file_name_suffix_: str = _decode(keyword, "file_name_suffix", _file_name_suffix, kwargs)
-                        export_: bool = _decode(keyword, "export", _export, kwargs)
-                        format_type_: bool = _decode(keyword, "format_type", _format_type, kwargs)
+                        storage_account_: str = _decode(
+                            keyword, "storage_account", copy.deepcopy(storage_account), kwargs)
+                        storage_type_: str = _decode(
+                            keyword, "storage_type", copy.deepcopy(storage_type), kwargs)
+                        container_: str = _decode(
+                            keyword, "container", copy.deepcopy(container), kwargs)
+                        key_: str = _decode(
+                            keyword, "key", copy.deepcopy(key), kwargs)
+                        output_parent_path_: str = _decode(
+                            keyword, "output_parent_path", copy.deepcopy(output_parent_path), kwargs)
+                        file_name_prefix_: str = _decode(
+                            keyword, "file_name_prefix", copy.deepcopy(file_name_prefix), kwargs)
+                        file_name_: Union[str, list] = _decode(
+                            keyword, "file_name", copy.deepcopy(file_name), kwargs)
+                        file_name_suffix_: str = _decode(
+                            keyword, "file_name_suffix", copy.deepcopy(file_name_suffix), kwargs)
+                        export_: bool = _decode(
+                            keyword, "export", copy.deepcopy(export), kwargs)
+                        format_type_: bool = _decode(
+                            keyword, "format_type", copy.deepcopy(format_type), kwargs)
 
                         # add prefix
                         if file_name_prefix_ is not None:
@@ -1392,16 +1392,6 @@ class AzFileClient:
             #
             wrapped_function = _wrapper(
                 _func=func,
-                _storage_account=copy.deepcopy(storage_account),
-                _storage_type=copy.deepcopy(storage_type),
-                _container=copy.deepcopy(container),
-                _key=copy.deepcopy(key),
-                _output_parent_path=copy.deepcopy(output_parent_path),
-                _file_name_prefix=copy.deepcopy(file_name_prefix),
-                _file_name=copy.deepcopy(file_name),
-                _file_name_suffix=copy.deepcopy(file_name_suffix),
-                _export=copy.deepcopy(export),
-                _format_type=copy.deepcopy(format_type)
             )
             wrapped_function.__doc__ = _append_docs(func.__doc__, additional_args_list=keyword_list)
             if func_name in self.__dict__.keys():
