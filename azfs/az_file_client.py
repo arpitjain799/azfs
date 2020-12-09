@@ -1,4 +1,5 @@
 import bz2
+import copy
 from functools import partial
 import gzip
 import io
@@ -1252,53 +1253,66 @@ class AzFileClient:
                 else:
                     raise ValueError("type not matched.")
 
-            def _wrapper(_func: callable):
+            def _wrapper(
+                    _func: callable,
+                    _storage_account: Optional[Union[str, dict]],
+                    _storage_type: Union[str, dict],
+                    _container: Optional[Union[str, dict]],
+                    _key: Optional[Union[str, dict]],
+                    _output_parent_path: Union[str, dict],
+                    _file_name_prefix: Optional[Union[str, dict]],
+                    _file_name: Optional[Union[str, dict]],
+                    _file_name_suffix: Optional[Union[str, dict]],
+                    _export: Union[bool, dict],
+                    _format_type: Union[str, dict]
+            ):
+
                 def _actual_function(*args, **kwargs):
                     output_path_list = []
                     for keyword in keyword_list:
-                        _storage_account: str = _decode(keyword, "storage_account", storage_account, kwargs)
-                        _storage_type: str = _decode(keyword, "storage_type", storage_type, kwargs)
-                        _container: str = _decode(keyword, "container", container, kwargs)
-                        _key: str = _decode(keyword, "key", key, kwargs)
-                        _output_parent_path: str = _decode(keyword, "output_parent_path", output_parent_path, kwargs)
-                        _file_name_prefix: str = _decode(keyword, "file_name_prefix", file_name_prefix, kwargs)
-                        _file_name: Union[str, list] = _decode(keyword, "file_name", file_name, kwargs)
-                        _file_name_suffix: str = _decode(keyword, "file_name_suffix", file_name_suffix, kwargs)
-                        _export: bool = _decode(keyword, "export", export, kwargs)
-                        _format_type: bool = _decode(keyword, "format_type", format_type, kwargs)
+                        storage_account_: str = _decode(keyword, "storage_account", _storage_account, kwargs)
+                        storage_type_: str = _decode(keyword, "storage_type", _storage_type, kwargs)
+                        container_: str = _decode(keyword, "container", _container, kwargs)
+                        key_: str = _decode(keyword, "key", _key, kwargs)
+                        output_parent_path_: str = _decode(keyword, "output_parent_path", _output_parent_path, kwargs)
+                        file_name_prefix_: str = _decode(keyword, "file_name_prefix", _file_name_prefix, kwargs)
+                        file_name_: Union[str, list] = _decode(keyword, "file_name", _file_name, kwargs)
+                        file_name_suffix_: str = _decode(keyword, "file_name_suffix", _file_name_suffix, kwargs)
+                        export_: bool = _decode(keyword, "export", _export, kwargs)
+                        format_type_: bool = _decode(keyword, "format_type", _format_type, kwargs)
 
                         # add prefix
-                        if _file_name_prefix is not None:
-                            if type(_file_name) is str:
-                                _file_name = f"{_file_name_prefix}{_file_name}"
-                            elif type(_file_name) is list:
-                                _file_name = [f"{_file_name_prefix}{f}" for f in _file_name]
+                        if file_name_prefix_ is not None:
+                            if type(file_name_) is str:
+                                file_name_ = f"{file_name_prefix_}{file_name_}"
+                            elif type(file_name_) is list:
+                                file_name_ = [f"{file_name_prefix_}{f}" for f in file_name_]
                         # add suffix
-                        if _file_name_suffix is not None:
-                            if type(_file_name) is str:
-                                _file_name = f"{_file_name}{_file_name_suffix}"
-                            elif type(_file_name) is list:
-                                _file_name = [f"{f}{_file_name_suffix}" for f in _file_name]
+                        if file_name_suffix_ is not None:
+                            if type(file_name_) is str:
+                                file_name_ = f"{file_name_}{file_name_suffix_}"
+                            elif type(file_name_) is list:
+                                file_name_ = [f"{f}{file_name_suffix_}" for f in file_name_]
 
-                        if _export:
-                            if _output_parent_path is not None and _file_name is not None:
-                                if type(_file_name) is str:
-                                    output_path_list.append(f"{_output_parent_path}/{_file_name}.{_format_type}")
-                                elif type(_file_name) is list:
+                        if export_:
+                            if output_parent_path_ is not None and file_name_ is not None:
+                                if type(file_name_) is str:
+                                    output_path_list.append(f"{output_parent_path_}/{file_name_}.{format_type_}")
+                                elif type(file_name_) is list:
                                     output_path_list.append(
-                                        [f"{_output_parent_path}/{f}.{_format_type}" for f in _file_name]
+                                        [f"{output_parent_path_}/{f}.{format_type_}" for f in file_name_]
                                     )
-                            elif _storage_account is not None and \
-                                    _storage_type is not None and \
-                                    _container is not None and \
-                                    _key is not None and \
-                                    _file_name is not None:
-                                _url = f"https://{_storage_account}.{_storage_type}.core.windows.net"
-                                if type(_file_name) is str:
-                                    output_path_list.append(f"{_url}/{_container}/{_key}/{_file_name}.{_format_type}")
-                                elif type(_file_name) is list:
+                            elif storage_account_ is not None and \
+                                    storage_type_ is not None and \
+                                    container_ is not None and \
+                                    key_ is not None and \
+                                    file_name_ is not None:
+                                url_ = f"https://{storage_account_}.{storage_type_}.core.windows.net"
+                                if type(file_name_) is str:
+                                    output_path_list.append(f"{url_}/{container_}/{key_}/{file_name_}.{format_type_}")
+                                elif type(file_name_) is list:
                                     output_path_list.append(
-                                        [f"{_url}/{_container}/{_key}/{f}.{_format_type}" for f in _file_name]
+                                        [f"{url_}/{container_}/{key_}/{f}.{format_type_}" for f in file_name_]
                                     )
 
                     # check the argument for the `_func`, and replace only `keyword arguments`
@@ -1322,11 +1336,9 @@ class AzFileClient:
                     elif type(_df) is tuple:
                         # multiple dataframe
                         for output_path in output_path_list:
-                            print(output_path)
                             if len(output_path) != len(_df):
                                 raise ValueError("size of output path and function response not matched")
                             for i_df, i_output_path in zip(_df, output_path):
-                                print(i_output_path)
                                 if type(i_df) is not pd.DataFrame:
                                     ValueError("return type of the given function must be `pd.DataFrame`")
                                 if i_output_path.endswith("csv"):
@@ -1376,7 +1388,21 @@ class AzFileClient:
                     result_list.append(addition_s)
                     return "\n\n".join(result_list)
 
-            wrapped_function = _wrapper(_func=func)
+            # mutable object is to Null, after initial reference
+            #
+            wrapped_function = _wrapper(
+                _func=func,
+                _storage_account=copy.deepcopy(storage_account),
+                _storage_type=copy.deepcopy(storage_type),
+                _container=copy.deepcopy(container),
+                _key=copy.deepcopy(key),
+                _output_parent_path=copy.deepcopy(output_parent_path),
+                _file_name_prefix=copy.deepcopy(file_name_prefix),
+                _file_name=copy.deepcopy(file_name),
+                _file_name_suffix=copy.deepcopy(file_name_suffix),
+                _export=copy.deepcopy(export),
+                _format_type=copy.deepcopy(format_type)
+            )
             wrapped_function.__doc__ = _append_docs(func.__doc__, additional_args_list=keyword_list)
             if func_name in self.__dict__.keys():
                 warnings.warn(f"function name `{func_name}` is already given.")
