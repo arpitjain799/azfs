@@ -1310,15 +1310,34 @@ class AzFileClient:
 
                     # get return of the `_func`
                     _df = _func(*args, **kwargs_for_func)
-                    if type(_df) is not pd.DataFrame:
+                    if type(_df) is pd.DataFrame:
+                        # single dataframe
+                        for output_path in output_path_list:
+                            if output_path.endswith("csv"):
+                                self.write_csv(path=output_path, df=_df, **kwargs)
+                            elif output_path.endswith("pickle"):
+                                self.write_pickle(path=output_path, df=_df, **kwargs)
+                            else:
+                                raise ValueError("file format must be `csv` or `pickle`")
+                    elif type(_df) is tuple:
+                        # multiple dataframe
+                        for output_path in output_path_list:
+                            print(output_path)
+                            if len(output_path) != len(_df):
+                                raise ValueError("size of output path and function response not matched")
+                            for i_df, i_output_path in zip(_df, output_path):
+                                print(i_output_path)
+                                if type(i_df) is not pd.DataFrame:
+                                    ValueError("return type of the given function must be `pd.DataFrame`")
+                                if i_output_path.endswith("csv"):
+                                    self.write_csv(path=i_output_path, df=i_df, **kwargs)
+                                elif i_output_path.endswith("pickle"):
+                                    self.write_pickle(path=i_output_path, df=i_df, **kwargs)
+                                else:
+                                    raise ValueError("file format must be `csv` or `pickle`")
+
+                    else:
                         raise ValueError("return type of the given function must be `pd.DataFrame`")
-                    for output_path in output_path_list:
-                        if output_path.endswith("csv"):
-                            self.write_csv(path=output_path, df=_df, **kwargs)
-                        elif output_path.endswith("pickle"):
-                            self.write_pickle(path=output_path, df=_df, **kwargs)
-                        else:
-                            raise ValueError("file format must be `csv` or `pickle`")
                     return _df
                 return _actual_function
 
@@ -1331,7 +1350,7 @@ class AzFileClient:
                     f"\n        {additional_args}_key: (str) folder path, default:={key}",
                     f"\n        {additional_args}_output_parent_path: (str) parent path, default:={output_parent_path}",
                     f"\n        {additional_args}_file_name_prefix: (str) file name prefix, default:={file_name_prefix}"
-                    f"\n        {additional_args}_file_name: (str) file name, default:={file_name}"
+                    f"\n        {additional_args}_file_name: (str, list) file name, default:={file_name}"
                     f"\n        {additional_args}_file_name_suffix: (str) file name suffix, default:={file_name_suffix}"
                     f"\n        {additional_args}_export: (bool) export if True, default:={export}"
                     f"\n        {additional_args}_format_type: (str) file format, default:={format_type}"
