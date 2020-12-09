@@ -1224,6 +1224,30 @@ class AzFileClient:
             func_name = func_dict['register_as']
             func = func_dict['function']
 
+            def _decode_arguments(
+                    keyword: str,
+                    kwargs_import_function: Optional[Union[str, dict]],
+                    kwargs_invoke_function: dict) -> Optional[Union[str, bool]]:
+                """
+
+                Args:
+                    keyword:
+                    kwargs_import_function:
+                    kwargs_invoke_function:
+                """
+
+                target_value_from_invoke_function = kwargs_invoke_function.pop(keyword, None)
+                if target_value_from_invoke_function is not None:
+                    return target_value_from_invoke_function
+                if kwargs_import_function is None:
+                    return None
+                if type(kwargs_import_function) is str:
+                    return kwargs_import_function
+                elif type(kwargs_import_function) is dict:
+                    return kwargs_import_function.pop(keyword, None)
+                else:
+                    raise ValueError("type not matched.")
+
             def _wrapper(_func: callable):
                 def _actual_function(*args, **kwargs):
                     output_path_list = []
