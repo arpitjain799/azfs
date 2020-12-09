@@ -1225,17 +1225,19 @@ class AzFileClient:
             func = func_dict['function']
 
             def _decode_arguments(
-                    keyword: str,
+                    kwrd: str,
+                    suffix: str,
                     kwargs_import_function: Optional[Union[str, dict]],
                     kwargs_invoke_function: dict) -> Optional[Union[str, bool]]:
                 """
 
                 Args:
-                    keyword:
+                    kwrd:
+                    suffix:
                     kwargs_import_function:
                     kwargs_invoke_function:
                 """
-
+                keyword = f"{kwrd}_{suffix}"
                 target_value_from_invoke_function = kwargs_invoke_function.pop(keyword, None)
                 if target_value_from_invoke_function is not None:
                     return target_value_from_invoke_function
@@ -1244,7 +1246,7 @@ class AzFileClient:
                 if type(kwargs_import_function) is str:
                     return kwargs_import_function
                 elif type(kwargs_import_function) is dict:
-                    return kwargs_import_function.pop(keyword, None)
+                    return kwargs_import_function.pop(kwrd, None)
                 else:
                     raise ValueError("type not matched.")
 
