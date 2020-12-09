@@ -1254,16 +1254,16 @@ class AzFileClient:
                 def _actual_function(*args, **kwargs):
                     output_path_list = []
                     for keyword in keyword_list:
-                        _storage_account: str = kwargs.pop(f"{keyword}_storage_account", storage_account)
-                        _storage_type: str = kwargs.pop(f"{keyword}_storage_type", storage_type)
-                        _container: str = kwargs.pop(f"{keyword}_container", container)
-                        _key: str = kwargs.pop(f"{keyword}_key", key)
-                        _output_parent_path: str = kwargs.pop(f"{keyword}_output_parent_path", output_parent_path)
-                        _file_name_prefix: str = kwargs.pop(f"{keyword}_file_name_prefix", file_name_prefix)
-                        _file_name: str = kwargs.pop(f"{keyword}_file_name", file_name)
-                        _file_name_suffix: str = kwargs.pop(f"{keyword}_file_name_suffix", file_name_suffix)
-                        _export: bool = kwargs.pop(f"{keyword}_export", export)
-                        _format_type: bool = kwargs.pop(f"{keyword}_format_type", format_type)
+                        _storage_account: str = _decode(keyword, "storage_account", storage_account, kwargs)
+                        _storage_type: str = _decode(keyword, "storage_type", storage_type, kwargs)
+                        _container: str = _decode(keyword, "container", container, kwargs)
+                        _key: str = _decode(keyword, "key", key, kwargs)
+                        _output_parent_path: str = _decode(keyword, "output_parent_path", output_parent_path, kwargs)
+                        _file_name_prefix: str = _decode(keyword, "file_name_prefix", file_name_prefix, kwargs)
+                        _file_name: str = _decode(keyword, "file_name", file_name, kwargs)
+                        _file_name_suffix: str = _decode(keyword, "file_name_suffix", file_name_suffix, kwargs)
+                        _export: bool = _decode(keyword, "export", export, kwargs)
+                        _format_type: bool = _decode(keyword, "format_type", format_type, kwargs)
 
                         # add prefix and suffix
                         if _file_name_prefix is not None:
