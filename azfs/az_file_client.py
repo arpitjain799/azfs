@@ -1205,7 +1205,7 @@ class AzFileClient:
     # import decorator
     def import_decorator(
             self,
-            export_df: ExportDecorator,
+            export_decorator: ExportDecorator,
             *,
             keyword_list: Optional[list],
             storage_account: Optional[str] = None,
@@ -1219,7 +1219,7 @@ class AzFileClient:
             export: bool = True,
             format_type: str = "csv"
     ):
-        for func_dict in export_df.functions:
+        for func_dict in export_decorator.functions:
             original_func_name = func_dict['function_name']
             func_name = func_dict['register_as']
             func = func_dict['function']
