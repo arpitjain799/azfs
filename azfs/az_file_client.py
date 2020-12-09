@@ -1,4 +1,5 @@
 import bz2
+import copy
 from functools import partial
 import gzip
 import io
@@ -1205,56 +1206,130 @@ class AzFileClient:
     # import decorator
     def import_decorator(
             self,
-            export_df: ExportDecorator,
+            export_decorator: ExportDecorator,
             *,
-            keyword_list: Optional[list],
-            storage_account: Optional[str] = None,
-            storage_type: str = "blob",
-            container: Optional[str] = None,
-            key: Optional[str] = None,
-            output_parent_path: Optional[str] = None,
-            file_name_prefix: Optional[str] = None,
-            file_name: Optional[str] = None,
-            file_name_suffix: Optional[str] = None,
-            export: bool = True,
-            format_type: str = "csv"
+            keyword_list: list,
+            storage_account: Optional[Union[str, dict]] = None,
+            storage_type: Union[str, dict] = "blob",
+            container: Optional[Union[str, dict]] = None,
+            key: Optional[Union[str, dict]] = None,
+            output_parent_path: Optional[Union[str, dict]] = None,
+            file_name_prefix: Optional[Union[str, dict]] = None,
+            file_name: Optional[Union[str, dict]] = None,
+            file_name_suffix: Optional[Union[str, dict]] = None,
+            export: Union[bool, dict] = True,
+            format_type: Union[str, dict] = "csv"
     ):
-        for func_dict in export_df.functions:
+        for func_dict in export_decorator.functions:
             original_func_name = func_dict['function_name']
             func_name = func_dict['register_as']
             func = func_dict['function']
 
-            def _wrapper(_func: callable):
+            def _decode(
+                    kwrd: str,
+                    suffix: str,
+                    kwargs_import_function: Optional[Union[str, dict]],
+                    kwargs_invoke_function: dict) -> Optional[Union[str, bool]]:
+                """
+
+                Args:
+                    kwrd: one item in `keyword_list`
+                    suffix:
+                    kwargs_import_function: argument from `azfs.AzFileClient::import_decorator`
+                    kwargs_invoke_function: argument from user-defined function
+                """
+                keyword = f"{kwrd}_{suffix}"
+                target_value_from_invoke_function = kwargs_invoke_function.pop(keyword, None)
+                if target_value_from_invoke_function is not None:
+                    return target_value_from_invoke_function
+                if kwargs_import_function is None:
+                    return None
+                if type(kwargs_import_function) is str \
+                        or type(kwargs_import_function) is bool \
+                        or type(kwargs_import_function) is list:
+                    return kwargs_import_function
+                elif type(kwargs_import_function) is dict:
+                    return kwargs_import_function.pop(kwrd, None)
+                else:
+                    raise ValueError("type not matched.")
+
+            def _wrapper(
+                    _func: callable,
+            ):
+
                 def _actual_function(*args, **kwargs):
+                    """
+                    do the things below:
+                        1. get additional argument with `dict.pop`
+                        2. attach additional prefix/suffix to `file_name`
+                        3. append output candidate paths
+                        4. pick the parameter based on user-defined function and call it
+                        5. get the return value of the user-defined function as pd.DataFrame
+                        6. save the pd.DataFrame to the paths
+
+                    Args:
+                        *args:
+                        **kwargs:
+
+                    Returns:
+                        pd.DataFrame as same as user-defined function
+                    """
                     output_path_list = []
                     for keyword in keyword_list:
-                        _storage_account: str = kwargs.pop(f"{keyword}_storage_account", storage_account)
-                        _storage_type: str = kwargs.pop(f"{keyword}_storage_type", storage_type)
-                        _container: str = kwargs.pop(f"{keyword}_container", container)
-                        _key: str = kwargs.pop(f"{keyword}_key", key)
-                        _output_parent_path: str = kwargs.pop(f"{keyword}_output_parent_path", output_parent_path)
-                        _file_name_prefix: str = kwargs.pop(f"{keyword}_file_name_prefix", file_name_prefix)
-                        _file_name: str = kwargs.pop(f"{keyword}_file_name", file_name)
-                        _file_name_suffix: str = kwargs.pop(f"{keyword}_file_name_suffix", file_name_suffix)
-                        _export: bool = kwargs.pop(f"{keyword}_export", export)
-                        _format_type: bool = kwargs.pop(f"{keyword}_format_type", format_type)
+                        storage_account_: str = _decode(
+                            keyword, "storage_account", copy.deepcopy(storage_account), kwargs)
+                        storage_type_: str = _decode(
+                            keyword, "storage_type", copy.deepcopy(storage_type), kwargs)
+                        container_: str = _decode(
+                            keyword, "container", copy.deepcopy(container), kwargs)
+                        key_: str = _decode(
+                            keyword, "key", copy.deepcopy(key), kwargs)
+                        output_parent_path_: str = _decode(
+                            keyword, "output_parent_path", copy.deepcopy(output_parent_path), kwargs)
+                        file_name_prefix_: str = _decode(
+                            keyword, "file_name_prefix", copy.deepcopy(file_name_prefix), kwargs)
+                        file_name_: Union[str, list] = _decode(
+                            keyword, "file_name", copy.deepcopy(file_name), kwargs)
+                        file_name_suffix_: str = _decode(
+                            keyword, "file_name_suffix", copy.deepcopy(file_name_suffix), kwargs)
+                        export_: bool = _decode(
+                            keyword, "export", copy.deepcopy(export), kwargs)
+                        format_type_: bool = _decode(
+                            keyword, "format_type", copy.deepcopy(format_type), kwargs)
 
-                        # add prefix and suffix
-                        if _file_name_prefix is not None:
-                            _file_name = f"{_file_name_prefix}{_file_name}"
-                        if _file_name_suffix is not None:
-                            _file_name = f"{_file_name}{_file_name_suffix}"
+                        # add prefix
+                        if file_name_prefix_ is not None:
+                            if type(file_name_) is str:
+                                file_name_ = f"{file_name_prefix_}{file_name_}"
+                            elif type(file_name_) is list:
+                                file_name_ = [f"{file_name_prefix_}{f}" for f in file_name_]
+                        # add suffix
+                        if file_name_suffix_ is not None:
+                            if type(file_name_) is str:
+                                file_name_ = f"{file_name_}{file_name_suffix_}"
+                            elif type(file_name_) is list:
+                                file_name_ = [f"{f}{file_name_suffix_}" for f in file_name_]
 
-                        if _export:
-                            if _output_parent_path is not None and _file_name is not None:
-                                output_path_list.append(f"{_output_parent_path}/{_file_name}.{_format_type}")
-                            elif _storage_account is not None and \
-                                    _storage_type is not None and \
-                                    _container is not None and \
-                                    _key is not None and \
-                                    _file_name is not None:
-                                _url = f"https://{_storage_account}.{_storage_type}.core.windows.net"
-                                output_path_list.append(f"{_url}/{_container}/{_key}/{_file_name}.{_format_type}")
+                        if export_:
+                            if output_parent_path_ is not None and file_name_ is not None:
+                                if type(file_name_) is str:
+                                    output_path_list.append(f"{output_parent_path_}/{file_name_}.{format_type_}")
+                                elif type(file_name_) is list:
+                                    output_path_list.append(
+                                        [f"{output_parent_path_}/{f}.{format_type_}" for f in file_name_]
+                                    )
+                            elif storage_account_ is not None and \
+                                    storage_type_ is not None and \
+                                    container_ is not None and \
+                                    key_ is not None and \
+                                    file_name_ is not None:
+                                url_ = f"https://{storage_account_}.{storage_type_}.core.windows.net"
+                                if type(file_name_) is str:
+                                    output_path_list.append(f"{url_}/{container_}/{key_}/{file_name_}.{format_type_}")
+                                elif type(file_name_) is list:
+                                    output_path_list.append(
+                                        [f"{url_}/{container_}/{key_}/{f}.{format_type_}" for f in file_name_]
+                                    )
 
                     # check the argument for the `_func`, and replace only `keyword arguments`
                     sig = signature(_func)
@@ -1265,19 +1340,44 @@ class AzFileClient:
 
                     # get return of the `_func`
                     _df = _func(*args, **kwargs_for_func)
-                    if type(_df) is not pd.DataFrame:
+                    if type(_df) is pd.DataFrame:
+                        # single dataframe
+                        for output_path in output_path_list:
+                            if output_path.endswith("csv"):
+                                self.write_csv(path=output_path, df=_df, **kwargs)
+                            elif output_path.endswith("pickle"):
+                                self.write_pickle(path=output_path, df=_df, **kwargs)
+                            else:
+                                raise ValueError("file format must be `csv` or `pickle`")
+                    elif type(_df) is tuple:
+                        # multiple dataframe
+                        for output_path in output_path_list:
+                            if len(output_path) != len(_df):
+                                raise ValueError("size of output path and function response not matched")
+                            for i_df, i_output_path in zip(_df, output_path):
+                                if type(i_df) is not pd.DataFrame:
+                                    ValueError("return type of the given function must be `pd.DataFrame`")
+                                if i_output_path.endswith("csv"):
+                                    self.write_csv(path=i_output_path, df=i_df, **kwargs)
+                                elif i_output_path.endswith("pickle"):
+                                    self.write_pickle(path=i_output_path, df=i_df, **kwargs)
+                                else:
+                                    raise ValueError("file format must be `csv` or `pickle`")
+
+                    else:
                         raise ValueError("return type of the given function must be `pd.DataFrame`")
-                    for output_path in output_path_list:
-                        if output_path.endswith("csv"):
-                            self.write_csv(path=output_path, df=_df, **kwargs)
-                        elif output_path.endswith("pickle"):
-                            self.write_pickle(path=output_path, df=_df, **kwargs)
-                        else:
-                            raise ValueError("file format must be `csv` or `pickle`")
                     return _df
                 return _actual_function
 
             def _generate_parameter_args(additional_args: str) -> str:
+                """
+
+                Args:
+                    additional_args:
+
+                Returns:
+                    argument example for the function
+                """
                 args_list = [
                     f"\n        == params for {additional_args} ==",
                     f"\n        {additional_args}_storage_account: (str) storage account, default:={storage_account}",
@@ -1286,7 +1386,7 @@ class AzFileClient:
                     f"\n        {additional_args}_key: (str) folder path, default:={key}",
                     f"\n        {additional_args}_output_parent_path: (str) parent path, default:={output_parent_path}",
                     f"\n        {additional_args}_file_name_prefix: (str) file name prefix, default:={file_name_prefix}"
-                    f"\n        {additional_args}_file_name: (str) file name, default:={file_name}"
+                    f"\n        {additional_args}_file_name: (str, list) file name, default:={file_name}"
                     f"\n        {additional_args}_file_name_suffix: (str) file name suffix, default:={file_name_suffix}"
                     f"\n        {additional_args}_export: (bool) export if True, default:={export}"
                     f"\n        {additional_args}_format_type: (str) file format, default:={format_type}"
@@ -1294,6 +1394,16 @@ class AzFileClient:
                 return "".join(args_list)
 
             def _append_docs(docstring: Optional[str], additional_args_list: list) -> str:
+                """
+                append/generate docstring
+
+                Args:
+                    docstring: already written docstring
+                    additional_args_list:
+
+                Returns:
+                    `docstring`
+                """
                 result_list = []
                 if docstring is not None:
                     for s in docstring.split("\n\n"):
@@ -1312,7 +1422,11 @@ class AzFileClient:
                     result_list.append(addition_s)
                     return "\n\n".join(result_list)
 
-            wrapped_function = _wrapper(_func=func)
+            # mutable object is to Null, after initial reference
+            #
+            wrapped_function = _wrapper(
+                _func=func,
+            )
             wrapped_function.__doc__ = _append_docs(func.__doc__, additional_args_list=keyword_list)
             if func_name in self.__dict__.keys():
                 warnings.warn(f"function name `{func_name}` is already given.")
