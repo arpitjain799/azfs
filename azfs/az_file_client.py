@@ -1243,7 +1243,9 @@ class AzFileClient:
                     return target_value_from_invoke_function
                 if kwargs_import_function is None:
                     return None
-                if type(kwargs_import_function) is str or type(kwargs_import_function) is bool:
+                if type(kwargs_import_function) is str \
+                        or type(kwargs_import_function) is bool \
+                        or type(kwargs_import_function) is list:
                     return kwargs_import_function
                 elif type(kwargs_import_function) is dict:
                     return kwargs_import_function.pop(kwrd, None)
@@ -1260,27 +1262,44 @@ class AzFileClient:
                         _key: str = _decode(keyword, "key", key, kwargs)
                         _output_parent_path: str = _decode(keyword, "output_parent_path", output_parent_path, kwargs)
                         _file_name_prefix: str = _decode(keyword, "file_name_prefix", file_name_prefix, kwargs)
-                        _file_name: str = _decode(keyword, "file_name", file_name, kwargs)
+                        _file_name: Union[str, list] = _decode(keyword, "file_name", file_name, kwargs)
                         _file_name_suffix: str = _decode(keyword, "file_name_suffix", file_name_suffix, kwargs)
                         _export: bool = _decode(keyword, "export", export, kwargs)
                         _format_type: bool = _decode(keyword, "format_type", format_type, kwargs)
 
-                        # add prefix and suffix
+                        # add prefix
                         if _file_name_prefix is not None:
-                            _file_name = f"{_file_name_prefix}{_file_name}"
+                            if type(_file_name) is str:
+                                _file_name = f"{_file_name_prefix}{_file_name}"
+                            elif type(_file_name) is list:
+                                _file_name = [f"{_file_name_prefix}{f}" for f in _file_name]
+                        # add suffix
                         if _file_name_suffix is not None:
-                            _file_name = f"{_file_name}{_file_name_suffix}"
+                            if type(_file_name) is str:
+                                _file_name = f"{_file_name}{_file_name_suffix}"
+                            elif type(_file_name) is list:
+                                _file_name = [f"{f}{_file_name_suffix}" for f in _file_name]
 
                         if _export:
                             if _output_parent_path is not None and _file_name is not None:
-                                output_path_list.append(f"{_output_parent_path}/{_file_name}.{_format_type}")
+                                if type(_file_name) is str:
+                                    output_path_list.append(f"{_output_parent_path}/{_file_name}.{_format_type}")
+                                elif type(_file_name) is list:
+                                    output_path_list.append(
+                                        [f"{_output_parent_path}/{f}.{_format_type}" for f in _file_name]
+                                    )
                             elif _storage_account is not None and \
                                     _storage_type is not None and \
                                     _container is not None and \
                                     _key is not None and \
                                     _file_name is not None:
                                 _url = f"https://{_storage_account}.{_storage_type}.core.windows.net"
-                                output_path_list.append(f"{_url}/{_container}/{_key}/{_file_name}.{_format_type}")
+                                if type(_file_name) is str:
+                                    output_path_list.append(f"{_url}/{_container}/{_key}/{_file_name}.{_format_type}")
+                                elif type(_file_name) is list:
+                                    output_path_list.append(
+                                        [f"{_url}/{_container}/{_key}/{f}.{_format_type}" for f in _file_name]
+                                    )
 
                     # check the argument for the `_func`, and replace only `keyword arguments`
                     sig = signature(_func)
