@@ -1220,6 +1220,46 @@ class AzFileClient:
             export: Union[bool, dict] = True,
             format_type: Union[str, dict] = "csv"
     ):
+        """
+        set user-defined functions as attribute of azfs.AzFileClient.
+
+
+        Args:
+            export_decorator:
+            keyword_list:
+            storage_account:
+            storage_type:
+            container:
+            key:
+            output_parent_path:
+            file_name_prefix:
+            file_name:
+            file_name_suffix:
+            export:
+            format_type:
+
+        Returns:
+            None
+
+        Examples:
+            >>> import azfs
+            >>> your_decorator = azfs.ExportDecorator()
+            # define your function with the decorator
+            >>> @your_decorator.register()
+            >>> def your_function(name) -> pd.DataFrame:
+            >>>     return pd.DataFrame()
+            # import the defined function
+            >>> azc = azfs.AzFileClient()
+            >>> azc.import_decorator(
+            ...     export_decorator=your_decorator,
+            ...     keyword_list=["prod"],
+            ...     output_parent_path="https://your_storage_account.../your_container/your_folder",
+            ... )
+            # then you can save your pd.DataFrame.
+            >>> azc.your_function(name="your_name", prod_file_name="example")
+
+
+        """
         for func_dict in export_decorator.functions:
             original_func_name = func_dict['function_name']
             func_name = func_dict['register_as']
