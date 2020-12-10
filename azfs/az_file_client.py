@@ -1218,7 +1218,8 @@ class AzFileClient:
             file_name: Optional[Union[str, dict]] = None,
             file_name_suffix: Optional[Union[str, dict]] = None,
             export: Union[bool, dict] = True,
-            format_type: Union[str, dict] = "csv"
+            format_type: Union[str, dict] = "csv",
+            **write_kwargs
     ):
         """
         set user-defined functions as attribute of azfs.AzFileClient.
@@ -1237,6 +1238,7 @@ class AzFileClient:
             file_name_suffix:
             export:
             format_type:
+            write_kwargs: additional default parameters, ex. to_csv(**write_kwargs)
 
         Returns:
             None
@@ -1314,6 +1316,9 @@ class AzFileClient:
                     Returns:
                         pd.DataFrame as same as user-defined function
                     """
+                    # default keyword arguments for `to_csv`, etc
+                    write_kwargs_ = copy.deepcopy(write_kwargs)
+                    # output_path_list
                     output_path_list = []
                     for keyword in keyword_list:
                         storage_account_: str = _decode(
@@ -1382,11 +1387,12 @@ class AzFileClient:
                     _df = _func(*args, **kwargs_for_func)
                     if type(_df) is pd.DataFrame:
                         # single dataframe
+                        write_kwargs_.update(kwargs)
                         for output_path in output_path_list:
                             if output_path.endswith("csv"):
-                                self.write_csv(path=output_path, df=_df, **kwargs)
+                                self.write_csv(path=output_path, df=_df, **write_kwargs_)
                             elif output_path.endswith("pickle"):
-                                self.write_pickle(path=output_path, df=_df, **kwargs)
+                                self.write_pickle(path=output_path, df=_df, **write_kwargs_)
                             else:
                                 raise ValueError("file format must be `csv` or `pickle`")
                     elif type(_df) is tuple:
