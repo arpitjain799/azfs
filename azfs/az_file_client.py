@@ -1218,8 +1218,50 @@ class AzFileClient:
             file_name: Optional[Union[str, dict]] = None,
             file_name_suffix: Optional[Union[str, dict]] = None,
             export: Union[bool, dict] = True,
-            format_type: Union[str, dict] = "csv"
+            format_type: Union[str, dict] = "csv",
+            **write_kwargs
     ):
+        """
+        set user-defined functions as attribute of azfs.AzFileClient.
+
+
+        Args:
+            export_decorator:
+            keyword_list:
+            storage_account:
+            storage_type:
+            container:
+            key:
+            output_parent_path:
+            file_name_prefix:
+            file_name:
+            file_name_suffix:
+            export:
+            format_type:
+            write_kwargs: additional default parameters, ex. to_csv(**write_kwargs)
+
+        Returns:
+            None
+
+        Examples:
+            >>> import azfs
+            >>> your_decorator = azfs.ExportDecorator()
+            # define your function with the decorator
+            >>> @your_decorator.register()
+            >>> def your_function(name) -> pd.DataFrame:
+            >>>     return pd.DataFrame()
+            # import the defined function
+            >>> azc = azfs.AzFileClient()
+            >>> azc.import_decorator(
+            ...     export_decorator=your_decorator,
+            ...     keyword_list=["prod"],
+            ...     output_parent_path="https://your_storage_account.../your_container/your_folder",
+            ... )
+            # then you can save your pd.DataFrame.
+            >>> azc.your_function(name="your_name", prod_file_name="example")
+
+
+        """
         for func_dict in export_decorator.functions:
             original_func_name = func_dict['function_name']
             func_name = func_dict['register_as']
@@ -1242,6 +1284,9 @@ class AzFileClient:
                 target_value_from_invoke_function = kwargs_invoke_function.pop(keyword, None)
                 if target_value_from_invoke_function is not None:
                     return target_value_from_invoke_function
+                if suffix in kwargs_invoke_function:
+                    return kwargs_invoke_function[suffix]
+
                 if kwargs_import_function is None:
                     return None
                 if type(kwargs_import_function) is str \
@@ -1274,6 +1319,9 @@ class AzFileClient:
                     Returns:
                         pd.DataFrame as same as user-defined function
                     """
+                    # default keyword arguments for `to_csv`, etc
+                    write_kwargs_ = copy.deepcopy(write_kwargs)
+                    # output_path_list
                     output_path_list = []
                     for keyword in keyword_list:
                         storage_account_: str = _decode(
@@ -1312,24 +1360,45 @@ class AzFileClient:
 
                         if export_:
                             if output_parent_path_ is not None and file_name_ is not None:
-                                if type(file_name_) is str:
-                                    output_path_list.append(f"{output_parent_path_}/{file_name_}.{format_type_}")
-                                elif type(file_name_) is list:
-                                    output_path_list.append(
-                                        [f"{output_parent_path_}/{f}.{format_type_}" for f in file_name_]
-                                    )
+                                if key_ is not None:
+                                    if type(file_name_) is str:
+                                        output_path_list.append(
+                                            f"{output_parent_path_}/{key_}/{file_name_}.{format_type_}")
+                                    elif type(file_name_) is list:
+                                        output_path_list.append(
+                                            [f"{output_parent_path_}/{key_}/{f}.{format_type_}" for f in file_name_]
+                                        )
+                                else:
+                                    if type(file_name_) is str:
+                                        output_path_list.append(
+                                            f"{output_parent_path_}/{file_name_}.{format_type_}")
+                                    elif type(file_name_) is list:
+                                        output_path_list.append(
+                                            [f"{output_parent_path_}/{f}.{format_type_}" for f in file_name_]
+                                        )
+
                             elif storage_account_ is not None and \
                                     storage_type_ is not None and \
                                     container_ is not None and \
-                                    key_ is not None and \
                                     file_name_ is not None:
-                                url_ = f"https://{storage_account_}.{storage_type_}.core.windows.net"
-                                if type(file_name_) is str:
-                                    output_path_list.append(f"{url_}/{container_}/{key_}/{file_name_}.{format_type_}")
-                                elif type(file_name_) is list:
-                                    output_path_list.append(
-                                        [f"{url_}/{container_}/{key_}/{f}.{format_type_}" for f in file_name_]
-                                    )
+                                if key_ is not None:
+                                    url_ = f"https://{storage_account_}.{storage_type_}.core.windows.net"
+                                    if type(file_name_) is str:
+                                        output_path_list.append(
+                                            f"{url_}/{container_}/{key_}/{file_name_}.{format_type_}")
+                                    elif type(file_name_) is list:
+                                        output_path_list.append(
+                                            [f"{url_}/{container_}/{key_}/{f}.{format_type_}" for f in file_name_]
+                                        )
+                                else:
+                                    url_ = f"https://{storage_account_}.{storage_type_}.core.windows.net"
+                                    if type(file_name_) is str:
+                                        output_path_list.append(
+                                            f"{url_}/{container_}/{file_name_}.{format_type_}")
+                                    elif type(file_name_) is list:
+                                        output_path_list.append(
+                                            [f"{url_}/{container_}/{f}.{format_type_}" for f in file_name_]
+                                        )
 
                     # check the argument for the `_func`, and replace only `keyword arguments`
                     sig = signature(_func)
@@ -1340,13 +1409,32 @@ class AzFileClient:
 
                     # get return of the `_func`
                     _df = _func(*args, **kwargs_for_func)
+
+                    # pop unused kwargs for `to_csv` or `to_pickle`
+                    pop_keyword_list = [
+                        "storage_account",
+                        "storage_type",
+                        "container",
+                        "key",
+                        "output_parent_path",
+                        "file_name_prefix",
+                        "file_name",
+                        "file_name_suffix",
+                        "export",
+                        "file_format"
+                    ]
+                    for pop_keyword in pop_keyword_list:
+                        _ = kwargs.pop(pop_keyword, None)
+
+                    # additional kwargs for `to_csv` or `to_pickle`
+                    write_kwargs_.update(kwargs)
                     if type(_df) is pd.DataFrame:
                         # single dataframe
                         for output_path in output_path_list:
                             if output_path.endswith("csv"):
-                                self.write_csv(path=output_path, df=_df, **kwargs)
+                                self.write_csv(path=output_path, df=_df, **write_kwargs_)
                             elif output_path.endswith("pickle"):
-                                self.write_pickle(path=output_path, df=_df, **kwargs)
+                                self.write_pickle(path=output_path, df=_df, **write_kwargs_)
                             else:
                                 raise ValueError("file format must be `csv` or `pickle`")
                     elif type(_df) is tuple:
