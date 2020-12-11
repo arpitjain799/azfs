@@ -1,9 +1,9 @@
 from azfs.az_file_client import (
-    AzFileClient
+    AzFileClient,
+    export_decorator
 )
 
 from azfs.az_file_system import AzFileSystem
-from azfs.export_decorator import export_decorator
 from azfs.utils import BlobPathDecoder
 
 from .table_storage import (
