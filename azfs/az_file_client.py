@@ -1228,7 +1228,7 @@ class AzFileClient:
     # import decorator
     def import_decorator(
             self,
-            export_decorator: ExportDecorator,
+            decorator: ExportDecorator,
             *,
             keyword_list: list,
             storage_account: Optional[Union[str, dict]] = None,
@@ -1248,7 +1248,7 @@ class AzFileClient:
 
 
         Args:
-            export_decorator:
+            decorator:
             keyword_list:
             storage_account:
             storage_type:
@@ -1275,7 +1275,7 @@ class AzFileClient:
             # import the defined function
             >>> azc = azfs.AzFileClient()
             >>> azc.import_decorator(
-            ...     export_decorator=your_decorator,
+            ...     decorator=your_decorator,
             ...     keyword_list=["prod"],
             ...     output_parent_path="https://your_storage_account.../your_container/your_folder",
             ... )
@@ -1284,7 +1284,7 @@ class AzFileClient:
 
 
         """
-        for func_dict in export_decorator.functions:
+        for func_dict in decorator.functions:
             original_func_name = func_dict['function_name']
             func_name = func_dict['register_as']
             func = func_dict['function']
