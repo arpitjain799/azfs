@@ -19,3 +19,6 @@ class ExportDecorator:
         return _wrapper
 
     __call__ = register
+
+
+export_decorator = ExportDecorator()
