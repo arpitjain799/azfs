@@ -1267,9 +1267,9 @@ class AzFileClient:
 
         Examples:
             >>> import azfs
-            >>> your_decorator = azfs.ExportDecorator()
+            >>> from azfs import export_decorator
             # define your function with the decorator
-            >>> @your_decorator.register()
+            >>> @export_decorator.register()
             >>> def your_function(name) -> pd.DataFrame:
             >>>     return pd.DataFrame()
             # import the defined function
