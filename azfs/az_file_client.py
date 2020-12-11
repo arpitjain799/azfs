@@ -1554,3 +1554,5 @@ class AzFileClient:
     put.__doc__ = _put.__doc__
     upload = _put
     upload.__doc__ = _put.__doc__
+
+    # end of the main file
