@@ -1360,24 +1360,45 @@ class AzFileClient:
 
                         if export_:
                             if output_parent_path_ is not None and file_name_ is not None:
-                                if type(file_name_) is str:
-                                    output_path_list.append(f"{output_parent_path_}/{file_name_}.{format_type_}")
-                                elif type(file_name_) is list:
-                                    output_path_list.append(
-                                        [f"{output_parent_path_}/{f}.{format_type_}" for f in file_name_]
-                                    )
+                                if key_ is not None:
+                                    if type(file_name_) is str:
+                                        output_path_list.append(
+                                            f"{output_parent_path_}/{key_}/{file_name_}.{format_type_}")
+                                    elif type(file_name_) is list:
+                                        output_path_list.append(
+                                            [f"{output_parent_path_}/{key_}/{f}.{format_type_}" for f in file_name_]
+                                        )
+                                else:
+                                    if type(file_name_) is str:
+                                        output_path_list.append(
+                                            f"{output_parent_path_}/{file_name_}.{format_type_}")
+                                    elif type(file_name_) is list:
+                                        output_path_list.append(
+                                            [f"{output_parent_path_}/{f}.{format_type_}" for f in file_name_]
+                                        )
+
                             elif storage_account_ is not None and \
                                     storage_type_ is not None and \
                                     container_ is not None and \
-                                    key_ is not None and \
                                     file_name_ is not None:
-                                url_ = f"https://{storage_account_}.{storage_type_}.core.windows.net"
-                                if type(file_name_) is str:
-                                    output_path_list.append(f"{url_}/{container_}/{key_}/{file_name_}.{format_type_}")
-                                elif type(file_name_) is list:
-                                    output_path_list.append(
-                                        [f"{url_}/{container_}/{key_}/{f}.{format_type_}" for f in file_name_]
-                                    )
+                                if key_ is not None:
+                                    url_ = f"https://{storage_account_}.{storage_type_}.core.windows.net"
+                                    if type(file_name_) is str:
+                                        output_path_list.append(
+                                            f"{url_}/{container_}/{key_}/{file_name_}.{format_type_}")
+                                    elif type(file_name_) is list:
+                                        output_path_list.append(
+                                            [f"{url_}/{container_}/{key_}/{f}.{format_type_}" for f in file_name_]
+                                        )
+                                else:
+                                    url_ = f"https://{storage_account_}.{storage_type_}.core.windows.net"
+                                    if type(file_name_) is str:
+                                        output_path_list.append(
+                                            f"{url_}/{container_}/{file_name_}.{format_type_}")
+                                    elif type(file_name_) is list:
+                                        output_path_list.append(
+                                            [f"{url_}/{container_}/{f}.{format_type_}" for f in file_name_]
+                                        )
 
                     # check the argument for the `_func`, and replace only `keyword arguments`
                     sig = signature(_func)
