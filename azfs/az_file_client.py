@@ -1284,6 +1284,9 @@ class AzFileClient:
                 target_value_from_invoke_function = kwargs_invoke_function.pop(keyword, None)
                 if target_value_from_invoke_function is not None:
                     return target_value_from_invoke_function
+                if suffix in kwargs_invoke_function:
+                    return kwargs_invoke_function[suffix]
+
                 if kwargs_import_function is None:
                     return None
                 if type(kwargs_import_function) is str \
@@ -1385,9 +1388,27 @@ class AzFileClient:
 
                     # get return of the `_func`
                     _df = _func(*args, **kwargs_for_func)
+
+                    # pop unused kwargs for `to_csv` or `to_pickle`
+                    pop_keyword_list = [
+                        "storage_account",
+                        "storage_type",
+                        "container",
+                        "key",
+                        "output_parent_path",
+                        "file_name_prefix",
+                        "file_name",
+                        "file_name_suffix",
+                        "export",
+                        "file_format"
+                    ]
+                    for pop_keyword in pop_keyword_list:
+                        _ = kwargs.pop(pop_keyword, None)
+
+                    # additional kwargs for `to_csv` or `to_pickle`
+                    write_kwargs_.update(kwargs)
                     if type(_df) is pd.DataFrame:
                         # single dataframe
-                        write_kwargs_.update(kwargs)
                         for output_path in output_path_list:
                             if output_path.endswith("csv"):
                                 self.write_csv(path=output_path, df=_df, **write_kwargs_)
