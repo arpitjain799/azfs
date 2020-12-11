@@ -17,13 +17,35 @@ from azure.identity import DefaultAzureCredential
 from azure.core.exceptions import ResourceNotFoundError
 from azfs.clients import AzfsClient, TextReader
 from azfs.error import AzfsInputError
-from azfs.export_decorator import ExportDecorator
 from azfs.utils import (
     BlobPathDecoder,
     ls_filter
 )
 
-__all__ = ["AzFileClient"]
+__all__ = ["AzFileClient", "export_decorator"]
+
+
+class ExportDecorator:
+    def __init__(self):
+        self.functions = []
+
+    def register(self, _as: Optional[str] = None):
+        def _wrapper(func: callable):
+            func_name = func.__name__
+            self.functions.append(
+                {
+                    "function_name": func_name,
+                    "register_as": _as if _as is not None else func_name,
+                    "function": func
+                }
+            )
+            return func
+        return _wrapper
+
+    __call__ = register
+
+
+export_decorator = ExportDecorator()
 
 
 def _wrap_quick_load(inputs: dict):
