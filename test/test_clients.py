@@ -702,7 +702,7 @@ class TestExists:
 
 
 class TestExportDecorator:
-    decorator = azfs.ExportDecorator()
+    decorator = azfs.export_decorator
 
     @staticmethod
     @decorator.register()
