@@ -7,11 +7,11 @@ class CliFactory:
     def __init__(self, target_file_dir):
         self.target_file_dir = target_file_dir
 
-    def load_export_decorator(self):
+    def load_export_decorator(self, target_file_name: str):
         if self.target_file_dir not in sys.path:
             sys.path.insert(0, self.target_file_dir)
         try:
-            app = importlib.import_module('__init__')
+            app = importlib.import_module(target_file_name)
             export_decorator = getattr(app, 'export_decorator')
         except SyntaxError as e:
             message = (

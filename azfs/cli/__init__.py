@@ -26,14 +26,17 @@ def cmd(ctx, target_file_dir: str):
 
 
 @cmd.command("decorator")
+@click.option('--target-file-name')
 @click.pass_context
-def decorator(ctx):
+def decorator(ctx, target_file_name):
     """
     Display the function to deploy based script `app.py`.
 
     """
     cli_factory: CliFactory = ctx.obj['factory']
-    _export_decorator: azfs.az_file_client.ExportDecorator = cli_factory.load_export_decorator()
+    if target_file_name is None:
+        target_file_name = "__init__"
+    _export_decorator: azfs.az_file_client.ExportDecorator = cli_factory.load_export_decorator(target_file_name)
     append_functions = len(_export_decorator.functions)
 
     az_file_client_path = f"{azfs.__file__.rsplit('/', 1)[0]}/az_file_client.py"
