@@ -1,5 +1,6 @@
 from inspect import signature
 import os
+from typing import List
 
 import click
 import azfs
@@ -25,20 +26,7 @@ def cmd(ctx, target_file_dir: str):
     ctx.obj['factory'] = CliFactory(target_file_dir=target_file_dir)
 
 
-@cmd.command("decorator")
-@click.option('--target-file-name')
-@click.pass_context
-def decorator(ctx, target_file_name):
-    """
-    Display the function to deploy based script `app.py`.
-
-    """
-    cli_factory: CliFactory = ctx.obj['factory']
-    if target_file_name is None:
-        target_file_name = "__init__"
-    _export_decorator: azfs.az_file_client.ExportDecorator = cli_factory.load_export_decorator(target_file_name)
-    append_functions = len(_export_decorator.functions)
-
+def _read_az_file_client_content() -> List[str]:
     az_file_client_path = f"{azfs.__file__.rsplit('/', 1)[0]}/az_file_client.py"
 
     with open(az_file_client_path, "r") as f:
@@ -50,7 +38,20 @@ def decorator(ctx, target_file_name):
             break
 
     az_file_client_content = az_file_client_content[:main_file_index+1]
-    for f in _export_decorator.functions:
+    return az_file_client_content
+
+
+def _write_az_file_client_content(az_file_client_content: List[str]):
+    az_file_client_path = f"{azfs.__file__.rsplit('/', 1)[0]}/az_file_client.py"
+    with open(az_file_client_path, "w") as f:
+        f.writelines(az_file_client_content)
+
+
+def _load_functions(export_decorator) -> (int, List[str]):
+    new_lines = []
+    append_functions = len(export_decorator.functions)
+
+    for f in export_decorator.functions:
         function_name = f['register_as']
         sig = signature(f['function'])
         ideal_sig = str(sig)
@@ -63,12 +64,39 @@ def decorator(ctx, target_file_name):
         new_mock_function: str = MOCK_FUNCTION % (function_name, ideal_sig)
 
         new_mock_function_content = [f"{s}\n" for s in new_mock_function.split("\n")]
-        az_file_client_content.extend(new_mock_function_content)
+        new_lines.extend(new_mock_function_content)
         click.echo(f"    * {function_name}{ideal_sig}")
+    return append_functions, new_lines
 
-    with open(az_file_client_path, "w") as f:
-        f.writelines(az_file_client_content)
 
+@cmd.command("decorator")
+@click.option("-n", "--target-file-name", multiple=True)
+@click.pass_context
+def decorator(ctx, target_file_name):
+    """
+    Display the function to deploy based script `app.py`.
+
+    """
+    cli_factory: CliFactory = ctx.obj['factory']
+    if target_file_name is None:
+        target_file_name = ["__init__"]
+    # append_functions = len(_export_decorator.functions)
+    append_functions = 0
+    append_content = []
+    for file_name in target_file_name:
+        _export_decorator: azfs.az_file_client.ExportDecorator = cli_factory.load_export_decorator(file_name)
+        newly_added, tmp_append_content = _load_functions(_export_decorator)
+        append_functions += newly_added
+        append_content.extend(tmp_append_content)
+
+    # read `az_file_client.py`
+    az_file_client_content = _read_az_file_client_content()
+
+    # append newly added content
+    az_file_client_content.extend(append_content)
+
+    # over-write `az_file_client.py`
+    _write_az_file_client_content(az_file_client_content)
     click.echo(f"{append_functions} functions are successfully added.")
 
 
