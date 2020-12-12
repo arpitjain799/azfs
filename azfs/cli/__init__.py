@@ -72,17 +72,19 @@ def _load_functions(export_decorator) -> (int, List[str]):
 @cmd.command("decorator")
 @click.option("-n", "--target-file-name", multiple=True)
 @click.pass_context
-def decorator(ctx, target_file_name):
+def decorator(ctx, target_file_name: list):
     """
-    Display the function to deploy based script `app.py`.
+    add decorated functions to the file `az_file_client.py`
 
     """
     cli_factory: CliFactory = ctx.obj['factory']
-    if target_file_name is None:
+    if len(target_file_name) == 0:
         target_file_name = ["__init__"]
-    # append_functions = len(_export_decorator.functions)
+    # set initial state
     append_functions = 0
     append_content = []
+
+    # append target functions
     for file_name in target_file_name:
         _export_decorator: azfs.az_file_client.ExportDecorator = cli_factory.load_export_decorator(file_name)
         newly_added, tmp_append_content = _load_functions(_export_decorator)
