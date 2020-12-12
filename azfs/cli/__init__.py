@@ -34,7 +34,7 @@ def decorator(ctx):
     """
     cli_factory: CliFactory = ctx.obj['factory']
     _export_decorator: azfs.az_file_client.ExportDecorator = cli_factory.load_export_decorator()
-    click.echo(_export_decorator.functions)
+    append_functions = len(_export_decorator.functions)
 
     az_file_client_path = f"{azfs.__file__.rsplit('/', 1)[0]}/az_file_client.py"
 
@@ -48,6 +48,7 @@ def decorator(ctx):
 
     az_file_client_content = az_file_client_content[:main_file_index+1]
     for f in _export_decorator.functions:
+        function_name = f['register_as']
         sig = signature(f['function'])
         ideal_sig = str(sig)
         if "()" in ideal_sig:
@@ -56,13 +57,16 @@ def decorator(ctx):
             ideal_sig = ideal_sig.replace(")", ", **kwargs)")
 
         ideal_sig = ideal_sig.replace("pandas.core.frame.DataFrame", "pd.DataFrame")
-        new_mock_function: str = MOCK_FUNCTION % (f['register_as'], ideal_sig)
+        new_mock_function: str = MOCK_FUNCTION % (function_name, ideal_sig)
 
         new_mock_function_content = [f"{s}\n" for s in new_mock_function.split("\n")]
         az_file_client_content.extend(new_mock_function_content)
+        click.echo(f"    * {function_name}{ideal_sig}")
 
     with open(az_file_client_path, "w") as f:
         f.writelines(az_file_client_content)
+
+    click.echo(f"{append_functions} functions are successfully added.")
 
 
 def main():

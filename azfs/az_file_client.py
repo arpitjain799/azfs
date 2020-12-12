@@ -9,7 +9,8 @@ import lzma
 import multiprocessing as mp
 import pickle
 import re
-from typing import Union, Optional, List
+# to accept all typing.*
+from typing import *
 import warnings
 
 import pandas as pd
