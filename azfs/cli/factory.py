@@ -22,6 +22,3 @@ class CliFactory:
                       ) % (getattr(e, 'filename'), e.lineno, e.text, e.msg)
             raise RuntimeError(message)
         return export_decorator
-
-    def load_functions(self):
-        pass
