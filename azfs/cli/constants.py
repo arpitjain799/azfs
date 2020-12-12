@@ -7,3 +7,10 @@ WELCOME_PROMPT = r"""
 
 Welcome AzFS.
 """
+
+
+MOCK_FUNCTION = """
+    @staticmethod
+    def %s%s:
+        pass
+"""
