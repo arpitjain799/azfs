@@ -22,7 +22,7 @@ from azfs.utils import (
     ls_filter
 )
 
-__all__ = ["AzFileClient", "export_decorator"]
+__all__ = ["AzFileClient", "ExportDecorator", "export_decorator"]
 
 
 class ExportDecorator:
