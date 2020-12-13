@@ -9,7 +9,8 @@ import lzma
 import multiprocessing as mp
 import pickle
 import re
-from typing import Union, Optional, List
+# to accept all typing.*
+from typing import *
 import warnings
 
 import pandas as pd
@@ -17,13 +18,35 @@ from azure.identity import DefaultAzureCredential
 from azure.core.exceptions import ResourceNotFoundError
 from azfs.clients import AzfsClient, TextReader
 from azfs.error import AzfsInputError
-from azfs.export_decorator import ExportDecorator
 from azfs.utils import (
     BlobPathDecoder,
     ls_filter
 )
 
-__all__ = ["AzFileClient"]
+__all__ = ["AzFileClient", "ExportDecorator", "export_decorator"]
+
+
+class ExportDecorator:
+    def __init__(self):
+        self.functions = []
+
+    def register(self, _as: Optional[str] = None):
+        def _wrapper(func: callable):
+            func_name = func.__name__
+            self.functions.append(
+                {
+                    "function_name": func_name,
+                    "register_as": _as if _as is not None else func_name,
+                    "function": func
+                }
+            )
+            return func
+        return _wrapper
+
+    __call__ = register
+
+
+export_decorator = ExportDecorator()
 
 
 def _wrap_quick_load(inputs: dict):
@@ -1206,7 +1229,7 @@ class AzFileClient:
     # import decorator
     def import_decorator(
             self,
-            export_decorator: ExportDecorator,
+            decorator: ExportDecorator,
             *,
             keyword_list: list,
             storage_account: Optional[Union[str, dict]] = None,
@@ -1226,7 +1249,7 @@ class AzFileClient:
 
 
         Args:
-            export_decorator:
+            decorator:
             keyword_list:
             storage_account:
             storage_type:
@@ -1245,15 +1268,15 @@ class AzFileClient:
 
         Examples:
             >>> import azfs
-            >>> your_decorator = azfs.ExportDecorator()
+            >>> from azfs import export_decorator
             # define your function with the decorator
-            >>> @your_decorator.register()
+            >>> @export_decorator.register()
             >>> def your_function(name) -> pd.DataFrame:
             >>>     return pd.DataFrame()
             # import the defined function
             >>> azc = azfs.AzFileClient()
             >>> azc.import_decorator(
-            ...     export_decorator=your_decorator,
+            ...     decorator=your_decorator,
             ...     keyword_list=["prod"],
             ...     output_parent_path="https://your_storage_account.../your_container/your_folder",
             ... )
@@ -1262,7 +1285,7 @@ class AzFileClient:
 
 
         """
-        for func_dict in export_decorator.functions:
+        for func_dict in decorator.functions:
             original_func_name = func_dict['function_name']
             func_name = func_dict['register_as']
             func = func_dict['function']
@@ -1532,3 +1555,5 @@ class AzFileClient:
     put.__doc__ = _put.__doc__
     upload = _put
     upload.__doc__ = _put.__doc__
+
+    # end of the main file

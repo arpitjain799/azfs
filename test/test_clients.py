@@ -702,7 +702,7 @@ class TestExists:
 
 
 class TestExportDecorator:
-    decorator = azfs.ExportDecorator()
+    decorator = azfs.export_decorator
 
     @staticmethod
     @decorator.register()
@@ -735,6 +735,17 @@ class TestExportDecorator:
 
         """
         return pd.DataFrame(), pd.DataFrame
+
+    @staticmethod
+    @decorator.register()
+    def export_str_example_multiple(_input: str) -> (str, str):
+        """
+
+        Args:
+            _input: some_name
+
+        """
+        return "a", "b"
 
     azc = azfs.AzFileClient()
     azc.import_decorator(decorator, keyword_list=["prod"])
@@ -798,3 +809,35 @@ class TestExportDecorator:
                 dev_format_type="parquet",
             )
 
+        with pytest.raises(ValueError):
+            self.azc_multiple.export_df_example_multiple(
+                _input="error",
+                prod_file_name_prefix="prefix",
+                prod_file_name="the_file_name_1",
+                prod_file_name_suffix="suffix",
+                prod_format_type="parquet",
+
+                dev_storage_account="devazfs",
+                dev_container="test_container",
+                dev_file_name_prefix="prefix",
+                dev_file_name=["the_file_name_1", "the_file_name_2"],
+                dev_file_name_suffix="suffix",
+                dev_format_type="parquet",
+            )
+
+        with pytest.raises(ValueError):
+            self.azc_multiple.export_str_example_multiple(
+                _input="error",
+                prod_file_name_prefix="prefix",
+                prod_file_name=["the_file_name_1", "the_file_name_2"],
+                prod_file_name_suffix="suffix",
+                prod_format_type="parquet",
+
+                dev_storage_account="devazfs",
+                dev_container="test_container",
+                dev_key="some_folder",
+                dev_file_name_prefix="prefix",
+                dev_file_name=["the_file_name_1", "the_file_name_2"],
+                dev_file_name_suffix="suffix",
+                dev_format_type="parquet",
+            )
