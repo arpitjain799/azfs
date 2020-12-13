@@ -8,3 +8,13 @@ class AzfsInputError(AzfsBaseError):
 
 class AzfsInvalidPathError(AzfsBaseError):
     pass
+
+
+class AzfsImportDecoratorError(AzfsBaseError):
+    pass
+
+
+class AzfsDecoratorFileFormatError(AzfsImportDecoratorError):
+    pass
+
+
