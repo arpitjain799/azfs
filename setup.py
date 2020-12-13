@@ -49,9 +49,15 @@ setuptools.setup(
         "azure-storage-blob>=12.3.0",
         "azure-storage-file-datalake>=12.0.0",
         "azure-storage-queue>=12.1.1",
-        "fsspec"
+        "fsspec",
+        "click"
     ],
     license="MIT",
+    entry_points={
+        'console_scripts': [
+            'azfs = azfs.cli:main',
+        ]
+    },
     classifiers=[
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.6",
