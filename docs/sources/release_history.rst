@@ -2,6 +2,15 @@
 Release History
 ###############
 
+0.2.11 (2020-12-13)
+*******************
+
+* update ``azfs.ExportDecorator()``
+    * accept basic argument (`#123 <https://github.com/gsy0911/azfs/issues/123>`_)
+    * add appropriate error (`#124 <https://github.com/gsy0911/azfs/issues/124>`_)
+* add cli command ``$ azfs decorator -n {file_name}``
+    * to avoid PEP8 violation on PyCharm(`#121 <https://github.com/gsy0911/azfs/issues/121>`_)
+
 0.2.10 (2020-12-10)
 *******************
 

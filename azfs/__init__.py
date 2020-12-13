@@ -12,7 +12,7 @@ from .table_storage import (
 )
 
 # comparable tuple
-VERSION = (0, 2, 10)
+VERSION = (0, 2, 11)
 # generate __version__ via VERSION tuple
 __version__ = ".".join(map(str, VERSION))
 
