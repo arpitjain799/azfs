@@ -17,7 +17,10 @@ import pandas as pd
 from azure.identity import DefaultAzureCredential
 from azure.core.exceptions import ResourceNotFoundError
 from azfs.clients import AzfsClient, TextReader
-from azfs.error import AzfsInputError
+from azfs.error import (
+    AzfsInputError,
+    AzfsDecoratorFileFormatError
+)
 from azfs.utils import (
     BlobPathDecoder,
     ls_filter
@@ -1459,7 +1462,7 @@ class AzFileClient:
                             elif output_path.endswith("pickle"):
                                 self.write_pickle(path=output_path, df=_df, **write_kwargs_)
                             else:
-                                raise ValueError("file format must be `csv` or `pickle`")
+                                raise AzfsDecoratorFileFormatError("file format must be `csv` or `pickle`")
                     elif type(_df) is tuple:
                         # multiple dataframe
                         for output_path in output_path_list:
@@ -1473,7 +1476,7 @@ class AzFileClient:
                                 elif i_output_path.endswith("pickle"):
                                     self.write_pickle(path=i_output_path, df=i_df, **kwargs)
                                 else:
-                                    raise ValueError("file format must be `csv` or `pickle`")
+                                    raise AzfsDecoratorFileFormatError("file format must be `csv` or `pickle`")
 
                     else:
                         raise ValueError("return type of the given function must be `pd.DataFrame`")
