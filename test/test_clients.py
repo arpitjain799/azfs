@@ -14,7 +14,12 @@ from azure.core.exceptions import ResourceNotFoundError
 from azfs.clients.blob_client import AzBlobClient
 from azfs.clients.datalake_client import AzDataLakeClient
 from azfs.clients.client_interface import ClientInterface
-from azfs.error import AzfsInputError
+from azfs.error import (
+    AzfsInputError,
+    AzfsDecoratorFileFormatError,
+    AzfsDecoratorReturnTypeError,
+    AzfsDecoratorSizeNotMatchedError
+)
 import pandas as pd
 
 
@@ -761,7 +766,7 @@ class TestExportDecorator:
     )
 
     def test_return_type_not_matched(self):
-        with pytest.raises(ValueError):
+        with pytest.raises(AzfsDecoratorReturnTypeError):
             self.azc.export_df_example_1(
                 _input="error",
                 prod_file_name_prefix="prefix",
@@ -769,8 +774,18 @@ class TestExportDecorator:
                 prod_file_name_suffix="suffix"
             )
 
+        with pytest.raises(AzfsDecoratorReturnTypeError):
+            self.azc.export_df_example_1(
+                _input="error",
+                prod_output_parent_path="https://prodazfs.dfs.core.windows.net/test_caontainer",
+                prod_key="test",
+                prod_file_name_prefix="prefix",
+                prod_file_name="the_file_name",
+                prod_file_name_suffix="suffix"
+            )
+
     def test_format_type_not_matched(self):
-        with pytest.raises(ValueError):
+        with pytest.raises(AzfsDecoratorFileFormatError):
             self.azc.export_df_example_2(
                 _input="error",
                 prod_output_parent_path="https://testazfs.dfs.core.windows.net/test_caontainer",
@@ -780,7 +795,7 @@ class TestExportDecorator:
                 prod_format_type="parquet"
             )
 
-        with pytest.raises(ValueError):
+        with pytest.raises(AzfsDecoratorFileFormatError):
             self.azc.export_df_example_3(
                 _input="error",
                 prod_storage_account="testazfs",
@@ -792,7 +807,7 @@ class TestExportDecorator:
                 prod_format_type="parquet"
             )
 
-        with pytest.raises(ValueError):
+        with pytest.raises(AzfsDecoratorFileFormatError):
             self.azc_multiple.export_df_example_multiple(
                 _input="error",
                 prod_file_name_prefix="prefix",
@@ -809,7 +824,7 @@ class TestExportDecorator:
                 dev_format_type="parquet",
             )
 
-        with pytest.raises(ValueError):
+        with pytest.raises(AzfsDecoratorSizeNotMatchedError):
             self.azc_multiple.export_df_example_multiple(
                 _input="error",
                 prod_file_name_prefix="prefix",
@@ -825,7 +840,7 @@ class TestExportDecorator:
                 dev_format_type="parquet",
             )
 
-        with pytest.raises(ValueError):
+        with pytest.raises(AzfsDecoratorReturnTypeError):
             self.azc_multiple.export_str_example_multiple(
                 _input="error",
                 prod_file_name_prefix="prefix",
