@@ -19,7 +19,9 @@ from azure.core.exceptions import ResourceNotFoundError
 from azfs.clients import AzfsClient, TextReader
 from azfs.error import (
     AzfsInputError,
-    AzfsDecoratorFileFormatError
+    AzfsDecoratorFileFormatError,
+    AzfsDecoratorSizeNotMatchedError,
+    AzfsDecoratorReturnTypeError
 )
 from azfs.utils import (
     BlobPathDecoder,
@@ -1462,24 +1464,24 @@ class AzFileClient:
                             elif output_path.endswith("pickle"):
                                 self.write_pickle(path=output_path, df=_df, **write_kwargs_)
                             else:
-                                raise AzfsDecoratorFileFormatError("file format must be `csv` or `pickle`")
+                                raise AzfsDecoratorFileFormatError()
                     elif type(_df) is tuple:
                         # multiple dataframe
                         for output_path in output_path_list:
                             if len(output_path) != len(_df):
-                                raise ValueError("size of output path and function response not matched")
+                                raise AzfsDecoratorSizeNotMatchedError()
                             for i_df, i_output_path in zip(_df, output_path):
                                 if type(i_df) is not pd.DataFrame:
-                                    ValueError("return type of the given function must be `pd.DataFrame`")
+                                    raise AzfsDecoratorReturnTypeError()
                                 if i_output_path.endswith("csv"):
                                     self.write_csv(path=i_output_path, df=i_df, **kwargs)
                                 elif i_output_path.endswith("pickle"):
                                     self.write_pickle(path=i_output_path, df=i_df, **kwargs)
                                 else:
-                                    raise AzfsDecoratorFileFormatError("file format must be `csv` or `pickle`")
+                                    raise AzfsDecoratorFileFormatError()
 
                     else:
-                        raise ValueError("return type of the given function must be `pd.DataFrame`")
+                        raise AzfsDecoratorReturnTypeError()
                     return _df
                 return _actual_function
 
