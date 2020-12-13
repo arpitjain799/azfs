@@ -774,6 +774,16 @@ class TestExportDecorator:
                 prod_file_name_suffix="suffix"
             )
 
+        with pytest.raises(AzfsDecoratorReturnTypeError):
+            self.azc.export_df_example_1(
+                _input="error",
+                prod_output_parent_path="https://prodazfs.dfs.core.windows.net/test_caontainer",
+                prod_key="test",
+                prod_file_name_prefix="prefix",
+                prod_file_name="the_file_name",
+                prod_file_name_suffix="suffix"
+            )
+
     def test_format_type_not_matched(self):
         with pytest.raises(AzfsDecoratorFileFormatError):
             self.azc.export_df_example_2(
