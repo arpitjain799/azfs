@@ -2,6 +2,12 @@
 Release History
 ###############
 
+0.2.12 (2020-12-15)
+*******************
+
+* update ``azfs.ExportDecorator()``
+    * attach ``under_bar`` each argument to avoid conflict (`#130 <https://github.com/gsy0911/azfs/issues/130>`_)
+
 0.2.11 (2020-12-13)
 *******************
 
