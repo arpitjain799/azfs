@@ -1286,7 +1286,7 @@ class AzFileClient:
             ...     output_parent_path="https://your_storage_account.../your_container/your_folder",
             ... )
             # then you can save your pd.DataFrame.
-            >>> azc.your_function(name="your_name", prod_file_name="example")
+            >>> azc.your_function(name="your_name", _prod_file_name="example")
 
 
         """
@@ -1539,7 +1539,6 @@ class AzFileClient:
                     return "\n\n".join(result_list)
 
             # mutable object is to Null, after initial reference
-            #
             wrapped_function = _wrapper(
                 _func=func,
             )
