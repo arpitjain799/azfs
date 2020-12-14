@@ -1286,7 +1286,7 @@ class AzFileClient:
             ...     output_parent_path="https://your_storage_account.../your_container/your_folder",
             ... )
             # then you can save your pd.DataFrame.
-            >>> azc.your_function(name="your_name", prod_file_name="example")
+            >>> azc.your_function(name="your_name", _prod_file_name="example")
 
 
         """
@@ -1308,12 +1308,12 @@ class AzFileClient:
                     kwargs_import_function: argument from `azfs.AzFileClient::import_decorator`
                     kwargs_invoke_function: argument from user-defined function
                 """
-                keyword = f"{kwrd}_{suffix}"
+                keyword = f"_{kwrd}_{suffix}"
                 target_value_from_invoke_function = kwargs_invoke_function.pop(keyword, None)
                 if target_value_from_invoke_function is not None:
                     return target_value_from_invoke_function
-                if suffix in kwargs_invoke_function:
-                    return kwargs_invoke_function[suffix]
+                if f"_{suffix}" in kwargs_invoke_function:
+                    return kwargs_invoke_function[f"_{suffix}"]
 
                 if kwargs_import_function is None:
                     return None
@@ -1440,16 +1440,16 @@ class AzFileClient:
 
                     # pop unused kwargs for `to_csv` or `to_pickle`
                     pop_keyword_list = [
-                        "storage_account",
-                        "storage_type",
-                        "container",
-                        "key",
-                        "output_parent_path",
-                        "file_name_prefix",
-                        "file_name",
-                        "file_name_suffix",
-                        "export",
-                        "file_format"
+                        "_storage_account",
+                        "_storage_type",
+                        "_container",
+                        "_key",
+                        "_output_parent_path",
+                        "_file_name_prefix",
+                        "_file_name",
+                        "_file_name_suffix",
+                        "_export",
+                        "_file_format"
                     ]
                     for pop_keyword in pop_keyword_list:
                         _ = kwargs.pop(pop_keyword, None)
@@ -1539,7 +1539,6 @@ class AzFileClient:
                     return "\n\n".join(result_list)
 
             # mutable object is to Null, after initial reference
-            #
             wrapped_function = _wrapper(
                 _func=func,
             )
