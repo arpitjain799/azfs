@@ -1494,19 +1494,86 @@ class AzFileClient:
                 Returns:
                     argument example for the function
                 """
+                args_ = "\n        _{args}_{kwrd}: ({_type}) {exp}, default:={default}"
+                args_dict = [
+                    {
+                        "args": additional_args,
+                        "kwrd": "storage_account",
+                        "_type": "str",
+                        "exp": "storage account",
+                        "default": storage_account
+                    },
+                    {
+                        "args": additional_args,
+                        "kwrd": "storage_type",
+                        "_type": "str",
+                        "exp": "`blob` or `dfs`",
+                        "default": storage_type
+                    },
+                    {
+                        "args": additional_args,
+                        "kwrd": "container",
+                        "_type": "str",
+                        "exp": "container",
+                        "default": container
+                    },
+                    {
+                        "args": additional_args,
+                        "kwrd": "key",
+                        "_type": "str",
+                        "exp": "as same as folder name",
+                        "default": key
+                    },
+                    {
+                        "args": additional_args,
+                        "kwrd": "output_parent_path",
+                        "_type": "str",
+                        "exp": "ex. https://st.blob.core.windows.net/container/{_key}/{file_name}",
+                        "default": output_parent_path
+                    },
+                    {
+                        "args": additional_args,
+                        "kwrd": "file_name_prefix",
+                        "_type": "str",
+                        "exp": "{file_name_prefix}{file_name}",
+                        "default": file_name_prefix
+                    },
+                    {
+                        "args": additional_args,
+                        "kwrd": "file_name",
+                        "_type": "str, List[str]",
+                        "exp": "file_name",
+                        "default": "file_name"
+                    },
+                    {
+                        "args": additional_args,
+                        "kwrd": "file_name_suffix",
+                        "_type": "str",
+                        "exp": "{file_name}{file_name_suffix}",
+                        "default": file_name_suffix
+                    },
+                    {
+                        "args": additional_args,
+                        "kwrd": "export",
+                        "_type": "bool",
+                        "exp": "export if True",
+                        "default": export
+                    },
+                    {
+                        "args": additional_args,
+                        "kwrd": "format_type",
+                        "_type": "str",
+                        "exp": "`csv` or `pickle`",
+                        "default": format_type
+                    },
+                ]
+
                 args_list = [
                     f"\n        == params for {additional_args} ==",
-                    f"\n        {additional_args}_storage_account: (str) storage account, default:={storage_account}",
-                    f"\n        {additional_args}_storage_type: (str) `blob` or `dfs`, default:={storage_type}",
-                    f"\n        {additional_args}_container: (str) container, default:={container}",
-                    f"\n        {additional_args}_key: (str) folder path, default:={key}",
-                    f"\n        {additional_args}_output_parent_path: (str) parent path, default:={output_parent_path}",
-                    f"\n        {additional_args}_file_name_prefix: (str) file name prefix, default:={file_name_prefix}"
-                    f"\n        {additional_args}_file_name: (str, list) file name, default:={file_name}"
-                    f"\n        {additional_args}_file_name_suffix: (str) file name suffix, default:={file_name_suffix}"
-                    f"\n        {additional_args}_export: (bool) export if True, default:={export}"
-                    f"\n        {additional_args}_format_type: (str) file format, default:={format_type}"
                 ]
+                args_list.extend(
+                    [args_.format(**d) for d in args_dict]
+                )
                 return "".join(args_list)
 
             def _append_docs(docstring: Optional[str], additional_args_list: list) -> str:
