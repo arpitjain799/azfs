@@ -60,7 +60,10 @@ def _load_functions(export_decorator) -> (int, List[str]):
         else:
             ideal_sig = ideal_sig.replace(")", ", **kwargs)", 1)
 
-        ideal_sig = ideal_sig.replace("pandas.core.frame.DataFrame", "pd.DataFrame")
+        # currently replace only pd.DataFrame related.
+        ideal_sig = ideal_sig \
+            .replace("pandas.core.frame.DataFrame", "pd.DataFrame") \
+            .replace("<class 'pd.DataFrame'>", "pd.DataFrame")
         new_mock_function: str = MOCK_FUNCTION % (function_name, ideal_sig)
 
         new_mock_function_content = [f"{s}\n" for s in new_mock_function.split("\n")]
