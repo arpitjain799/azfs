@@ -56,9 +56,9 @@ def _load_functions(export_decorator) -> (int, List[str]):
         sig = signature(f['function'])
         ideal_sig = str(sig)
         if "()" in ideal_sig:
-            ideal_sig = ideal_sig.replace(")", "**kwargs)")
+            ideal_sig = ideal_sig.replace(")", "**kwargs)", 1)
         else:
-            ideal_sig = ideal_sig.replace(")", ", **kwargs)")
+            ideal_sig = ideal_sig.replace(")", ", **kwargs)", 1)
 
         ideal_sig = ideal_sig.replace("pandas.core.frame.DataFrame", "pd.DataFrame")
         new_mock_function: str = MOCK_FUNCTION % (function_name, ideal_sig)
