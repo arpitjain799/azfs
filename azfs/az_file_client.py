@@ -1485,7 +1485,7 @@ class AzFileClient:
                     return _df
                 return _actual_function
 
-            def _generate_parameter_args(additional_args: str) -> str:
+            def _generate_parameter_args(additional_args: Optional[str] = None) -> str:
                 """
 
                 Args:
@@ -1494,20 +1494,87 @@ class AzFileClient:
                 Returns:
                     argument example for the function
                 """
-                args_list = [
-                    f"\n        == params for {additional_args} ==",
-                    f"\n        {additional_args}_storage_account: (str) storage account, default:={storage_account}",
-                    f"\n        {additional_args}_storage_type: (str) `blob` or `dfs`, default:={storage_type}",
-                    f"\n        {additional_args}_container: (str) container, default:={container}",
-                    f"\n        {additional_args}_key: (str) folder path, default:={key}",
-                    f"\n        {additional_args}_output_parent_path: (str) parent path, default:={output_parent_path}",
-                    f"\n        {additional_args}_file_name_prefix: (str) file name prefix, default:={file_name_prefix}"
-                    f"\n        {additional_args}_file_name: (str, list) file name, default:={file_name}"
-                    f"\n        {additional_args}_file_name_suffix: (str) file name suffix, default:={file_name_suffix}"
-                    f"\n        {additional_args}_export: (bool) export if True, default:={export}"
-                    f"\n        {additional_args}_format_type: (str) file format, default:={format_type}"
+                indent_ = "\n        "
+                basic_args_ = "_{kwrd}: ({_type}) {exp}, default:={default}"
+                args_dict = [
+                    {
+                        "kwrd": "storage_account",
+                        "_type": "str",
+                        "exp": "storage account",
+                        "default": storage_account
+                    },
+                    {
+                        "kwrd": "storage_type",
+                        "_type": "str",
+                        "exp": "`blob` or `dfs`",
+                        "default": storage_type
+                    },
+                    {
+                        "kwrd": "container",
+                        "_type": "str",
+                        "exp": "container",
+                        "default": container
+                    },
+                    {
+                        "kwrd": "key",
+                        "_type": "str",
+                        "exp": "as same as folder name",
+                        "default": key
+                    },
+                    {
+                        "kwrd": "output_parent_path",
+                        "_type": "str",
+                        "exp": "ex. https://st.blob.core.windows.net/container/{_key}/{file_name}",
+                        "default": output_parent_path
+                    },
+                    {
+                        "kwrd": "file_name_prefix",
+                        "_type": "str",
+                        "exp": "{file_name_prefix}{file_name}",
+                        "default": file_name_prefix
+                    },
+                    {
+                        "kwrd": "file_name",
+                        "_type": "str, List[str]",
+                        "exp": "file_name",
+                        "default": "file_name"
+                    },
+                    {
+                        "kwrd": "file_name_suffix",
+                        "_type": "str",
+                        "exp": "{file_name}{file_name_suffix}",
+                        "default": file_name_suffix
+                    },
+                    {
+                        "kwrd": "export",
+                        "_type": "bool",
+                        "exp": "export if True",
+                        "default": export
+                    },
+                    {
+                        "kwrd": "format_type",
+                        "_type": "str",
+                        "exp": "`csv` or `pickle`",
+                        "default": format_type
+                    },
                 ]
-                return "".join(args_list)
+
+                if additional_args is not None:
+                    args_list = [
+                        f"\n        == params for {additional_args} ==",
+                    ]
+                    args_list.extend(
+                        [f"{indent_}_{additional_args}{basic_args_.format(**d)}" for d in args_dict]
+                    )
+                    return "".join(args_list)
+                else:
+                    args_list = [
+                        f"\n        == params for default ==",
+                    ]
+                    args_list.extend(
+                        [f"{indent_}{basic_args_.format(**d)}" for d in args_dict]
+                    )
+                    return "".join(args_list)
 
             def _append_docs(docstring: Optional[str], additional_args_list: list) -> str:
                 """
@@ -1524,7 +1591,10 @@ class AzFileClient:
                 if docstring is not None:
                     for s in docstring.split("\n\n"):
                         if "Args:" in s:
-                            args_list = [_generate_parameter_args(arg) for arg in additional_args_list]
+                            # to set `default` parameter
+                            additional_args_list_ = [None]
+                            additional_args_list_.extend(additional_args_list)
+                            args_list = [_generate_parameter_args(arg) for arg in additional_args_list_]
                             addition_s = f"{s}{''.join(args_list)}"
                             result_list.append(addition_s)
                         else:
@@ -1533,15 +1603,16 @@ class AzFileClient:
                 else:
                     result_list.append(f"original_func_name:= {original_func_name}")
                     result_list.append("Args:")
-                    args_list = [_generate_parameter_args(arg) for arg in additional_args_list]
+                    # to set `default` parameter
+                    additional_args_list_ = [None]
+                    additional_args_list_.extend(additional_args_list)
+                    args_list = [_generate_parameter_args(arg) for arg in additional_args_list_]
                     addition_s = ''.join(args_list)
                     result_list.append(addition_s)
                     return "\n\n".join(result_list)
 
             # mutable object is to Null, after initial reference
-            wrapped_function = _wrapper(
-                _func=func,
-            )
+            wrapped_function = _wrapper(_func=func)
             wrapped_function.__doc__ = _append_docs(func.__doc__, additional_args_list=keyword_list)
             if func_name in self.__dict__.keys():
                 warnings.warn(f"function name `{func_name}` is already given.")
