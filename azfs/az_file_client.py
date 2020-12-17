@@ -1592,7 +1592,10 @@ class AzFileClient:
                 if docstring is not None:
                     for s in docstring.split("\n\n"):
                         if "Args:" in s:
-                            args_list = [_generate_parameter_args(arg) for arg in additional_args_list]
+                            # to set `default` parameter
+                            additional_args_list_ = [None]
+                            additional_args_list_.extend(additional_args_list)
+                            args_list = [_generate_parameter_args(arg) for arg in additional_args_list_]
                             addition_s = f"{s}{''.join(args_list)}"
                             result_list.append(addition_s)
                         else:
@@ -1601,7 +1604,10 @@ class AzFileClient:
                 else:
                     result_list.append(f"original_func_name:= {original_func_name}")
                     result_list.append("Args:")
-                    args_list = [_generate_parameter_args(arg) for arg in additional_args_list]
+                    # to set `default` parameter
+                    additional_args_list_ = [None]
+                    additional_args_list_.extend(additional_args_list)
+                    args_list = [_generate_parameter_args(arg) for arg in additional_args_list_]
                     addition_s = ''.join(args_list)
                     result_list.append(addition_s)
                     return "\n\n".join(result_list)
