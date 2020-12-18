@@ -10,7 +10,12 @@ Welcome AzFS.
 
 
 MOCK_FUNCTION = """
-    @staticmethod
-    def %s%s:
-        pass
+    try:
+        @staticmethod
+        def %s%s:
+            pass
+    except SyntaxError as e:
+        print(e)
+    except ImportError as e:
+        print(e)
 """
