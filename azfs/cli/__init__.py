@@ -1,5 +1,6 @@
 from inspect import signature
 import os
+import re
 from typing import List
 
 import click
@@ -48,6 +49,28 @@ def _write_az_file_client_content(az_file_client_content: List[str]):
 
 
 def _load_functions(export_decorator) -> (int, List[str]):
+
+    def _decode_types(input_str: str):
+        pattern = r"(<module '(?P<module_name>[A-Za-z0-9]+)' from '.+?'>)?(<class '(?P<class_name>.*?)'>)?"
+        result = re.match(pattern, input_str)
+        if not result:
+            return "", None
+        else:
+            result_dict = result.groupdict()
+            return _get_module_and_imports(**result_dict)
+
+    def _get_module_and_imports(module_name: str, class_name: str) -> (str, str):
+        if module_name is not None:
+            return module_name, f"import {module_name}"
+        elif class_name is not None:
+            if "." in class_name:
+                import_str = class_name.rsplit(".", 1)
+                return import_str[1], f"from {import_str[0]} import {import_str[1]}"
+            else:
+                return class_name, None
+        else:
+            raise ValueError
+
     new_lines = []
     append_functions = len(export_decorator.functions)
 
