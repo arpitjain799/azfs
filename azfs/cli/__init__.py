@@ -71,23 +71,39 @@ def _load_functions(export_decorator) -> (int, List[str]):
         else:
             raise ValueError
 
+    def _decode_signature(input_str: str):
+        module_pattern = r"<module '(?P<module_name>[A-Za-z0-9]+)' from '.+?'>"
+        class_pattern = r"<class '(?P<class_name>.*?)'>"
+
+        result = re.sub(module_pattern, r"\g<module_name>", input_str)
+        result = re.sub(class_pattern, r"\g<class_name>", result)
+        return result
+
     new_lines = []
     append_functions = len(export_decorator.functions)
 
     for f in export_decorator.functions:
+        # initialize
+        additional_import_list = []
+
         function_name = f['register_as']
         sig = signature(f['function'])
-        ideal_sig = str(sig)
+        for signature_params in sig.parameters:
+            annotation_candidate = sig.parameters[signature_params].annotation
+            annotation, import_candidate = _decode_types(str(annotation_candidate))
+            additional_import_list.append(import_candidate)
+
+        ideal_sig = _decode_signature(str(sig))
         if "()" in ideal_sig:
             ideal_sig = ideal_sig.replace(")", "**kwargs)", 1)
         else:
             ideal_sig = ideal_sig.replace(")", ", **kwargs)", 1)
 
-        # currently replace only pd.DataFrame related.
-        ideal_sig = ideal_sig \
-            .replace("pandas.core.frame.DataFrame", "pd.DataFrame") \
-            .replace("<class 'pd.DataFrame'>", "pd.DataFrame")
-        new_mock_function: str = MOCK_FUNCTION % (function_name, ideal_sig)
+        # create additional import
+        additional_import = "\n".join(set(additional_import_list))
+
+        # create mock function
+        new_mock_function: str = MOCK_FUNCTION % (additional_import, function_name, ideal_sig)
 
         new_mock_function_content = [f"{s}\n" for s in new_mock_function.split("\n")]
         new_lines.extend(new_mock_function_content)
