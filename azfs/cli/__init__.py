@@ -64,10 +64,10 @@ def _load_functions(export_decorator) -> (int, List[str]):
             return module_name, f"import {module_name}"
         elif class_name is not None:
             if "." in class_name:
-                import_str = class_name.rsplit(".", 1)
-                return import_str[1], f"from {import_str[0]} import {import_str[1]}"
+                import_str = class_name.split(".", 1)
+                return class_name, f"import {import_str[0]}"
             else:
-                return class_name, None
+                return class_name, ""
         else:
             raise ValueError
 
