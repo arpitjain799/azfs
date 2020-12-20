@@ -12,13 +12,10 @@ Welcome AzFS.
 MOCK_FUNCTION = """
     try:
         # import required modules
-        %s
-        
+        %s        
         @staticmethod
         def %s%s:
             pass
-    except SyntaxError as e:
-        print(e)
-    except ImportError as e:
-        print(e)
+    except NameError as e:
+        pass
 """
