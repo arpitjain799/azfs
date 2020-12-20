@@ -88,9 +88,16 @@ def _load_functions(export_decorator) -> (int, List[str]):
 
         function_name = f['register_as']
         sig = signature(f['function'])
+
+        # argument parameters
         for signature_params in sig.parameters:
             annotation_candidate = sig.parameters[signature_params].annotation
-            annotation, import_candidate = _decode_types(str(annotation_candidate))
+            _, import_candidate = _decode_types(str(annotation_candidate))
+            additional_import_list.append(import_candidate)
+
+        # return parameters
+        for signature_params in sig.return_annotation:
+            _, import_candidate = _decode_types(str(signature_params))
             additional_import_list.append(import_candidate)
 
         ideal_sig = _decode_signature(str(sig))
