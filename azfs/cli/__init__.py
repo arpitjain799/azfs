@@ -96,8 +96,20 @@ def _load_functions(export_decorator) -> (int, List[str]):
             additional_import_list.append(import_candidate)
 
         # return parameters
-        for signature_params in sig.return_annotation:
-            _, import_candidate = _decode_types(str(signature_params))
+        return_annotation = sig.return_annotation
+        return_annotation_type = type(return_annotation)
+        if str(return_annotation) == "<class 'inspect._empty'>":
+            # inspect._empty is not accessible
+            pass
+        elif str(return_annotation_type) == "<class 'typing._GenericAlias'>":
+            # typing._GenericAlias is also not accessible
+            pass
+        elif return_annotation_type == tuple:
+            for signature_params in return_annotation:
+                _, import_candidate = _decode_types(str(signature_params))
+                additional_import_list.append(import_candidate)
+        else:
+            _, import_candidate = _decode_types(str(return_annotation))
             additional_import_list.append(import_candidate)
 
         ideal_sig = _decode_signature(str(sig))
