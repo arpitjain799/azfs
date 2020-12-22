@@ -13,7 +13,6 @@ MOCK_FUNCTION = """
     try:
         # import required modules
         %s
-                
         @staticmethod
         def %s%s:
             pass

@@ -119,7 +119,10 @@ def _load_functions(export_decorator) -> (int, List[str]):
             ideal_sig = ideal_sig.replace(")", ", **kwargs)", 1)
 
         # create additional import
-        additional_import = f"import {', '.join([s for s in set(additional_import_list) if len(s) > 0])}"
+        additional_import_candidate = [s for s in set(additional_import_list) if len(s) > 0]
+        additional_import = ""
+        if len(additional_import_candidate) > 0:
+            additional_import = f"import {', '.join(additional_import_candidate)}\n"
 
         # create mock function
         new_mock_function: str = MOCK_FUNCTION % (additional_import, function_name, ideal_sig)
