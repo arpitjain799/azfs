@@ -2,6 +2,14 @@
 Release History
 ###############
 
+0.2.13 (2020-12-22)
+*******************
+
+* update ``azfs.ExportDecorator()``
+    * accept ``default_parameter`` each argument (`#128 <https://github.com/gsy0911/azfs/issues/128>`_)
+* BUG FIX: cli command ``$ azfs decorator -n {file_name}``
+    * NameError occurred (`#132 <https://github.com/gsy0911/azfs/issues/132>`_)
+
 0.2.12 (2020-12-15)
 *******************
 
