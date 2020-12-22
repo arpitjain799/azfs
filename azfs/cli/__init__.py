@@ -61,11 +61,11 @@ def _load_functions(export_decorator) -> (int, List[str]):
 
     def _get_module_and_imports(module_name: str, class_name: str) -> (str, str):
         if module_name is not None:
-            return module_name, f"import {module_name}"
+            return module_name, module_name
         elif class_name is not None:
             if "." in class_name:
                 import_str = class_name.split(".", 1)
-                return class_name, f"import {import_str[0]}"
+                return class_name, import_str[0]
             else:
                 return class_name, ""
         else:
@@ -119,7 +119,7 @@ def _load_functions(export_decorator) -> (int, List[str]):
             ideal_sig = ideal_sig.replace(")", ", **kwargs)", 1)
 
         # create additional import
-        additional_import = "\n".join(set(additional_import_list))
+        additional_import = f"import {', '.join([s for s in set(additional_import_list) if len(s) > 0])}"
 
         # create mock function
         new_mock_function: str = MOCK_FUNCTION % (additional_import, function_name, ideal_sig)

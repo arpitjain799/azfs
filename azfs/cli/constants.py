@@ -12,7 +12,8 @@ Welcome AzFS.
 MOCK_FUNCTION = """
     try:
         # import required modules
-        %s        
+        %s
+                
         @staticmethod
         def %s%s:
             pass
