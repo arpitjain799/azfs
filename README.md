@@ -75,6 +75,22 @@ df = azc.read().apply(function=lambda x: x[x['id'] == 'AAA']).csv(csv_pattern_pa
 df = azc.read(use_mp=True).apply(function=lambda x: x[x['id'] == 'AAA']).csv(csv_pattern_path)
 ```
 
+For `Queue` Storage
+
+```python
+import azfs
+queue_url = "https://{storage_account}.queue.core.windows.net/{queue_name}"
+
+azc = azfs.AzFileClient()
+queue_message = azc.get(queue_url)
+# message will not be deleted if `delete=False`
+# queue_message = azc.get(queue_url, delete=False)
+
+# get message content
+queue_content = queue_message.get('content')
+
+```
+
 For `Table` Storage
 
 ```python
