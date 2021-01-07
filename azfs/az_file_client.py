@@ -9,6 +9,8 @@ import lzma
 import multiprocessing as mp
 import pickle
 import re
+import sys
+import traceback as trc
 # to accept all typing.*
 from typing import *
 import warnings
@@ -1613,6 +1615,17 @@ class AzFileClient:
                     result_list.append(addition_s)
                     return "\n\n".join(result_list)
 
+            def _ignore_error_wrapper(_func: callable):
+                def _actual_function(*args, **kwargs):
+                    result = None
+                    try:
+                        result = _func(*args, **kwargs)
+                    except Exception as e:
+                        print(e)
+                        print(f"error occurred at: {_func.__name__}")
+                        print(f"{sys.exc_info()}\n{trc.format_exc()}")
+                    return result
+                return _actual_function
             # mutable object is to Null, after initial reference
             wrapped_function = _wrapper(_func=func)
             wrapped_function.__doc__ = _append_docs(func.__doc__, additional_args_list=keyword_list)
