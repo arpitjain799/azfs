@@ -1247,6 +1247,7 @@ class AzFileClient:
             file_name_suffix: Optional[Union[str, dict]] = None,
             export: Union[bool, dict] = True,
             format_type: Union[str, dict] = "csv",
+            ignore_error=False,
             **write_kwargs
     ):
         """
@@ -1266,6 +1267,7 @@ class AzFileClient:
             file_name_suffix:
             export:
             format_type:
+            ignore_error:
             write_kwargs: additional default parameters, ex. to_csv(**write_kwargs)
 
         Returns:
