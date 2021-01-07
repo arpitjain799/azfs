@@ -1283,7 +1283,7 @@ class AzFileClient:
             # import the defined function
             >>> azc = azfs.AzFileClient()
             >>> azc.import_decorator(
-            ...     decorator=your_decorator,
+            ...     decorator=export_decorator,
             ...     keyword_list=["prod"],
             ...     output_parent_path="https://your_storage_account.../your_container/your_folder",
             ... )
