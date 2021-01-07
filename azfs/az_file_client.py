@@ -9,6 +9,8 @@ import lzma
 import multiprocessing as mp
 import pickle
 import re
+import sys
+import traceback as trc
 # to accept all typing.*
 from typing import *
 import warnings
@@ -1247,6 +1249,7 @@ class AzFileClient:
             file_name_suffix: Optional[Union[str, dict]] = None,
             export: Union[bool, dict] = True,
             format_type: Union[str, dict] = "csv",
+            ignore_error=False,
             **write_kwargs
     ):
         """
@@ -1266,6 +1269,7 @@ class AzFileClient:
             file_name_suffix:
             export:
             format_type:
+            ignore_error:
             write_kwargs: additional default parameters, ex. to_csv(**write_kwargs)
 
         Returns:
@@ -1281,7 +1285,7 @@ class AzFileClient:
             # import the defined function
             >>> azc = azfs.AzFileClient()
             >>> azc.import_decorator(
-            ...     decorator=your_decorator,
+            ...     decorator=export_decorator,
             ...     keyword_list=["prod"],
             ...     output_parent_path="https://your_storage_account.../your_container/your_folder",
             ... )
@@ -1611,8 +1615,33 @@ class AzFileClient:
                     result_list.append(addition_s)
                     return "\n\n".join(result_list)
 
+            def _ignore_error_wrapper(_func: callable):
+                """
+                to ignore error
+
+                Args:
+                    _func: wrap function
+
+                Returns:
+
+                """
+                def _actual_function(*args, **kwargs):
+                    result = None
+                    try:
+                        result = _func(*args, **kwargs)
+                    except Exception as e:
+                        print(e)
+                        print(f"error occurred at: {_func.__name__}")
+                        print(f"{sys.exc_info()}\n{trc.format_exc()}")
+                    return result
+                return _actual_function
+
             # mutable object is to Null, after initial reference
             wrapped_function = _wrapper(_func=func)
+
+            # add ignore
+            if ignore_error:
+                wrapped_function = _ignore_error_wrapper(_func=wrapped_function)
             wrapped_function.__doc__ = _append_docs(func.__doc__, additional_args_list=keyword_list)
             if func_name in self.__dict__.keys():
                 warnings.warn(f"function name `{func_name}` is already given.")
