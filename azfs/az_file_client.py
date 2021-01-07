@@ -1616,6 +1616,15 @@ class AzFileClient:
                     return "\n\n".join(result_list)
 
             def _ignore_error_wrapper(_func: callable):
+                """
+                to ignore error
+
+                Args:
+                    _func: wrap function
+
+                Returns:
+
+                """
                 def _actual_function(*args, **kwargs):
                     result = None
                     try:
