@@ -1626,8 +1626,13 @@ class AzFileClient:
                         print(f"{sys.exc_info()}\n{trc.format_exc()}")
                     return result
                 return _actual_function
+
             # mutable object is to Null, after initial reference
             wrapped_function = _wrapper(_func=func)
+
+            # add ignore
+            if ignore_error:
+                wrapped_function = _ignore_error_wrapper(_func=wrapped_function)
             wrapped_function.__doc__ = _append_docs(func.__doc__, additional_args_list=keyword_list)
             if func_name in self.__dict__.keys():
                 warnings.warn(f"function name `{func_name}` is already given.")
