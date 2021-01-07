@@ -765,6 +765,13 @@ class TestExportDecorator:
         }
     )
 
+    azc_ignore_error = azfs.AzFileClient()
+    azc_ignore_error.import_decorator(
+        decorator,
+        keyword_list=["prod"],
+        ignore_error=True
+    )
+
     def test_return_type_not_matched(self):
         with pytest.raises(AzfsDecoratorReturnTypeError):
             self.azc.export_df_example_1(
@@ -856,3 +863,11 @@ class TestExportDecorator:
                 _dev_file_name_suffix="suffix",
                 _dev_format_type="parquet",
             )
+
+    def test_ignore_error(self):
+        self.azc_ignore_error.export_df_example_1(
+            _input="error",
+            _prod_file_name_prefix="prefix",
+            _prod_file_name="the_file_name",
+            _prod_file_name_suffix="suffix"
+        )
