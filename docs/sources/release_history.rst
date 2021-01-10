@@ -2,6 +2,14 @@
 Release History
 ###############
 
+0.2.14 (2021-01-11)
+*******************
+
+* add default logger
+    * ``logger = getLogger("azfs")`` (`#144 <https://github.com/gsy0911/azfs/issues/144>`_)
+* update ``azfs.ExportDecorator()``
+    * ignore exception if ``ignore_error`` is True (`#142 <https://github.com/gsy0911/azfs/issues/142>`_)
+
 0.2.13 (2020-12-22)
 *******************
 
