@@ -5,6 +5,7 @@ import gzip
 import io
 from inspect import signature
 import json
+from logging import getLogger, INFO
 import lzma
 import multiprocessing as mp
 import pickle
@@ -31,6 +32,9 @@ from azfs.utils import (
 )
 
 __all__ = ["AzFileClient", "ExportDecorator", "export_decorator"]
+
+logger = getLogger(__name__)
+logger.setLevel(INFO)
 
 
 class ExportDecorator:
@@ -434,7 +438,6 @@ class AzFileClient:
             credential: if string, Blob Storage -> Access Keys -> Key
             connection_string: connection_string
         """
-
         if credential is None and connection_string is None:
             credential = DefaultAzureCredential()
         self._client = AzfsClient(credential=credential, connection_string=connection_string)
@@ -1432,6 +1435,9 @@ class AzFileClient:
                                             [f"{url_}/{container_}/{f}.{format_type_}" for f in file_name_]
                                         )
 
+                    # log output file path list
+                    logger.info(f"DataFrames will be export to {output_path_list}")
+
                     # check the argument for the `_func`, and replace only `keyword arguments`
                     sig = signature(_func)
                     kwargs_for_func = {}
@@ -1440,7 +1446,7 @@ class AzFileClient:
                             kwargs_for_func.update({signature_params: kwargs.pop(signature_params)})
 
                     # get return of the `_func`
-                    _df = _func(*args, **kwargs_for_func)
+                    _df: Union[pd.DataFrame, tuple] = _func(*args, **kwargs_for_func)
 
                     # pop unused kwargs for `to_csv` or `to_pickle`
                     pop_keyword_list = [
@@ -1462,6 +1468,7 @@ class AzFileClient:
                     write_kwargs_.update(kwargs)
                     if type(_df) is pd.DataFrame:
                         # single dataframe
+                        logger.info(_df.head())
                         for output_path in output_path_list:
                             if output_path.endswith("csv"):
                                 self.write_csv(path=output_path, df=_df, **write_kwargs_)
@@ -1477,6 +1484,7 @@ class AzFileClient:
                             for i_df, i_output_path in zip(_df, output_path):
                                 if type(i_df) is not pd.DataFrame:
                                     raise AzfsDecoratorReturnTypeError()
+                                logger.info(i_df.head())
                                 if i_output_path.endswith("csv"):
                                     self.write_csv(path=i_output_path, df=i_df, **kwargs)
                                 elif i_output_path.endswith("pickle"):
@@ -1541,7 +1549,7 @@ class AzFileClient:
                         "kwrd": "file_name",
                         "_type": "str, List[str]",
                         "exp": "file_name",
-                        "default": "file_name"
+                        "default": file_name
                     },
                     {
                         "kwrd": "file_name_suffix",
@@ -1595,8 +1603,9 @@ class AzFileClient:
                 if docstring is not None:
                     for s in docstring.split("\n\n"):
                         if "Args:" in s:
-                            # to set `default` parameter
+                            # set `None` to describe `default` parameter
                             additional_args_list_ = [None]
+                            # set `{keyword_list}` parameters
                             additional_args_list_.extend(additional_args_list)
                             args_list = [_generate_parameter_args(arg) for arg in additional_args_list_]
                             addition_s = f"{s}{''.join(args_list)}"
@@ -1607,8 +1616,9 @@ class AzFileClient:
                 else:
                     result_list.append(f"original_func_name:= {original_func_name}")
                     result_list.append("Args:")
-                    # to set `default` parameter
+                    # set `None` to describe `default` parameter
                     additional_args_list_ = [None]
+                    # set `{keyword_list}` parameters
                     additional_args_list_.extend(additional_args_list)
                     args_list = [_generate_parameter_args(arg) for arg in additional_args_list_]
                     addition_s = ''.join(args_list)
@@ -1630,9 +1640,9 @@ class AzFileClient:
                     try:
                         result = _func(*args, **kwargs)
                     except Exception as e:
-                        print(e)
-                        print(f"error occurred at: {_func.__name__}")
-                        print(f"{sys.exc_info()}\n{trc.format_exc()}")
+                        logger.error(e)
+                        logger.error(f"error occurred at: {_func.__name__}")
+                        logger.error(f"{sys.exc_info()}\n{trc.format_exc()}")
                     return result
                 return _actual_function
 
