@@ -1482,9 +1482,9 @@ class AzFileClient:
                             if len(output_path) != len(_df):
                                 raise AzfsDecoratorSizeNotMatchedError()
                             for i_df, i_output_path in zip(_df, output_path):
-                                logger.info(i_df.head())
                                 if type(i_df) is not pd.DataFrame:
                                     raise AzfsDecoratorReturnTypeError()
+                                logger.info(i_df.head())
                                 if i_output_path.endswith("csv"):
                                     self.write_csv(path=i_output_path, df=i_df, **kwargs)
                                 elif i_output_path.endswith("pickle"):
