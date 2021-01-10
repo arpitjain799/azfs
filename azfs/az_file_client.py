@@ -1446,7 +1446,7 @@ class AzFileClient:
                             kwargs_for_func.update({signature_params: kwargs.pop(signature_params)})
 
                     # get return of the `_func`
-                    _df = _func(*args, **kwargs_for_func)
+                    _df: Union[pd.DataFrame, tuple] = _func(*args, **kwargs_for_func)
 
                     # pop unused kwargs for `to_csv` or `to_pickle`
                     pop_keyword_list = [
@@ -1549,7 +1549,7 @@ class AzFileClient:
                         "kwrd": "file_name",
                         "_type": "str, List[str]",
                         "exp": "file_name",
-                        "default": "file_name"
+                        "default": file_name
                     },
                     {
                         "kwrd": "file_name_suffix",
@@ -1603,8 +1603,9 @@ class AzFileClient:
                 if docstring is not None:
                     for s in docstring.split("\n\n"):
                         if "Args:" in s:
-                            # to set `default` parameter
+                            # set `None` to describe `default` parameter
                             additional_args_list_ = [None]
+                            # set `{keyword_list}` parameters
                             additional_args_list_.extend(additional_args_list)
                             args_list = [_generate_parameter_args(arg) for arg in additional_args_list_]
                             addition_s = f"{s}{''.join(args_list)}"
@@ -1615,8 +1616,9 @@ class AzFileClient:
                 else:
                     result_list.append(f"original_func_name:= {original_func_name}")
                     result_list.append("Args:")
-                    # to set `default` parameter
+                    # set `None` to describe `default` parameter
                     additional_args_list_ = [None]
+                    # set `{keyword_list}` parameters
                     additional_args_list_.extend(additional_args_list)
                     args_list = [_generate_parameter_args(arg) for arg in additional_args_list_]
                     addition_s = ''.join(args_list)
