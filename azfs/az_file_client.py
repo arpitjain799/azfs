@@ -438,7 +438,6 @@ class AzFileClient:
             credential: if string, Blob Storage -> Access Keys -> Key
             connection_string: connection_string
         """
-
         if credential is None and connection_string is None:
             credential = DefaultAzureCredential()
         self._client = AzfsClient(credential=credential, connection_string=connection_string)
@@ -1634,9 +1633,9 @@ class AzFileClient:
                     try:
                         result = _func(*args, **kwargs)
                     except Exception as e:
-                        print(e)
-                        print(f"error occurred at: {_func.__name__}")
-                        print(f"{sys.exc_info()}\n{trc.format_exc()}")
+                        logger.error(e)
+                        logger.error(f"error occurred at: {_func.__name__}")
+                        logger.error(f"{sys.exc_info()}\n{trc.format_exc()}")
                     return result
                 return _actual_function
 
