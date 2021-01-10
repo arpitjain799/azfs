@@ -237,6 +237,25 @@ API reference is `manipulating <./sources/api.html#file-manipulating>`_.
    data = azc.info(path=src_path)
 
 
+manipulate QueueStorage
+=======================
+
+``AzFS`` can also manipulate QueueStorage.
+
+.. code-block:: python
+
+   import azfs
+   queue_url = "https://{storage_account}.queue.core.windows.net/{queue_name}"
+
+   azc = azfs.AzFileClient()
+   queue_message = azc.get(queue_url)
+   # message will not be deleted if `delete=False`
+   # queue_message = azc.get(queue_url, delete=False)
+
+   # get message content
+   queue_content = queue_message.get('content')
+
+
 manipulate TableStorage
 =======================
 
