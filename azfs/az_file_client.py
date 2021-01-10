@@ -5,6 +5,7 @@ import gzip
 import io
 from inspect import signature
 import json
+from logging import getLogger, INFO
 import lzma
 import multiprocessing as mp
 import pickle
@@ -31,6 +32,9 @@ from azfs.utils import (
 )
 
 __all__ = ["AzFileClient", "ExportDecorator", "export_decorator"]
+
+logger = getLogger(__name__)
+logger.setLevel(INFO)
 
 
 class ExportDecorator:
