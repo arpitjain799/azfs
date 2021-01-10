@@ -1435,6 +1435,9 @@ class AzFileClient:
                                             [f"{url_}/{container_}/{f}.{format_type_}" for f in file_name_]
                                         )
 
+                    # log output file path list
+                    logger.info(f"DataFrames will be export to {output_path_list}")
+
                     # check the argument for the `_func`, and replace only `keyword arguments`
                     sig = signature(_func)
                     kwargs_for_func = {}
@@ -1465,6 +1468,7 @@ class AzFileClient:
                     write_kwargs_.update(kwargs)
                     if type(_df) is pd.DataFrame:
                         # single dataframe
+                        logger.info(_df.head())
                         for output_path in output_path_list:
                             if output_path.endswith("csv"):
                                 self.write_csv(path=output_path, df=_df, **write_kwargs_)
@@ -1478,6 +1482,7 @@ class AzFileClient:
                             if len(output_path) != len(_df):
                                 raise AzfsDecoratorSizeNotMatchedError()
                             for i_df, i_output_path in zip(_df, output_path):
+                                logger.info(i_df.head())
                                 if type(i_df) is not pd.DataFrame:
                                     raise AzfsDecoratorReturnTypeError()
                                 if i_output_path.endswith("csv"):
