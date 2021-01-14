@@ -18,9 +18,20 @@ def _generate_parameter_args(
 
     Args:
         additional_args:
+        storage_account:
+        storage_type:
+        container:
+        key:
+        output_parent_path:
+        file_name_prefix:
+        file_name:
+        file_name_suffix:
+        export:
+        format_type:
 
     Returns:
         argument example for the function
+
     """
     indent_ = "\n        "
     basic_args_ = "_{kwrd}: ({_type}) {exp}, default:={default}"
@@ -112,6 +123,7 @@ def _append_docs(docstring: Optional[str], additional_args_list: list, **kwargs)
     Args:
         docstring: already written docstring
         additional_args_list:
+        **kwargs:
 
     Returns:
         `docstring`
@@ -143,4 +155,14 @@ def _append_docs(docstring: Optional[str], additional_args_list: list, **kwargs)
 
 
 def append_docs(docstring: Optional[str], additional_args_list: list, **kwargs) -> str:
+    """
+
+    Args:
+        docstring:
+        additional_args_list:
+        **kwargs:
+
+    Returns:
+
+    """
     return _append_docs(docstring=docstring, additional_args_list=additional_args_list, **kwargs)
