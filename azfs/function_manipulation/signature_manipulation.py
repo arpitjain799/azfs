@@ -2,8 +2,12 @@ from inspect import signature
 import re
 
 
+MODULE_PATTERN = "<module '(?P<module_name>[A-Za-z0-9]+)' from '.+?'>"
+CLASS_PATTERN = "<class '(?P<class_name>.*?)'>"
+
+
 def _decode_types(input_str: str):
-    pattern = r"(<module '(?P<module_name>[A-Za-z0-9]+)' from '.+?'>)?(<class '(?P<class_name>.*?)'>)?"
+    pattern = rf"({MODULE_PATTERN})?({CLASS_PATTERN})?"
     result = re.match(pattern, input_str)
     if not result:
         return "", None
@@ -26,11 +30,8 @@ def _get_module_and_imports(module_name: str, class_name: str) -> (str, str):
 
 
 def _decode_signature(input_str: str):
-    module_pattern = r"<module '(?P<module_name>[A-Za-z0-9]+)' from '.+?'>"
-    class_pattern = r"<class '(?P<class_name>.*?)'>"
-
-    result = re.sub(module_pattern, r"\g<module_name>", input_str)
-    result = re.sub(class_pattern, r"\g<class_name>", result)
+    result = re.sub(MODULE_PATTERN, r"\g<module_name>", input_str)
+    result = re.sub(CLASS_PATTERN, r"\g<class_name>", result)
     return result
 
 
