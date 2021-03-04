@@ -45,6 +45,14 @@ def get_signature_and_additional_imports(function: callable) -> (str, str):
         additional_import: additional required import
         ideal_sig: signature
 
+    Examples:
+        >>> import pandas as pd
+        >>> def some_func(a: str) -> pd.DataFrame:
+        >>>     return pd.DataFrame()
+        >>>
+        >>> get_signature_and_additional_imports(some_func)
+        # ('import pandas\n', '(a: str, **kwargs) -> pandas.core.frame.DataFrame')
+
     """
     sig = signature(function)
     # initialize

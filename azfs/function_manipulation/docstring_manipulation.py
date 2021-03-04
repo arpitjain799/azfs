@@ -163,6 +163,19 @@ def append_docs(docstring: Optional[str], additional_args_list: list, **kwargs) 
         **kwargs:
 
     Returns:
+        re-generated-`docstring`
 
+    Examples:
+        >>> def some_func(a: str) -> pd.DataFrame:
+        ...     '''
+        ...     the functions is ...
+        ...
+        ...     Args:
+        ...        a: hello
+        ...     '''
+        ...     return pd.DataFrame()
+        >>>
+        >>> print(append_docs(some_func.__doc__, ["prod"]))
+        ... # generated docstrings ...
     """
     return _append_docs(docstring=docstring, additional_args_list=additional_args_list, **kwargs)
