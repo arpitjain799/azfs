@@ -6,7 +6,7 @@
 [![Documentation Status](https://readthedocs.org/projects/azfs/badge/?version=latest)](https://azfs.readthedocs.io/en/latest/?badge=latest)
 
 
-[![PythonVersion](https://img.shields.io/badge/python-3.6|3.7|3.8-blue.svg)](https://www.python.org/downloads/release/python-377/)
+[![PythonVersion](https://img.shields.io/badge/python-3.6|3.7|3.8|3.9-blue.svg)](https://www.python.org/downloads/release/python-377/)
 [![PiPY](https://img.shields.io/pypi/v/azfs.svg)](https://pypi.org/project/azfs/)
 [![Downloads](https://pepy.tech/badge/azfs)](https://pepy.tech/project/azfs) 
 
