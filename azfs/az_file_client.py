@@ -19,6 +19,7 @@ import warnings
 import pandas as pd
 from azure.identity import DefaultAzureCredential
 from azure.core.exceptions import ResourceNotFoundError
+from azfs.function_manipulation import append_docs
 from azfs.clients import AzfsClient, TextReader
 from azfs.error import (
     AzfsInputError,
@@ -1497,134 +1498,6 @@ class AzFileClient:
                     return _df
                 return _actual_function
 
-            def _generate_parameter_args(additional_args: Optional[str] = None) -> str:
-                """
-
-                Args:
-                    additional_args:
-
-                Returns:
-                    argument example for the function
-                """
-                indent_ = "\n        "
-                basic_args_ = "_{kwrd}: ({_type}) {exp}, default:={default}"
-                args_dict = [
-                    {
-                        "kwrd": "storage_account",
-                        "_type": "str",
-                        "exp": "storage account",
-                        "default": storage_account
-                    },
-                    {
-                        "kwrd": "storage_type",
-                        "_type": "str",
-                        "exp": "`blob` or `dfs`",
-                        "default": storage_type
-                    },
-                    {
-                        "kwrd": "container",
-                        "_type": "str",
-                        "exp": "container",
-                        "default": container
-                    },
-                    {
-                        "kwrd": "key",
-                        "_type": "str",
-                        "exp": "as same as folder name",
-                        "default": key
-                    },
-                    {
-                        "kwrd": "output_parent_path",
-                        "_type": "str",
-                        "exp": "ex. https://st.blob.core.windows.net/container/{_key}/{file_name}",
-                        "default": output_parent_path
-                    },
-                    {
-                        "kwrd": "file_name_prefix",
-                        "_type": "str",
-                        "exp": "{file_name_prefix}{file_name}",
-                        "default": file_name_prefix
-                    },
-                    {
-                        "kwrd": "file_name",
-                        "_type": "str, List[str]",
-                        "exp": "file_name",
-                        "default": file_name
-                    },
-                    {
-                        "kwrd": "file_name_suffix",
-                        "_type": "str",
-                        "exp": "{file_name}{file_name_suffix}",
-                        "default": file_name_suffix
-                    },
-                    {
-                        "kwrd": "export",
-                        "_type": "bool",
-                        "exp": "export if True",
-                        "default": export
-                    },
-                    {
-                        "kwrd": "format_type",
-                        "_type": "str",
-                        "exp": "`csv` or `pickle`",
-                        "default": format_type
-                    },
-                ]
-
-                if additional_args is not None:
-                    args_list = [
-                        f"\n        == params for {additional_args} ==",
-                    ]
-                    args_list.extend(
-                        [f"{indent_}_{additional_args}{basic_args_.format(**d)}" for d in args_dict]
-                    )
-                    return "".join(args_list)
-                else:
-                    args_list = [
-                        f"\n        == params for default ==",
-                    ]
-                    args_list.extend(
-                        [f"{indent_}{basic_args_.format(**d)}" for d in args_dict]
-                    )
-                    return "".join(args_list)
-
-            def _append_docs(docstring: Optional[str], additional_args_list: list) -> str:
-                """
-                append/generate docstring
-
-                Args:
-                    docstring: already written docstring
-                    additional_args_list:
-
-                Returns:
-                    `docstring`
-                """
-                result_list = []
-                if docstring is not None:
-                    for s in docstring.split("\n\n"):
-                        if "Args:" in s:
-                            # set `None` to describe `default` parameter
-                            additional_args_list_ = [None]
-                            # set `{keyword_list}` parameters
-                            additional_args_list_.extend(additional_args_list)
-                            args_list = [_generate_parameter_args(arg) for arg in additional_args_list_]
-                            addition_s = f"{s}{''.join(args_list)}"
-                            result_list.append(addition_s)
-                        else:
-                            result_list.append(s)
-                    return "\n\n".join(result_list)
-                else:
-                    result_list.append(f"original_func_name:= {original_func_name}")
-                    result_list.append("Args:")
-                    # set `None` to describe `default` parameter
-                    additional_args_list_ = [None]
-                    # set `{keyword_list}` parameters
-                    additional_args_list_.extend(additional_args_list)
-                    args_list = [_generate_parameter_args(arg) for arg in additional_args_list_]
-                    addition_s = ''.join(args_list)
-                    result_list.append(addition_s)
-                    return "\n\n".join(result_list)
-
             def _ignore_error_wrapper(_func: callable):
                 """
                 to ignore error
@@ -1652,7 +1525,26 @@ class AzFileClient:
             # add ignore
             if ignore_error:
                 wrapped_function = _ignore_error_wrapper(_func=wrapped_function)
-            wrapped_function.__doc__ = _append_docs(func.__doc__, additional_args_list=keyword_list)
+
+            # add docstring parameters
+            parameters = {
+                "storage_account": storage_account,
+                "storage_type": storage_type,
+                "container": container,
+                "key": key,
+                "output_parent_path": output_parent_path,
+                "file_name_prefix": file_name_prefix,
+                "file_name": file_name,
+                "file_name_suffix": file_name_suffix,
+                "export": export,
+                "format_type": format_type
+            }
+            # add docstring
+            wrapped_function.__doc__ = append_docs(
+                func.__doc__,
+                additional_args_list=keyword_list,
+                **parameters
+            )
             if func_name in self.__dict__.keys():
                 warnings.warn(f"function name `{func_name}` is already given.")
             setattr(self, func_name, wrapped_function)
