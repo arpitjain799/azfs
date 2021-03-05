@@ -10,6 +10,10 @@ minor = int(version[1])
 
 
 def test_signature_manipulation():
+    if minor <= 6:
+        # not conduct test on python 3.6, because it will be dropped soon.
+        return
+
     def some_func_1(a: str) -> pd.DataFrame:
         return pd.DataFrame()
 
