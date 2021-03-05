@@ -1,9 +1,19 @@
+import platform
+import pytest
 from typing import Optional
 from azfs.function_manipulation import get_signature_and_additional_imports
 import pandas as pd
 
+version: tuple = platform.python_version_tuple()
+major = int(version[0])
+minor = int(version[1])
+
 
 def test_signature_manipulation():
+    if minor <= 6:
+        # not conduct test on python 3.6, because it will be dropped soon.
+        return
+
     def some_func_1(a: str) -> pd.DataFrame:
         return pd.DataFrame()
 
@@ -31,5 +41,10 @@ def test_signature_manipulation():
     def some_func_5() -> Optional[str]:
         return ""
 
-    response = get_signature_and_additional_imports(some_func_5)
-    assert response == ('', '(**kwargs) -> Union[str, NoneType]')
+    # difference after python 3.9.0
+    if minor <= 8:
+        response = get_signature_and_additional_imports(some_func_5)
+        assert response == ('', '(**kwargs) -> Union[str, NoneType]')
+    else:
+        with pytest.raises(ValueError):
+            _ = get_signature_and_additional_imports(some_func_5)
