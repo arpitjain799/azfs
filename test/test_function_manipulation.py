@@ -5,8 +5,8 @@ from azfs.function_manipulation import get_signature_and_additional_imports
 import pandas as pd
 
 version: tuple = platform.python_version_tuple()
-major = version[0]
-minor = version[1]
+major = int(version[0])
+minor = int(version[1])
 
 
 def test_signature_manipulation():
