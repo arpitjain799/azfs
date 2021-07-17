@@ -22,3 +22,8 @@ clean: ## clean the wheel directory ## make clean
 .PHONY: test-python
 test-python: ## execute test with pytest ## make test-python
 	pytest ./test -vv --cov=./azfs --cov-report=html
+
+
+.PHONY: format
+format: ## format with black ## make format
+	black azfs --line-length 120
