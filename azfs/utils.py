@@ -1,9 +1,6 @@
 import re
 from typing import Union, Tuple
-from azfs.error import (
-    AzfsInputError,
-    AzfsInvalidPathError
-)
+from azfs.error import AzfsInputError, AzfsInvalidPathError
 
 __all__ = ["BlobPathDecoder", "ls_filter"]
 
@@ -22,22 +19,18 @@ class BlobPathDecoder:
         (https://testazfs.blob.core.windows.net", blob, test_container, test1.csv)
 
     """
+
     # pattern blocks
     _STORAGE_ACCOUNT = "(?P<storage_account>[a-z0-9]*)"
     _STORAGE_TYPE = "(?P<storage_type>dfs|blob|queue)"
     _CONTAINER = "(?P<container>[^/.]*)"
     _BLOB = "(?P<blob>.+)"
     # replace_dict
-    _replace_dict = {
-        "%A": _STORAGE_ACCOUNT,
-        "%T": _STORAGE_TYPE,
-        "%C": _CONTAINER,
-        "%B": _BLOB
-    }
+    _replace_dict = {"%A": _STORAGE_ACCOUNT, "%T": _STORAGE_TYPE, "%C": _CONTAINER, "%B": _BLOB}
     # pattern
     _decode_path_pattern_list = [
         rf"https://{_STORAGE_ACCOUNT}.{_STORAGE_TYPE}.core.windows.net/{_CONTAINER}?/?{_BLOB}?$",
-        rf"/?{_STORAGE_TYPE}/{_STORAGE_ACCOUNT}/{_CONTAINER}/{_BLOB}"
+        rf"/?{_STORAGE_TYPE}/{_STORAGE_ACCOUNT}/{_CONTAINER}/{_BLOB}",
     ]
 
     def __init__(self, path: Union[None, str] = None):
@@ -130,18 +123,16 @@ class BlobPathDecoder:
         return self
 
     def get(self) -> (str, str, str, str):
-        return \
-            self.storage_account_name, \
-            self.account_type, \
-            self.container_name, \
-            self.blob_name
+        return self.storage_account_name, self.account_type, self.container_name, self.blob_name
 
     def get_with_url(self) -> (str, str, str, str):
-        return \
-            f"https://{self.storage_account_name}.{self.account_type}.core.windows.net", \
-            self.account_type, \
-            self.container_name, \
-            self.blob_name
+        return (
+            f"https://{self.storage_account_name}.{self.account_type}.core.windows.net",
+            self.account_type,
+            self.container_name,
+            self.blob_name,
+        )
+
 
 # ================ #
 # filter based `/` #
@@ -206,19 +197,19 @@ def _ls_file_and_folder_filter(file_path_list: list, parent_path: str):
         result = re.match(pattern, fp)
         if result:
             if parent_path == "":
-                if result['parent_path'] is None and result['folder'] is None:
+                if result["parent_path"] is None and result["folder"] is None:
                     # append file, if the file is in under the specified parent_path
-                    ls_result_list.append(result['blob'])
-                elif result['folder'] is not None:
+                    ls_result_list.append(result["blob"])
+                elif result["folder"] is not None:
                     # append folder name
-                    ls_result_list.append(result['folder'])
+                    ls_result_list.append(result["folder"])
             else:
-                if result['parent_path'] is not None and result['folder'] is None:
+                if result["parent_path"] is not None and result["folder"] is None:
                     # append file, if the file is in under the specified parent_path
-                    ls_result_list.append(result['blob'])
-                elif result['parent_path'] is not None and result['folder'] is not None:
+                    ls_result_list.append(result["blob"])
+                elif result["parent_path"] is not None and result["folder"] is not None:
                     # append folder name
-                    ls_result_list.append(result['folder'])
+                    ls_result_list.append(result["folder"])
     ls_result_list = list(set(ls_result_list))
     ls_result_list.sort()
     return ls_result_list

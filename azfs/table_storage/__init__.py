@@ -1,4 +1,1 @@
-from .table_storage import (
-    TableStorage,
-    TableStorageWrapper
-)
+from .table_storage import TableStorage, TableStorageWrapper

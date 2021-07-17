@@ -8,15 +8,8 @@ from azfs.utils import BlobPathDecoder
 
 
 # define the types
-FileClientType = Union[
-    BlobClient,
-    DataLakeFileClient,
-    QueueClient
-]
-FileSystemClientType = Union[
-    ContainerClient,
-    FileSystemClient
-]
+FileClientType = Union[BlobClient, DataLakeFileClient, QueueClient]
+FileSystemClientType = Union[ContainerClient, FileSystemClient]
 
 
 class ClientInterface:
@@ -33,17 +26,13 @@ class ClientInterface:
     """
 
     def __init__(
-            self,
-            credential: Optional[Union[str, DefaultAzureCredential]],
-            connection_string: Optional[str] = None):
+        self, credential: Optional[Union[str, DefaultAzureCredential]], connection_string: Optional[str] = None
+    ):
         self.credential = credential
         self.connection_string = connection_string
 
     @abstractmethod
-    def _get_service_client_from_credential(
-            self,
-            account_url: str,
-            credential: Union[DefaultAzureCredential, str]):
+    def _get_service_client_from_credential(self, account_url: str, credential: Union[DefaultAzureCredential, str]):
         """
         get service_client for Blob, DataLake or Queue Service Client with credential.
 
@@ -57,9 +46,7 @@ class ClientInterface:
         raise NotImplementedError
 
     @abstractmethod
-    def _get_service_client_from_connection_string(
-            self,
-            connection_string: str):
+    def _get_service_client_from_connection_string(self, connection_string: str):
         raise NotImplementedError
 
     def _get_service_client_from_url(self, account_url):
@@ -82,17 +69,10 @@ class ClientInterface:
             Union[BlobClient, DataLakeFileClient, QueueClient]
         """
         account_url, account_kind, file_system, file_path = BlobPathDecoder(path).get_with_url()
-        return self._get_file_client(
-            account_url=account_url,
-            file_system=file_system,
-            file_path=file_path)
+        return self._get_file_client(account_url=account_url, file_system=file_system, file_path=file_path)
 
     @abstractmethod
-    def _get_file_client(
-            self,
-            account_url: str,
-            file_system: str,
-            file_path: str):
+    def _get_file_client(self, account_url: str, file_system: str, file_path: str):
         """
         abstract method to be implemented
         get file_client from given path
@@ -114,15 +94,10 @@ class ClientInterface:
             Union[ContainerClient, FileSystemClient]
         """
         account_url, _, file_system, _ = BlobPathDecoder(path).get_with_url()
-        return self._get_container_client(
-            account_url=account_url,
-            file_system=file_system)
+        return self._get_container_client(account_url=account_url, file_system=file_system)
 
     @abstractmethod
-    def _get_container_client(
-            self,
-            account_url: str,
-            file_system: str):
+    def _get_container_client(self, account_url: str, file_system: str):
         """
         abstract method to be implemented
         :param account_url:

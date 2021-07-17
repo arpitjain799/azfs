@@ -9,14 +9,11 @@ class MetaClient(type):
     A metaclass which have AzBlobClient or AzDataLakeClient in class dictionary.
     if another storage type is added, add new storage type as {"***": Class<Az***Client>}
     """
+
     def __new__(mcs, name, bases, dictionary):
         cls = type.__new__(mcs, name, bases, dictionary)
         # set Clients
-        clients = {
-            'dfs': AzDataLakeClient,
-            'blob': AzBlobClient,
-            'queue': AzQueueClient
-        }
+        clients = {"dfs": AzDataLakeClient, "blob": AzBlobClient, "queue": AzQueueClient}
         cls.CLIENTS = clients
         return cls
 
@@ -38,6 +35,7 @@ class AzfsClient(AbstractClient):
         >>> data = AzfsClient(credential="...").get_client("blob").get(path=data_path)
 
     """
+
     CLIENTS = {}
 
     def __init__(self, credential, connection_string):
@@ -66,6 +64,7 @@ class TextReader:
     The class is to provide line-based reading iterator.
     Reading file should be ends-with "\n", otherwise last line will be ignored.
     """
+
     def __init__(self, client, path: str, offset: int = 0, length: int = 2 ** 14, size: int = None):
         self._client = client
         self._size = client.info(path).get("size", size)
@@ -98,7 +97,7 @@ class TextReader:
     def next_line(self) -> bytes:
         if self._byte_text is None or self._line_counter >= self._current_chunk_lines_length:
             self._byte_text = self.get_chunk()
-            chunk_lines = self._byte_text.split("\n".encode('utf-8'))
+            chunk_lines = self._byte_text.split("\n".encode("utf-8"))
             self._current_chunk_lines = chunk_lines[:-1]
             self._current_chunk_lines_length = len(self._current_chunk_lines)
             self._line_counter = 0

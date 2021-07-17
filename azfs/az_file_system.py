@@ -5,14 +5,11 @@ from fsspec import AbstractFileSystem
 from fsspec.spec import AbstractBufferedFile
 from azure.identity import DefaultAzureCredential
 
-from .utils import (
-    BlobPathDecoder,
-    ls_filter
-)
+from .utils import BlobPathDecoder, ls_filter
 from .clients import AzfsClient
 
 
-logger = logging.getLogger('azfs')
+logger = logging.getLogger("azfs")
 __all__ = ["AzFileSystem", "AzFile"]
 
 
@@ -20,25 +17,18 @@ class AzFileSystem(AbstractFileSystem):
     default_block_size = 5 * 2 ** 20
 
     def __init__(
-            self,
-            credential: Optional[Union[str, DefaultAzureCredential]] = None,
-            connection_string: str = None,
-            *args,
-            **storage_options):
+        self,
+        credential: Optional[Union[str, DefaultAzureCredential]] = None,
+        connection_string: str = None,
+        *args,
+        **storage_options,
+    ):
         super().__init__(*args, **storage_options)
         if credential is None and connection_string is None:
             credential = DefaultAzureCredential()
         self.az_client = AzfsClient(credential=credential, connection_string=connection_string)
 
-    def _open(
-        self,
-        path,
-        mode="rb",
-        block_size=None,
-        autocommit=True,
-        cache_options=None,
-        **kwargs
-    ):
+    def _open(self, path, mode="rb", block_size=None, autocommit=True, cache_options=None, **kwargs):
         """
         (Override method)
         Return raw bytes-mode file-like from the file-system
@@ -47,15 +37,7 @@ class AzFileSystem(AbstractFileSystem):
         if block_size is None:
             block_size = self.default_block_size
 
-        return AzFile(
-            self,
-            path,
-            mode,
-            block_size,
-            autocommit,
-            cache_options=cache_options,
-            **kwargs
-        )
+        return AzFile(self, path, mode, block_size, autocommit, cache_options=cache_options, **kwargs)
 
     def info(self, path, **kwargs):
         """
@@ -91,7 +73,7 @@ class AzFileSystem(AbstractFileSystem):
             "last_modified": data.get("last_modified", ""),
             "etag": data.get("etag", ""),
             "content_type": content_settings.get("content_type", ""),
-            "type": data_type
+            "type": data_type,
         }
 
     def ls(self, path, detail=True, attach_prefix=False, **kwargs):
@@ -187,15 +169,16 @@ class AzFile(AbstractBufferedFile):
     part_max = 5 * 2 ** 30
 
     def __init__(
-            self,
-            fs: AzFileSystem,
-            path: str,
-            mode="rb",
-            block_size="default",
-            autocommit=True,
-            cache_type="readahead",
-            cache_options=None,
-            **kwargs):
+        self,
+        fs: AzFileSystem,
+        path: str,
+        mode="rb",
+        block_size="default",
+        autocommit=True,
+        cache_type="readahead",
+        cache_options=None,
+        **kwargs,
+    ):
         # path, mode, start, end, block_size, and etc, are initialized
         # if mode is "rb", prepare to read data in azure
         # otherwise ("ab" or "wb"), to write data to azure
@@ -203,13 +186,13 @@ class AzFile(AbstractBufferedFile):
         # check block_size from AbstractBufferedFile
         if self.writable():
             if block_size < 5 * 2 ** 20:
-                raise ValueError('Block size must be >=5MB')
+                raise ValueError("Block size must be >=5MB")
         # when not using autocommit we want to have transactional state to manage
         self.append_block = False
 
         # reference by s3fs
-        if 'a' in mode and fs.exists(path):
-            loc = fs.info(path)['size']
+        if "a" in mode and fs.exists(path):
+            loc = fs.info(path)["size"]
             if loc < 5 * 2 ** 20:
                 # existing file too small for multi-upload: download
                 self.write(self.fs.cat(self.path))
@@ -263,8 +246,9 @@ class AzFile(AbstractBufferedFile):
             # logger.debug(f"self.buffer.tell(): {self.buffer.tell()}")
 
             try:
-                _ = self.fs.az_client.get_client(account_kind=account_kind) \
-                        .append(path=self.path, data=data0, offset=offset0)
+                _ = self.fs.az_client.get_client(account_kind=account_kind).append(
+                    path=self.path, data=data0, offset=offset0
+                )
             except Exception as e:
                 raise IOError from e
 
@@ -311,5 +295,6 @@ class AzFile(AbstractBufferedFile):
 
         """
         _, account_kind, _, file_path = BlobPathDecoder(self.path).get_with_url()
-        return self.fs.az_client.get_client(
-            account_kind=account_kind).get(path=self.path, offset=start, length=end-start)
+        return self.fs.az_client.get_client(account_kind=account_kind).get(
+            path=self.path, offset=start, length=end - start
+        )
