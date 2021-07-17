@@ -6,11 +6,7 @@ from .client_interface import ClientInterface
 
 
 class AzQueueClient(ClientInterface):
-
-    def _get_service_client_from_credential(
-            self,
-            account_url: str,
-            credential: Union[DefaultAzureCredential, str]):
+    def _get_service_client_from_credential(self, account_url: str, credential: Union[DefaultAzureCredential, str]):
         """
         get QueueServiceClient
 
@@ -23,16 +19,10 @@ class AzQueueClient(ClientInterface):
         """
         return QueueServiceClient(account_url=account_url, credential=credential)
 
-    def _get_service_client_from_connection_string(
-            self,
-            connection_string: str):
+    def _get_service_client_from_connection_string(self, connection_string: str):
         return QueueServiceClient.from_connection_string(conn_str=connection_string)
 
-    def _get_file_client(
-            self,
-            account_url: str,
-            file_system: str,
-            file_path: str) -> QueueClient:
+    def _get_file_client(self, account_url: str, file_system: str, file_path: str) -> QueueClient:
         """
         get QueueClient
 
@@ -44,17 +34,10 @@ class AzQueueClient(ClientInterface):
         Returns:
 
         """
-        queue_client = self._get_service_client_from_url(
-            account_url=account_url
-        ).get_queue_client(
-            queue=file_system
-        )
+        queue_client = self._get_service_client_from_url(account_url=account_url).get_queue_client(queue=file_system)
         return queue_client
 
-    def _get_container_client(
-            self,
-            account_url: str,
-            file_system: str):
+    def _get_container_client(self, account_url: str, file_system: str):
         """
         no correspond method to _container_client() in QueueClient
 
@@ -86,19 +69,19 @@ class AzQueueClient(ClientInterface):
         """
         delete_after_receive = True
         if "delete" in kwargs:
-            delete_after_receive = kwargs['delete']
+            delete_after_receive = kwargs["delete"]
         elif "delete_after_receive" in kwargs:
-            delete_after_receive = kwargs['delete_after_receive']
+            delete_after_receive = kwargs["delete_after_receive"]
 
         queue_client = self.get_file_client_from_path(path)
         # get queue iterator
         message_itr = queue_client.receive_messages()
         try:
             received_message = next(message_itr)
-            message_id = received_message['id']
-            pop_receipt = received_message['pop_receipt']
+            message_id = received_message["id"]
+            pop_receipt = received_message["pop_receipt"]
             # decode with base64
-            received_message['content'] = base64.b64decode(received_message['content'].encode('utf-8')).decode('utf-8')
+            received_message["content"] = base64.b64decode(received_message["content"].encode("utf-8")).decode("utf-8")
 
             # delete message in queue
             if delete_after_receive:
@@ -122,9 +105,9 @@ class AzQueueClient(ClientInterface):
 
         """
         # encode with base64
-        encoded_data = base64.b64encode(data.encode('utf-8')).decode('utf-8')
+        encoded_data = base64.b64encode(data.encode("utf-8")).decode("utf-8")
         put_data = self.get_file_client_from_path(path).send_message(encoded_data)
-        put_data['content'] = base64.b64decode(put_data['content'].encode('utf-8')).decode('utf-8')
+        put_data["content"] = base64.b64decode(put_data["content"].encode("utf-8")).decode("utf-8")
         return put_data
 
     def _create(self, path: str):

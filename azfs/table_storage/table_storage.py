@@ -27,9 +27,7 @@ class TableStorage:
     """
 
     def __init__(self, account_name: str, account_key: str, database_name: str):
-        """
-
-        """
+        """ """
         self.table_service = TableService(account_name=account_name, account_key=account_key)
         self.database_name = database_name
 
@@ -44,14 +42,10 @@ class TableStorage:
         Returns:
 
         """
-        filter_value_list = [
-            f"PartitionKey eq '{partition_key_value}'"
-        ]
+        filter_value_list = [f"PartitionKey eq '{partition_key_value}'"]
 
         # その他の条件を付与する場合
-        filter_value_list.extend(
-            [f"{k} eq '{v}'" for k, v in filter_key_values.items()]
-        )
+        filter_value_list.extend([f"{k} eq '{v}'" for k, v in filter_key_values.items()])
 
         tasks = self.table_service.query_entities(table_name=self.database_name, filter=" and ".join(filter_value_list))
         return [task for task in tasks]
@@ -67,7 +61,7 @@ class TableStorage:
         Returns:
 
         """
-        insert_data = {'PartitionKey': partition_key_value}
+        insert_data = {"PartitionKey": partition_key_value}
         insert_data.update(data)
         self.table_service.insert_entity(table_name=self.database_name, entity=insert_data)
         return insert_data
@@ -84,7 +78,7 @@ class TableStorage:
         Returns:
 
         """
-        updated_data = {'PartitionKey': partition_key_value, 'RowKey': row_key}
+        updated_data = {"PartitionKey": partition_key_value, "RowKey": row_key}
         updated_data.update(data)
         self.table_service.update_entity(table_name=self.database_name, entity=updated_data)
         return updated_data
@@ -167,13 +161,8 @@ class TableStorageWrapper:
         ...     'message': '{"2020-10-10T12:26:57.442718+09:00": "hello_world", "2020-10-10T13:00:23.602943+09:00": "RUNNING"}'
         ... }
     """
-    def __init__(
-            self,
-            account_name,
-            account_key,
-            database_name,
-            partition_key: str,
-            row_key_name: str = "id_"):
+
+    def __init__(self, account_name, account_key, database_name, partition_key: str, row_key_name: str = "id_"):
         self.st = TableStorage(account_name=account_name, account_key=account_key, database_name=database_name)
         self.partition_key = partition_key
         self.row_key_name = row_key_name
@@ -206,6 +195,7 @@ class TableStorageWrapper:
         Returns:
 
         """
+
         def _wrapper(function: callable):
             # check if `row_key` argument exists
             self._check_argument(function=function, arg_name=self.row_key_name)
@@ -222,6 +212,7 @@ class TableStorageWrapper:
             setattr(self, _to, _actual_function)
 
             return function
+
         return _wrapper
 
     # =======
@@ -239,7 +230,7 @@ class TableStorageWrapper:
 
         """
         if self.row_key_name in kwargs:
-            kwargs['RowKey'] = kwargs.pop(self.row_key_name)
+            kwargs["RowKey"] = kwargs.pop(self.row_key_name)
         return self.st.get(partition_key_value=self.partition_key, filter_key_values=kwargs)
 
     # =======
@@ -269,7 +260,7 @@ class TableStorageWrapper:
         """
         _data = self.pack_data_to_put(**kwargs)
         if self.row_key_name in _data:
-            _data['RowKey'] = _data.pop(self.row_key_name)
+            _data["RowKey"] = _data.pop(self.row_key_name)
         return self.st.put(partition_key_value=self.partition_key, data=_data)
 
     overwrite_pack_data_to_put = functools.partialmethod(_overwrite_pack_data, _to="pack_data_to_put")

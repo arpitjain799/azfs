@@ -3,12 +3,12 @@
 [![pytest](https://github.com/gsy0911/azfs/workflows/pytest/badge.svg)](https://github.com/gsy0911/azfs/actions?query=workflow%3Apytest)
 [![codecov](https://codecov.io/gh/gsy0911/azfs/branch/master/graph/badge.svg)](https://codecov.io/gh/gsy0911/azfs)
 [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/gsy0911/azfs.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/gsy0911/azfs/context:python)
-[![Documentation Status](https://readthedocs.org/projects/azfs/badge/?version=latest)](https://azfs.readthedocs.io/en/latest/?badge=latest)
-
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 [![PythonVersion](https://img.shields.io/badge/python-3.6|3.7|3.8|3.9-blue.svg)](https://www.python.org/downloads/release/python-377/)
 [![PiPY](https://img.shields.io/pypi/v/azfs.svg)](https://pypi.org/project/azfs/)
-[![Downloads](https://pepy.tech/badge/azfs)](https://pepy.tech/project/azfs) 
+[![Downloads](https://pepy.tech/badge/azfs)](https://pepy.tech/project/azfs)
+[![Documentation Status](https://readthedocs.org/projects/azfs/badge/?version=latest)](https://azfs.readthedocs.io/en/latest/?badge=latest)
 
 AzFS is to provide convenient Python read/write functions for Azure Storage Account.
 

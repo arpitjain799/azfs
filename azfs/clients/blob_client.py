@@ -5,11 +5,9 @@ from .client_interface import ClientInterface
 
 
 class AzBlobClient(ClientInterface):
-
     def _get_service_client_from_credential(
-            self,
-            account_url: str,
-            credential: Union[DefaultAzureCredential, str]) -> BlobServiceClient:
+        self, account_url: str, credential: Union[DefaultAzureCredential, str]
+    ) -> BlobServiceClient:
         """
         get BlobServiceClient
 
@@ -22,16 +20,10 @@ class AzBlobClient(ClientInterface):
         """
         return BlobServiceClient(account_url=account_url, credential=credential)
 
-    def _get_service_client_from_connection_string(
-            self,
-            connection_string: str):
+    def _get_service_client_from_connection_string(self, connection_string: str):
         return BlobServiceClient.from_connection_string(conn_str=connection_string)
 
-    def _get_file_client(
-            self,
-            account_url: str,
-            file_system: str,
-            file_path: str) -> BlobClient:
+    def _get_file_client(self, account_url: str, file_system: str, file_path: str) -> BlobClient:
         """
         get BlobClient
 
@@ -45,16 +37,10 @@ class AzBlobClient(ClientInterface):
         """
         file_client = self._get_service_client_from_url(
             account_url=account_url,
-        ).get_blob_client(
-            container=file_system,
-            blob=file_path
-        )
+        ).get_blob_client(container=file_system, blob=file_path)
         return file_client
 
-    def _get_container_client(
-            self,
-            account_url: str,
-            file_system: str) -> ContainerClient:
+    def _get_container_client(self, account_url: str, file_system: str) -> ContainerClient:
         """
         get ContainerClient
 
@@ -67,14 +53,13 @@ class AzBlobClient(ClientInterface):
         """
         container_client = self._get_service_client_from_url(
             account_url=account_url,
-        ).get_container_client(
-            container=file_system
-        )
+        ).get_container_client(container=file_system)
         return container_client
 
     def _ls(self, path: str, file_path: str):
-        blob_list = \
-            [f.name for f in self.get_container_client_from_path(path=path).list_blobs(name_starts_with=file_path)]
+        blob_list = [
+            f.name for f in self.get_container_client_from_path(path=path).list_blobs(name_starts_with=file_path)
+        ]
         return blob_list
 
     def _get(self, path: str, offset: int = None, length: int = None, **kwargs):
@@ -82,11 +67,7 @@ class AzBlobClient(ClientInterface):
         return file_bytes
 
     def _put(self, path: str, data):
-        self.get_file_client_from_path(path=path).upload_blob(
-            data=data,
-            length=len(data),
-            overwrite=True
-        )
+        self.get_file_client_from_path(path=path).upload_blob(data=data, length=len(data), overwrite=True)
         return True
 
     def _create(self, path: str):

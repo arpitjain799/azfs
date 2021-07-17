@@ -9,7 +9,7 @@ from azfs.function_manipulation import get_signature_and_additional_imports
 
 
 @click.group(invoke_without_command=True)
-@click.option('--target-file-dir')
+@click.option("--target-file-dir")
 @click.pass_context
 def cmd(ctx, target_file_dir: str):
     """
@@ -23,7 +23,7 @@ def cmd(ctx, target_file_dir: str):
         target_file_dir = os.getcwd()
     if ctx.invoked_subcommand is None:
         click.echo(WELCOME_PROMPT)
-    ctx.obj['factory'] = CliFactory(target_file_dir=target_file_dir)
+    ctx.obj["factory"] = CliFactory(target_file_dir=target_file_dir)
 
 
 def _read_az_file_client_content() -> List[str]:
@@ -37,7 +37,7 @@ def _read_az_file_client_content() -> List[str]:
         if "# end of the main file" in content:
             break
 
-    az_file_client_content = az_file_client_content[:main_file_index+1]
+    az_file_client_content = az_file_client_content[: main_file_index + 1]
     return az_file_client_content
 
 
@@ -53,9 +53,9 @@ def _load_functions(export_decorator) -> (int, List[str]):
 
     for f in export_decorator.functions:
         # function name
-        function_name = f['register_as']
+        function_name = f["register_as"]
         # get additional import and ideal signature
-        additional_import, ideal_sig = get_signature_and_additional_imports(f['function'])
+        additional_import, ideal_sig = get_signature_and_additional_imports(f["function"])
 
         # create mock function
         new_mock_function: str = MOCK_FUNCTION % (additional_import, function_name, ideal_sig)
@@ -74,7 +74,7 @@ def decorator(ctx, target_file_name: list):
     add decorated functions to the file `az_file_client.py`
 
     """
-    cli_factory: CliFactory = ctx.obj['factory']
+    cli_factory: CliFactory = ctx.obj["factory"]
     if len(target_file_name) == 0:
         target_file_name = ["__init__"]
     # set initial state

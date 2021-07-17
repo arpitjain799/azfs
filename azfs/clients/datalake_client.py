@@ -6,11 +6,9 @@ from .client_interface import ClientInterface
 
 
 class AzDataLakeClient(ClientInterface):
-
     def _get_service_client_from_credential(
-            self,
-            account_url: str,
-            credential: Union[DefaultAzureCredential, str]) -> DataLakeServiceClient:
+        self, account_url: str, credential: Union[DefaultAzureCredential, str]
+    ) -> DataLakeServiceClient:
         """
         get DataLakeServiceClient
 
@@ -23,16 +21,10 @@ class AzDataLakeClient(ClientInterface):
         """
         return DataLakeServiceClient(account_url=account_url, credential=credential)
 
-    def _get_service_client_from_connection_string(
-            self,
-            connection_string: str):
+    def _get_service_client_from_connection_string(self, connection_string: str):
         return DataLakeServiceClient.from_connection_string(conn_str=connection_string)
 
-    def _get_file_client(
-            self,
-            account_url: str,
-            file_system: str,
-            file_path: str) -> DataLakeFileClient:
+    def _get_file_client(self, account_url: str, file_system: str, file_path: str) -> DataLakeFileClient:
         """
         get DataLakeFileClient
 
@@ -47,15 +39,10 @@ class AzDataLakeClient(ClientInterface):
         """
         file_client = self._get_service_client_from_url(
             account_url=account_url,
-        ).get_file_client(
-            file_system=file_system,
-            file_path=file_path)
+        ).get_file_client(file_system=file_system, file_path=file_path)
         return file_client
 
-    def _get_container_client(
-            self,
-            account_url: str,
-            file_system: str) -> FileSystemClient:
+    def _get_container_client(self, account_url: str, file_system: str) -> FileSystemClient:
         """
         get FileSystemClient
 
@@ -67,16 +54,15 @@ class AzDataLakeClient(ClientInterface):
             FileSystemClient
 
         """
-        file_system_client = self._get_service_client_from_url(
-            account_url=account_url
-        ).get_file_system_client(
+        file_system_client = self._get_service_client_from_url(account_url=account_url).get_file_system_client(
             file_system=file_system
         )
         return file_system_client
 
     def _ls(self, path: str, file_path: str):
-        file_list = \
-            [f.name for f in self.get_container_client_from_path(path=path).get_paths(path=file_path, recursive=True)]
+        file_list = [
+            f.name for f in self.get_container_client_from_path(path=path).get_paths(path=file_path, recursive=True)
+        ]
         return file_list
 
     def _get(self, path: str, offset: int = None, length: int = None, **kwargs):

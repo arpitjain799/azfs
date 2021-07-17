@@ -12,6 +12,7 @@ import pickle
 import re
 import sys
 import traceback as trc
+
 # to accept all typing.*
 from typing import *
 import warnings
@@ -25,12 +26,9 @@ from azfs.error import (
     AzfsInputError,
     AzfsDecoratorFileFormatError,
     AzfsDecoratorSizeNotMatchedError,
-    AzfsDecoratorReturnTypeError
+    AzfsDecoratorReturnTypeError,
 )
-from azfs.utils import (
-    BlobPathDecoder,
-    ls_filter
-)
+from azfs.utils import BlobPathDecoder, ls_filter
 
 __all__ = ["AzFileClient", "ExportDecorator", "export_decorator"]
 
@@ -46,13 +44,10 @@ class ExportDecorator:
         def _wrapper(func: callable):
             func_name = func.__name__
             self.functions.append(
-                {
-                    "function_name": func_name,
-                    "register_as": _as if _as is not None else func_name,
-                    "function": func
-                }
+                {"function_name": func_name, "register_as": _as if _as is not None else func_name, "function": func}
             )
             return func
+
         return _wrapper
 
     __call__ = register
@@ -75,10 +70,11 @@ def _wrap_quick_load(inputs: dict):
 
 
 def _quick_load(
-        path: str,
-        file_format: Optional[str] = None,
-        credential: Optional[str] = None,
-        apply_method: Optional[callable] = None) -> pd.DataFrame:
+    path: str,
+    file_format: Optional[str] = None,
+    credential: Optional[str] = None,
+    apply_method: Optional[callable] = None,
+) -> pd.DataFrame:
     """
     read function for multiprocessing.
 
@@ -126,13 +122,14 @@ def _quick_load(
 
 class DataFrameReader:
     def __init__(
-            self,
-            _azc,
-            credential: Union[str, DefaultAzureCredential],
-            path: Union[str, List[str]] = None,
-            use_mp=False,
-            cpu_count: Optional[int] = None,
-            file_format: Optional[str] = None):
+        self,
+        _azc,
+        credential: Union[str, DefaultAzureCredential],
+        path: Union[str, List[str]] = None,
+        use_mp=False,
+        cpu_count: Optional[int] = None,
+        file_format: Optional[str] = None,
+    ):
         self._azc: AzFileClient = _azc
         # DefaultCredential cannot be pickle (when use multiprocessing), so make it None
         self._credential = credential if type(credential) is str else None
@@ -283,7 +280,7 @@ class DataFrameReader:
                     "path": f,
                     "file_format": self.file_format,
                     "credential": self._credential,
-                    "apply_method": self._apply_method
+                    "apply_method": self._apply_method,
                 }
                 _input.update(kwargs)
                 params_list.append(_input)
@@ -331,6 +328,7 @@ class AzFileClient:
         """
         AzContextManger provides easy way to set new function as attribute to another package like pandas.
         """
+
         def __init__(self):
             self.register_list = []
 
@@ -347,6 +345,7 @@ class AzFileClient:
                 decorated function
 
             """
+
             def _register(function):
                 """
                 append ``wrapper`` function
@@ -357,6 +356,7 @@ class AzFileClient:
                 Returns:
 
                 """
+
                 def wrapper(class_instance):
                     """
                     accept instance in kwargs as name of ``az_file_client_instance``
@@ -383,17 +383,13 @@ class AzFileClient:
 
                         df = args[0] if isinstance(args[0], pd.DataFrame) else None
                         if df is not None:
-                            kwargs['df'] = args[0]
+                            kwargs["df"] = args[0]
                             return target_function(*args[1:], **kwargs)
                         return target_function(*args, **kwargs)
 
                     return new_function
 
-                function_info = {
-                    "assign_as": _as,
-                    "assign_to": _to,
-                    "function": wrapper
-                }
+                function_info = {"assign_as": _as, "assign_to": _to, "function": wrapper}
                 self.register_list.append(function_info)
 
                 return function
@@ -412,7 +408,7 @@ class AzFileClient:
 
             """
             for f in self.register_list:
-                setattr(f['assign_to'], f['assign_as'], f['function'](class_instance=client))
+                setattr(f["assign_to"], f["assign_as"], f["function"](class_instance=client))
 
         def detach(self):
             """
@@ -423,15 +419,14 @@ class AzFileClient:
 
             """
             for f in self.register_list:
-                setattr(f['assign_to'], f['assign_as'], None)
+                setattr(f["assign_to"], f["assign_as"], None)
 
     # instance for context manager
     _az_context_manager = AzContextManager()
 
     def __init__(
-            self,
-            credential: Optional[Union[str, DefaultAzureCredential]] = None,
-            connection_string: Optional[str] = None):
+        self, credential: Optional[Union[str, DefaultAzureCredential]] = None, connection_string: Optional[str] = None
+    ):
         """
         if every argument is None, set credential as DefaultAzureCredential().
 
@@ -632,7 +627,7 @@ class AzFileClient:
             "last_modified": data.get("last_modified", ""),
             "etag": data.get("etag", ""),
             "content_type": content_settings.get("content_type", ""),
-            "type": data_type
+            "type": data_type,
         }
 
     def checksum(self, path: str) -> str:
@@ -753,7 +748,7 @@ class AzFileClient:
         result = re.match(acceptable_folder_pattern, file_path)
         if result:
             result_dict = result.groupdict()
-            root_folder = result_dict['root_folder']
+            root_folder = result_dict["root_folder"]
         else:
             raise AzfsInputError(
                 f"Cannot use `*` in root_folder under a container. Accepted format is {acceptable_folder_pattern}"
@@ -772,7 +767,7 @@ class AzFileClient:
 
             escaped_pattern_path = _escape(pattern_path)
             # fix pattern_path, in order to avoid matching `/`
-            replace_pattern_path = escaped_pattern_path.replace('*', '([^/])*?')
+            replace_pattern_path = escaped_pattern_path.replace("*", "([^/])*?")
             pattern = re.compile(f"{replace_pattern_path}$")
             file_full_path_list = [f"{base_path}{f}" for f in file_list]
             # filter with pattern.match
@@ -782,12 +777,13 @@ class AzFileClient:
             raise NotImplementedError
 
     def read(
-            self,
-            *,
-            path: Union[str, List[str]] = None,
-            use_mp: bool = False,
-            cpu_count: Optional[int] = None,
-            file_format: str = "csv") -> DataFrameReader:
+        self,
+        *,
+        path: Union[str, List[str]] = None,
+        use_mp: bool = False,
+        cpu_count: Optional[int] = None,
+        file_format: str = "csv",
+    ) -> DataFrameReader:
         """
         read csv, parquet, picke files in Azure Blob, like PySpark-method.
 
@@ -830,7 +826,8 @@ class AzFileClient:
             path=path,
             use_mp=use_mp,
             cpu_count=cpu_count,
-            file_format=file_format)
+            file_format=file_format,
+        )
 
     def _get(self, path: str, offset: int = None, length: int = None, **kwargs) -> Union[bytes, str, io.BytesIO, dict]:
         """
@@ -857,8 +854,9 @@ class AzFileClient:
         """
         _, account_kind, _, _ = BlobPathDecoder(path).get_with_url()
 
-        file_bytes = self._client.get_client(
-            account_kind=account_kind).get(path=path, offset=offset, length=length, **kwargs)
+        file_bytes = self._client.get_client(account_kind=account_kind).get(
+            path=path, offset=offset, length=length, **kwargs
+        )
         # gzip圧縮ファイルは一旦ここで展開
         if path.endswith(".gz"):
             file_bytes = gzip.decompress(file_bytes)
@@ -928,14 +926,14 @@ class AzFileClient:
             else:
                 byte_list.append(l)
             if div_idx + 1 == chunk_size:
-                file_to_read = (b"\n".join(byte_list))
+                file_to_read = b"\n".join(byte_list)
                 file_to_io_read = io.BytesIO(file_to_read)
                 df = pd.read_csv(file_to_io_read)
                 yield df
 
                 byte_list = [initial_line]
         # make remainder DataFrame after the for-loop
-        file_to_read = (b"\n".join(byte_list))
+        file_to_read = b"\n".join(byte_list)
         file_to_io_read = io.BytesIO(file_to_read)
         df = pd.read_csv(file_to_io_read)
         yield df
@@ -1052,6 +1050,7 @@ class AzFileClient:
 
         """
         import pyarrow.parquet as pq
+
         data = self._get(path=path)
         return pq.read_table(data).to_pandas()
 
@@ -1239,22 +1238,22 @@ class AzFileClient:
 
     # import decorator
     def import_decorator(
-            self,
-            decorator: ExportDecorator,
-            *,
-            keyword_list: list,
-            storage_account: Optional[Union[str, dict]] = None,
-            storage_type: Union[str, dict] = "blob",
-            container: Optional[Union[str, dict]] = None,
-            key: Optional[Union[str, dict]] = None,
-            output_parent_path: Optional[Union[str, dict]] = None,
-            file_name_prefix: Optional[Union[str, dict]] = None,
-            file_name: Optional[Union[str, dict]] = None,
-            file_name_suffix: Optional[Union[str, dict]] = None,
-            export: Union[bool, dict] = True,
-            format_type: Union[str, dict] = "csv",
-            ignore_error=False,
-            **write_kwargs
+        self,
+        decorator: ExportDecorator,
+        *,
+        keyword_list: list,
+        storage_account: Optional[Union[str, dict]] = None,
+        storage_type: Union[str, dict] = "blob",
+        container: Optional[Union[str, dict]] = None,
+        key: Optional[Union[str, dict]] = None,
+        output_parent_path: Optional[Union[str, dict]] = None,
+        file_name_prefix: Optional[Union[str, dict]] = None,
+        file_name: Optional[Union[str, dict]] = None,
+        file_name_suffix: Optional[Union[str, dict]] = None,
+        export: Union[bool, dict] = True,
+        format_type: Union[str, dict] = "csv",
+        ignore_error=False,
+        **write_kwargs,
     ):
         """
         set user-defined functions as attribute of azfs.AzFileClient.
@@ -1299,15 +1298,13 @@ class AzFileClient:
 
         """
         for func_dict in decorator.functions:
-            original_func_name = func_dict['function_name']
-            func_name = func_dict['register_as']
-            func = func_dict['function']
+            original_func_name = func_dict["function_name"]
+            func_name = func_dict["register_as"]
+            func = func_dict["function"]
 
             def _decode(
-                    kwrd: str,
-                    suffix: str,
-                    kwargs_import_function: Optional[Union[str, dict]],
-                    kwargs_invoke_function: dict) -> Optional[Union[str, bool]]:
+                kwrd: str, suffix: str, kwargs_import_function: Optional[Union[str, dict]], kwargs_invoke_function: dict
+            ) -> Optional[Union[str, bool]]:
                 """
 
                 Args:
@@ -1325,9 +1322,11 @@ class AzFileClient:
 
                 if kwargs_import_function is None:
                     return None
-                if type(kwargs_import_function) is str \
-                        or type(kwargs_import_function) is bool \
-                        or type(kwargs_import_function) is list:
+                if (
+                    type(kwargs_import_function) is str
+                    or type(kwargs_import_function) is bool
+                    or type(kwargs_import_function) is list
+                ):
                     return kwargs_import_function
                 elif type(kwargs_import_function) is dict:
                     return kwargs_import_function.pop(kwrd, None)
@@ -1335,9 +1334,8 @@ class AzFileClient:
                     raise ValueError("type not matched.")
 
             def _wrapper(
-                    _func: callable,
+                _func: callable,
             ):
-
                 def _actual_function(*args, **kwargs):
                     """
                     do the things below:
@@ -1361,25 +1359,23 @@ class AzFileClient:
                     output_path_list = []
                     for keyword in keyword_list:
                         storage_account_: str = _decode(
-                            keyword, "storage_account", copy.deepcopy(storage_account), kwargs)
-                        storage_type_: str = _decode(
-                            keyword, "storage_type", copy.deepcopy(storage_type), kwargs)
-                        container_: str = _decode(
-                            keyword, "container", copy.deepcopy(container), kwargs)
-                        key_: str = _decode(
-                            keyword, "key", copy.deepcopy(key), kwargs)
+                            keyword, "storage_account", copy.deepcopy(storage_account), kwargs
+                        )
+                        storage_type_: str = _decode(keyword, "storage_type", copy.deepcopy(storage_type), kwargs)
+                        container_: str = _decode(keyword, "container", copy.deepcopy(container), kwargs)
+                        key_: str = _decode(keyword, "key", copy.deepcopy(key), kwargs)
                         output_parent_path_: str = _decode(
-                            keyword, "output_parent_path", copy.deepcopy(output_parent_path), kwargs)
+                            keyword, "output_parent_path", copy.deepcopy(output_parent_path), kwargs
+                        )
                         file_name_prefix_: str = _decode(
-                            keyword, "file_name_prefix", copy.deepcopy(file_name_prefix), kwargs)
-                        file_name_: Union[str, list] = _decode(
-                            keyword, "file_name", copy.deepcopy(file_name), kwargs)
+                            keyword, "file_name_prefix", copy.deepcopy(file_name_prefix), kwargs
+                        )
+                        file_name_: Union[str, list] = _decode(keyword, "file_name", copy.deepcopy(file_name), kwargs)
                         file_name_suffix_: str = _decode(
-                            keyword, "file_name_suffix", copy.deepcopy(file_name_suffix), kwargs)
-                        export_: bool = _decode(
-                            keyword, "export", copy.deepcopy(export), kwargs)
-                        format_type_: bool = _decode(
-                            keyword, "format_type", copy.deepcopy(format_type), kwargs)
+                            keyword, "file_name_suffix", copy.deepcopy(file_name_suffix), kwargs
+                        )
+                        export_: bool = _decode(keyword, "export", copy.deepcopy(export), kwargs)
+                        format_type_: bool = _decode(keyword, "format_type", copy.deepcopy(format_type), kwargs)
 
                         # add prefix
                         if file_name_prefix_ is not None:
@@ -1399,29 +1395,32 @@ class AzFileClient:
                                 if key_ is not None:
                                     if type(file_name_) is str:
                                         output_path_list.append(
-                                            f"{output_parent_path_}/{key_}/{file_name_}.{format_type_}")
+                                            f"{output_parent_path_}/{key_}/{file_name_}.{format_type_}"
+                                        )
                                     elif type(file_name_) is list:
                                         output_path_list.append(
                                             [f"{output_parent_path_}/{key_}/{f}.{format_type_}" for f in file_name_]
                                         )
                                 else:
                                     if type(file_name_) is str:
-                                        output_path_list.append(
-                                            f"{output_parent_path_}/{file_name_}.{format_type_}")
+                                        output_path_list.append(f"{output_parent_path_}/{file_name_}.{format_type_}")
                                     elif type(file_name_) is list:
                                         output_path_list.append(
                                             [f"{output_parent_path_}/{f}.{format_type_}" for f in file_name_]
                                         )
 
-                            elif storage_account_ is not None and \
-                                    storage_type_ is not None and \
-                                    container_ is not None and \
-                                    file_name_ is not None:
+                            elif (
+                                storage_account_ is not None
+                                and storage_type_ is not None
+                                and container_ is not None
+                                and file_name_ is not None
+                            ):
                                 if key_ is not None:
                                     url_ = f"https://{storage_account_}.{storage_type_}.core.windows.net"
                                     if type(file_name_) is str:
                                         output_path_list.append(
-                                            f"{url_}/{container_}/{key_}/{file_name_}.{format_type_}")
+                                            f"{url_}/{container_}/{key_}/{file_name_}.{format_type_}"
+                                        )
                                     elif type(file_name_) is list:
                                         output_path_list.append(
                                             [f"{url_}/{container_}/{key_}/{f}.{format_type_}" for f in file_name_]
@@ -1429,8 +1428,7 @@ class AzFileClient:
                                 else:
                                     url_ = f"https://{storage_account_}.{storage_type_}.core.windows.net"
                                     if type(file_name_) is str:
-                                        output_path_list.append(
-                                            f"{url_}/{container_}/{file_name_}.{format_type_}")
+                                        output_path_list.append(f"{url_}/{container_}/{file_name_}.{format_type_}")
                                     elif type(file_name_) is list:
                                         output_path_list.append(
                                             [f"{url_}/{container_}/{f}.{format_type_}" for f in file_name_]
@@ -1460,7 +1458,7 @@ class AzFileClient:
                         "_file_name",
                         "_file_name_suffix",
                         "_export",
-                        "_file_format"
+                        "_file_format",
                     ]
                     for pop_keyword in pop_keyword_list:
                         _ = kwargs.pop(pop_keyword, None)
@@ -1496,6 +1494,7 @@ class AzFileClient:
                     else:
                         raise AzfsDecoratorReturnTypeError()
                     return _df
+
                 return _actual_function
 
             def _ignore_error_wrapper(_func: callable):
@@ -1508,6 +1507,7 @@ class AzFileClient:
                 Returns:
 
                 """
+
                 def _actual_function(*args, **kwargs):
                     result = None
                     try:
@@ -1517,6 +1517,7 @@ class AzFileClient:
                         logger.error(f"error occurred at: {_func.__name__}")
                         logger.error(f"{sys.exc_info()}\n{trc.format_exc()}")
                     return result
+
                 return _actual_function
 
             # mutable object is to Null, after initial reference
@@ -1537,14 +1538,10 @@ class AzFileClient:
                 "file_name": file_name,
                 "file_name_suffix": file_name_suffix,
                 "export": export,
-                "format_type": format_type
+                "format_type": format_type,
             }
             # add docstring
-            wrapped_function.__doc__ = append_docs(
-                func.__doc__,
-                additional_args_list=keyword_list,
-                **parameters
-            )
+            wrapped_function.__doc__ = append_docs(func.__doc__, additional_args_list=keyword_list, **parameters)
             if func_name in self.__dict__.keys():
                 warnings.warn(f"function name `{func_name}` is already given.")
             setattr(self, func_name, wrapped_function)
